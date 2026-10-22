@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. The [Step 1 lab](../labs/step-01/notes.md) contains the worked requirements exercise; the [Step 2 lab](../labs/step-02/notes.md) includes SQL inspection and captured PostgreSQL output. Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. The [Step 1 lab](../labs/step-01/notes.md) contains the worked requirements exercise; the [Step 2 lab](../labs/step-02/notes.md) includes SQL inspection; the [Step 3 lab](../labs/step-03/notes.md) verifies the relational design. Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -46,13 +46,15 @@ The detailed design and concurrency guidance remains in [the mastery guide](POST
 
   Evidence: [Step 2 instructions](../labs/step-02/notes.md), [inspection SQL](../labs/step-02/query.sql), and [executed PostgreSQL evidence](../labs/step-02/evidence.txt). PostgreSQL 18.6 was started; two authenticated psql connections confirmed the college_learning database, college_learner non-superuser role, public schema, table descriptions, and rollback. The technical proof passed; explaining the observations remains your learning gate.
 
-- [ ] **03. Design the relational model**
+- [x] **03. Design the relational model**
 
   Learn: Practice entities, cardinality, normalization, functional dependencies, and deliberate historical snapshots.
 
   Apply: Draw departments, categories, users, assets, and tickets; distinguish an asset's current department from a ticket's recorded department.
 
   Prove: Explain why repeated supplier details and comma-separated part IDs do not belong in ticket rows.
+
+  Evidence: [Relational model and diagrams](RELATIONAL_MODEL.md), [Step 3 instructions](../labs/step-03/notes.md), and [executed PostgreSQL evidence](../labs/step-03/evidence.txt). The five-entity probe verified shared references, optional membership, separate reporter/assignee links, historical department attribution, and normalization counterexamples. Its tables and fixtures were rolled back, and a fresh connection confirmed cleanup. Explaining the design yourself remains your learning gate.
 
 - [ ] **04. Choose identifiers and ordinary types**
 

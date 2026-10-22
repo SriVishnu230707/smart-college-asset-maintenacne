@@ -8,6 +8,8 @@ Step 1 now has a written [project contract](PROJECT_CONTRACT.md) and [worked acc
 
 Step 2 now has a running PostgreSQL 18 learning environment with [inspection instructions](../labs/step-02/notes.md) and [captured execution evidence](../labs/step-02/evidence.txt). Its disposable transaction probe is rolled back; application tables and SQLAlchemy models are still later steps.
 
+Step 3 now has a [logical relational model](RELATIONAL_MODEL.md), [normalization lab](../labs/step-03/notes.md), and [executed model evidence](../labs/step-03/evidence.txt). The five-table demonstration is rolled back after verification; permanent application schema and ORM implementation remain later steps.
+
 Follow the [sequential learning path](LEARNING_PATH.md): 64 project steps followed by 16 specialist extensions. Advance when you can demonstrate the result and explain the failure cases. Finishing CRUD alone will not establish practical mastery.
 
 Use PostgreSQL 18 and SQLAlchemy 2.1 documentation consistently for this route. The SQLAlchemy download page currently identifies 2.1 as the current series and 2.0 as the maintenance series. Pin the selected package versions in the project rather than depending on an unbounded latest release. Use psycopg 3, Alembic, pytest, FastAPI, Docker Compose, psql, and pgAdmin as supporting tools. Begin with synchronous SQLAlchemy; add async after the transaction and loading exercises. [SQLAlchemy release information](https://www.sqlalchemy.org/download.html), [PostgreSQL documentation](https://www.postgresql.org/docs/18/index.html).

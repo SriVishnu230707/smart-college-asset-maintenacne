@@ -1,0 +1,141 @@
+Step 3: relational-model verification evidence
+Captured (Asia/Kolkata): 2026-10-22 11:28:25 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-03/query.sql
+Pager usage is off.
+=== Step 3: five-entity relational model ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 20678
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 2
+INSERT 0 2
+INSERT 0 4
+INSERT 0 4
+INSERT 0 2
+                         List of tables
+     Schema     |        Name         | Type  |      Owner
+----------------+---------------------+-------+-----------------
+ college_step03 | asset_categories    | table | college_learner
+ college_step03 | assets              | table | college_learner
+ college_step03 | departments         | table | college_learner
+ college_step03 | maintenance_tickets | table | college_learner
+ college_step03 | users               | table | college_learner
+(5 rows)
+
+        Table "college_step03.maintenance_tickets"
+      Column      | Type | Collation | Nullable | Default
+------------------+------+-----------+----------+---------
+ id               | uuid |           | not null |
+ asset_id         | uuid |           | not null |
+ reported_by_id   | uuid |           | not null |
+ assigned_to_id   | uuid |           |          |
+ department_id    | uuid |           | not null |
+ title            | text |           | not null |
+ description      | text |           | not null |
+ status           | text |           | not null |
+ rejection_reason | text |           |          |
+Indexes:
+    "maintenance_tickets_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "maintenance_tickets_asset_id_fkey" FOREIGN KEY (asset_id) REFERENCES assets(id)
+    "maintenance_tickets_assigned_to_id_fkey" FOREIGN KEY (assigned_to_id) REFERENCES users(id)
+    "maintenance_tickets_department_id_fkey" FOREIGN KEY (department_id) REFERENCES departments(id)
+    "maintenance_tickets_reported_by_id_fkey" FOREIGN KEY (reported_by_id) REFERENCES users(id)
+
+=== Shared department/category facts; repeated asset names are valid ===
+ asset_code |        name         | category  | current_department
+------------+---------------------+-----------+--------------------
+ ECE-PC-001 | Lab Computer        | COMPUTER  | ECE
+ PC-001     | Lab Computer        | COMPUTER  | CSE
+ PC-002     | Lab Computer        | COMPUTER  | CSE
+ PRJ-001    | Classroom Projector | PROJECTOR | CSE
+(4 rows)
+
+PASS: Three distinct computers share one category record; names need not be unique.
+PASS: A Super Admin can have no department while assets still have a required parent.
+=== Reporter and assignee are different user relationships ===
+          title          |  reporter   |    assignee
+-------------------------+-------------+----------------
+ Projector flicker       | CSE Student |
+ Computer will not start | CSE Student | CSE Technician
+(2 rows)
+
+PASS: Reporter and assignee resolve to separate user identities.
+=== A terminal ticket keeps its department after asset transfer ===
+PASS: The transfer fixture has no nonterminal tickets for this asset.
+UPDATE 1
+INSERT 0 1
+            title             |  status  | department_at_report | current_asset_department
+------------------------------+----------+----------------------+--------------------------
+ Projector flicker            | rejected | CSE                  | ECE
+ Projector input not detected | open     | ECE                  | ECE
+(2 rows)
+
+PASS: The old ticket stays CSE; the transferred asset and new ticket belong to ECE.
+=== Counterexample: repeated current supplier details can disagree ===
+ supplier_ref | conflicting_current_contacts
+--------------+------------------------------
+ SUP-1        |                            2
+(1 row)
+
+PASS: The bad design permits contradictory copies of one supplier contact.
+PASS: Two parts reference one authoritative supplier contact record.
+=== Counterexample: substring lookup confuses PART-1 and PART-10 ===
+ ticket_ref |   part_codes
+------------+-----------------
+ T-EXACT    | PART-1,PART-30
+ T-WRONG    | PART-10,PART-20
+(2 rows)
+
+PASS: The encoded part list gives a false substring match for PART-10.
+PASS: Separate part-use rows give one exact relationship with its own quantity.
+ROLLBACK
+PASS: All five demonstration tables and fixtures were rolled back.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-03/reconnect.sql
+Pager usage is off.
+=== Step 3: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 20695
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | model_probe_absent
+------------------+-----------------+--------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms the Step 3 model probe left no schema behind.
