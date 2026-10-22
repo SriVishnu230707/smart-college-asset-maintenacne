@@ -90,4 +90,4 @@ CHECKs validate current row values on writes. They cannot by themselves enforce 
 
 The [Step 5 raw-money policy](MONEY_AND_TIME.md) also remains unchanged: a CHECK on an already scaled `NUMERIC(12,2)` cannot recover excess original precision that conversion rounded away. Every application/import path must validate raw money before scaled storage. This lab does not add production monetary-write protection.
 
-The [Step 6 lab](../labs/step-06/notes.md) records 48 successful PostgreSQL checks, including 37 expected rejections, and rolls all objects back. Step 7 adds referential integrity and deletion policies next.
+The [Step 6 lab](../labs/step-06/notes.md) records 48 successful PostgreSQL checks, including 37 expected rejections, and rolls all objects back. The [Step 7 decisions](REFERENTIAL_INTEGRITY.md) and [lab](../labs/step-07/notes.md) now add referential integrity and deletion policies.

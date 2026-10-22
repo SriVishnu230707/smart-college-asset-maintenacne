@@ -1,0 +1,243 @@
+Step 7: referential-integrity verification evidence
+Captured (Asia/Kolkata): 2026-10-22 13:09:55 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-07/query.sql
+Pager usage is off.
+=== Step 7: foreign keys, composite references, and deletion policies ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 41315
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+=== A valid reference graph with required and optional links ===
+INSERT 0 3
+INSERT 0 2
+INSERT 0 4
+INSERT 0 2
+INSERT 0 2
+PASS: Required parents exist; a ticket can be unassigned and a Super Admin can lack a department.
+=== Missing, NULL, and changed references are checked directly by PostgreSQL ===
+Output format is unaligned.
+PASS: A non-NULL missing user department fails fk_users_department.
+psql:/labs/step-07/query.sql:206: NOTICE:  Expected SQLSTATE 23503, constraint=fk_users_department, column=<not reported>
+psql:/labs/step-07/query.sql:208: NOTICE:  Expected SQLSTATE 23503, constraint=fk_assets_department, column=<not reported>
+PASS: A missing asset department fails fk_assets_department.
+psql:/labs/step-07/query.sql:210: NOTICE:  Expected SQLSTATE 23503, constraint=fk_assets_category, column=<not reported>
+PASS: A missing asset category fails fk_assets_category.
+psql:/labs/step-07/query.sql:212: NOTICE:  Expected SQLSTATE 23503, constraint=fk_tickets_asset, column=<not reported>
+PASS: A missing ticket asset fails fk_tickets_asset.
+PASS: A missing reporter fails fk_tickets_reporter.
+psql:/labs/step-07/query.sql:214: NOTICE:  Expected SQLSTATE 23503, constraint=fk_tickets_reporter, column=<not reported>
+PASS: An optional assignee must exist when non-NULL.
+psql:/labs/step-07/query.sql:216: NOTICE:  Expected SQLSTATE 23503, constraint=fk_tickets_assignee, column=<not reported>
+psql:/labs/step-07/query.sql:218: NOTICE:  Expected SQLSTATE 23503, constraint=fk_tickets_department, column=<not reported>
+PASS: A missing recorded ticket department fails fk_tickets_department.
+PASS: A required asset department cannot bypass its FK using NULL.
+psql:/labs/step-07/query.sql:220: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=department_id
+PASS: A required ticket asset cannot bypass its FK using NULL.
+psql:/labs/step-07/query.sql:222: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=asset_id
+PASS: Changing an asset category to a missing parent is rejected.
+psql:/labs/step-07/query.sql:224: NOTICE:  Expected SQLSTATE 23503, constraint=fk_assets_category, column=<not reported>
+PASS: Changing an assignee to a missing user is rejected.
+psql:/labs/step-07/query.sql:226: NOTICE:  Expected SQLSTATE 23503, constraint=fk_tickets_assignee, column=<not reported>
+psql:/labs/step-07/query.sql:228: NOTICE:  Expected SQLSTATE 23001, constraint=fk_tickets_asset, column=<not reported>
+PASS: Changing a referenced asset UUID is blocked by ON UPDATE RESTRICT.
+PASS: A foreign key cannot target non-unique department names.
+psql:/labs/step-07/query.sql:230: NOTICE:  Expected SQLSTATE 42830, constraint=<not reported>, column=<not reported>
+=== Referenced records cannot be hard-deleted ===
+psql:/labs/step-07/query.sql:236: NOTICE:  Expected SQLSTATE 23001, constraint=fk_assets_department, column=<not reported>
+PASS: A department used by an asset cannot be deleted.
+psql:/labs/step-07/query.sql:238: NOTICE:  Expected SQLSTATE 23001, constraint=fk_users_department, column=<not reported>
+PASS: A department used by a user cannot be deleted.
+PASS: A category used by an asset cannot be deleted.
+psql:/labs/step-07/query.sql:240: NOTICE:  Expected SQLSTATE 23001, constraint=fk_assets_category, column=<not reported>
+PASS: An asset with retained tickets cannot be deleted.
+psql:/labs/step-07/query.sql:242: NOTICE:  Expected SQLSTATE 23001, constraint=fk_tickets_asset, column=<not reported>
+psql:/labs/step-07/query.sql:244: NOTICE:  Expected SQLSTATE 23001, constraint=fk_tickets_reporter, column=<not reported>
+PASS: A referenced ticket reporter cannot be deleted.
+psql:/labs/step-07/query.sql:246: NOTICE:  Expected SQLSTATE 23001, constraint=fk_tickets_assignee, column=<not reported>
+PASS: A referenced technician remains protected even on a closed ticket.
+Output format is aligned.
+=== Asset transfer and retirement preserve recorded department and user identities ===
+PASS: All retained tickets are terminal before the illustrated asset transfer.
+UPDATE 1
+UPDATE 2
+ asset_code | current_department | department_at_report |  status
+------------+--------------------+----------------------+----------
+ PRJ-001    | ECE                | CSE                  | closed
+ PRJ-001    | ECE                | CSE                  | rejected
+(2 rows)
+
+PASS: Asset and user transfers leave both tickets attributed to the original department.
+Output format is unaligned.
+psql:/labs/step-07/query.sql:283: NOTICE:  Expected SQLSTATE 23001, constraint=fk_tickets_department, column=<not reported>
+PASS: A department referenced only by historical tickets still cannot be deleted.
+Output format is aligned.
+UPDATE 1
+UPDATE 2
+UPDATE 1
+UPDATE 1
+PASS: Retirement, deactivation, and archival preserve all historical reference identities.
+=== Composite references match one whole parent key ===
+INSERT 0 2
+INSERT 0 3
+INSERT 0 2
+  label  | order_no | part_no
+---------+----------+---------
+ valid   |        1 |      10
+ absent  |          |
+ partial |      999 |
+(3 rows)
+
+ label  | order_no | part_no
+--------+----------+---------
+ valid  |        2 |      20
+ absent |          |
+(2 rows)
+
+PASS: MATCH SIMPLE skips partial NULL pairs; MATCH FULL permits a complete pair or all NULLs.
+Output format is unaligned.
+PASS: Existing components from different rows do not form a valid SIMPLE pair.
+psql:/labs/step-07/query.sql:324: NOTICE:  Expected SQLSTATE 23503, constraint=fk_simple_reference, column=<not reported>
+PASS: Existing components from different rows do not form a valid FULL pair.
+psql:/labs/step-07/query.sql:326: NOTICE:  Expected SQLSTATE 23503, constraint=fk_full_reference, column=<not reported>
+psql:/labs/step-07/query.sql:328: NOTICE:  Expected SQLSTATE 23503, constraint=fk_full_reference, column=<not reported>
+PASS: MATCH FULL rejects a present order with a NULL part.
+psql:/labs/step-07/query.sql:330: NOTICE:  Expected SQLSTATE 23503, constraint=fk_full_reference, column=<not reported>
+PASS: MATCH FULL rejects a NULL order with a present part.
+PASS: A referenced composite parent pair cannot be deleted.
+psql:/labs/step-07/query.sql:332: NOTICE:  Expected SQLSTATE 23001, constraint=fk_full_reference, column=<not reported>
+Output format is aligned.
+=== Compare deletion actions using disposable probes ===
+INSERT 0 6
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DELETE 1
+PASS: ON DELETE CASCADE deletes the comparison child with its parent.
+DELETE 1
+PASS: ON DELETE SET NULL retains the comparison child and clears its optional link.
+DELETE 1
+PASS: ON DELETE SET DEFAULT changes the child to its existing fallback parent.
+Output format is unaligned.
+PASS: SET DEFAULT cannot remove the fallback parent and leave a dangling default.
+psql:/labs/step-07/query.sql:371: NOTICE:  Expected SQLSTATE 23503, constraint=fk_default_child, column=<not reported>
+PASS: SET NULL still fails if the child link is NOT NULL.
+psql:/labs/step-07/query.sql:373: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=parent_id
+PASS: The default nondeferrable NO ACTION rejects a referenced-parent delete.
+psql:/labs/step-07/query.sql:375: NOTICE:  Expected SQLSTATE 23503, constraint=fk_no_action_child, column=<not reported>
+Output format is aligned.
+PASS: Rejected deletion actions retain their parents and leave comparison children unchanged.
+=== Inspect actual foreign-key policy and unchanged project fixtures ===
+            Table "college_step07.maintenance_tickets"
+     Column     | Type | Collation | Nullable |      Default
+----------------+------+-----------+----------+-------------------
+ id             | uuid |           | not null | gen_random_uuid()
+ asset_id       | uuid |           | not null |
+ reported_by_id | uuid |           | not null |
+ assigned_to_id | uuid |           |          |
+ department_id  | uuid |           | not null |
+ status         | text |           | not null | 'open'::text
+Indexes:
+    "pk_maintenance_tickets" PRIMARY KEY, btree (id)
+    "ix_tickets_asset" btree (asset_id)
+    "ix_tickets_assignee" btree (assigned_to_id)
+    "ix_tickets_department" btree (department_id)
+    "ix_tickets_reporter" btree (reported_by_id)
+Check constraints:
+    "ck_tickets_status" CHECK (status = ANY (ARRAY['open'::text, 'assigned'::text, 'in_progress'::text, 'awaiting_verification'::text, 'closed'::text, 'rejected'::text]))
+Foreign-key constraints:
+    "fk_tickets_asset" FOREIGN KEY (asset_id) REFERENCES assets(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+    "fk_tickets_assignee" FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+    "fk_tickets_department" FOREIGN KEY (department_id) REFERENCES departments(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+    "fk_tickets_reporter" FOREIGN KEY (reported_by_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+
+        conname         |        child_table        |     parent_table      | delete_action | update_action | condeferrable |                                                   definition
+------------------------+---------------------------+-----------------------+---------------+---------------+---------------+-----------------------------------------------------------------------------------------------------------------
+ fk_assets_category     | assets                    | asset_categories      | r             | r             | f             | FOREIGN KEY (category_id) REFERENCES asset_categories(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+ fk_assets_department   | assets                    | departments           | r             | r             | f             | FOREIGN KEY (department_id) REFERENCES departments(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+ fk_cascade_child       | cascade_child_probe       | deletion_parent_probe | c             | a             | f             | FOREIGN KEY (parent_id) REFERENCES deletion_parent_probe(id) ON DELETE CASCADE
+ fk_default_child       | default_child_probe       | deletion_parent_probe | d             | a             | f             | FOREIGN KEY (parent_id) REFERENCES deletion_parent_probe(id) ON DELETE SET DEFAULT
+ fk_full_reference      | full_reference_probe      | part_line_key_probe   | r             | a             | f             | FOREIGN KEY (order_no, part_no) REFERENCES part_line_key_probe(order_no, part_no) MATCH FULL ON DELETE RESTRICT
+ fk_no_action_child     | no_action_child_probe     | deletion_parent_probe | a             | a             | f             | FOREIGN KEY (parent_id) REFERENCES deletion_parent_probe(id)
+ fk_nullable_child      | nullable_child_probe      | deletion_parent_probe | n             | a             | f             | FOREIGN KEY (parent_id) REFERENCES deletion_parent_probe(id) ON DELETE SET NULL
+ fk_required_null_child | required_null_child_probe | deletion_parent_probe | n             | a             | f             | FOREIGN KEY (parent_id) REFERENCES deletion_parent_probe(id) ON DELETE SET NULL
+ fk_simple_reference    | simple_reference_probe    | part_line_key_probe   | r             | a             | f             | FOREIGN KEY (order_no, part_no) REFERENCES part_line_key_probe(order_no, part_no) ON DELETE RESTRICT
+ fk_tickets_asset       | maintenance_tickets       | assets                | r             | r             | f             | FOREIGN KEY (asset_id) REFERENCES assets(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+ fk_tickets_assignee    | maintenance_tickets       | users                 | r             | r             | f             | FOREIGN KEY (assigned_to_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+ fk_tickets_department  | maintenance_tickets       | departments           | r             | r             | f             | FOREIGN KEY (department_id) REFERENCES departments(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+ fk_tickets_reporter    | maintenance_tickets       | users                 | r             | r             | f             | FOREIGN KEY (reported_by_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+ fk_users_department    | users                     | departments           | r             | r             | f             | FOREIGN KEY (department_id) REFERENCES departments(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+(14 rows)
+
+PASS: All seven project foreign keys are validated, nondeferrable, and RESTRICT parent deletion/key updates.
+PASS: Catalog definitions distinguish RESTRICT, CASCADE, SET NULL, SET DEFAULT, and NO ACTION.
+PASS: Seven explicit child-reference indexes accompany the project foreign keys.
+PASS: Rejected reference writes, parent deletes, and invalid DDL left no extra or missing fixture rows.
+ROLLBACK
+PASS: All Step 7 tables, indexes, constraints, fixtures, and the helper were rolled back.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-07/reconnect.sql
+Pager usage is off.
+=== Step 7: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 41323
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | reference_probe_absent
+------------------+-----------------+------------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 7 schema remains.

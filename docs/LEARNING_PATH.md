@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), and [row validity](../labs/step-06/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), and [referential integrity](../labs/step-07/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -86,13 +86,15 @@ The detailed design and concurrency guidance remains in [the mastery guide](POST
 
   Evidence: [Row-validity decisions](ROW_VALIDITY.md), [Step 6 instructions and rejection map](../labs/step-06/notes.md), and [executed PostgreSQL evidence](../labs/step-06/evidence.txt). All 48 checks passed, including 37 expected insert/update rejections with SQLSTATE and constraint/column assertions. The lab compared CHECK/NULL behavior, required values and defaults, allowed states, canonical business identities, composite keys, and nullable uniqueness. All objects were rolled back and cleanup was verified from a fresh connection. Explaining the failures yourself remains your learning gate.
 
-- [ ] **07. Enforce referential integrity**
+- [x] **07. Enforce referential integrity**
 
   Learn: Study foreign keys, nullable links, composite references, and ON DELETE choices.
 
   Apply: Connect assets to departments/categories and tickets to assets/users; choose retirement/deactivation for records with history.
 
   Prove: Try deleting referenced records and show the chosen policy, without relying on Python validation.
+
+  Evidence: [Reference/deletion decisions](REFERENTIAL_INTEGRITY.md), [Step 7 instructions and rejection map](../labs/step-07/notes.md), and [executed PostgreSQL evidence](../labs/step-07/evidence.txt). All 43 checks passed, including 28 expected rejections. Seven project foreign keys reject missing parents and protect referenced history with RESTRICT; comparison probes verify composite/NULL matches and deletion alternatives. Transfers retain the original ticket department, while retirement/deactivation/archive retain referenced identities. Catalog/index policy and rollback cleanup were checked, including a fresh connection. Explaining the policies yourself remains your learning gate.
 
 - [ ] **08. Manipulate the first dataset in SQL**
 
