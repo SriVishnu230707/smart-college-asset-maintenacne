@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), and [referential integrity](../labs/step-07/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), and [SQL CRUD/transactions](../labs/step-08/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -96,13 +96,15 @@ The detailed design and concurrency guidance remains in [the mastery guide](POST
 
   Evidence: [Reference/deletion decisions](REFERENTIAL_INTEGRITY.md), [Step 7 instructions and rejection map](../labs/step-07/notes.md), and [executed PostgreSQL evidence](../labs/step-07/evidence.txt). All 43 checks passed, including 28 expected rejections. Seven project foreign keys reject missing parents and protect referenced history with RESTRICT; comparison probes verify composite/NULL matches and deletion alternatives. Transfers retain the original ticket department, while retirement/deactivation/archive retain referenced identities. Catalog/index policy and rollback cleanup were checked, including a fresh connection. Explaining the policies yourself remains your learning gate.
 
-- [ ] **08. Manipulate the first dataset in SQL**
+- [x] **08. Manipulate the first dataset in SQL**
 
   Learn: Practice INSERT, SELECT, UPDATE, DELETE, RETURNING, and explicit BEGIN/COMMIT/ROLLBACK.
 
   Apply: Seed a small department/asset dataset and perform reversible changes directly in psql.
 
   Prove: Roll back a change and verify its absence from an independent connection.
+
+  Evidence: [SQL CRUD/transaction guide](SQL_CRUD_AND_TRANSACTIONS.md), [Step 8 instructions](../labs/step-08/notes.md), and [executed evidence](../labs/step-08/evidence.txt). All 23 verification checks passed, including three deliberate SQL errors. The lab commits a department/category/asset baseline, inspects INSERT/UPDATE/DELETE RETURNING and zero-match counts, rolls back successful and failed transactions, and verifies original rows through a different backend. A wrong-run cleanup attempt is refused; correct cleanup commits and its absence is checked from another connection. Reproducing and explaining the observations remains your learning gate.
 
 Checkpoint: You can build and inspect a small relational schema directly in PostgreSQL and explain each integrity rule.
 
