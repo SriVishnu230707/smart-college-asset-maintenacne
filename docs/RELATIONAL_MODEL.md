@@ -16,7 +16,7 @@ One row should describe one instance of the table's subject. A department name, 
 
 Lifecycle details include the creation/assignment/rejection/closure instants and the rejection reason when applicable. Successful workflow changes and verification/rework reasons will also be recorded in audit history. Event types, defaults, and conditional requirements are examined in later steps.
 
-Names are display values, not unique identifiers: two computers may both be called "Lab Computer", and a person's display name may change. `users.email` stores the chosen normalized form; uniqueness is about that stored identity, not the display name. UUID generation and ordinary column types are Step 4; money and timestamps are Step 5.
+Names are display values, not unique identifiers: two computers may both be called "Lab Computer", and a person's display name may change. `users.email` stores the chosen normalized form; uniqueness is about that stored identity, not the display name. UUID generation and ordinary column types are now described in the [Step 4 decision record](IDENTIFIERS_AND_TYPES.md); money and timestamps are Step 5.
 
 `users.role` is one application role value. A separate roles table becomes useful if roles acquire their own editable metadata; four fixed role names alone do not require another entity. PostgreSQL login roles from Step 2 are separate from these application accounts.
 

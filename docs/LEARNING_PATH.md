@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. The [Step 1 lab](../labs/step-01/notes.md) contains the worked requirements exercise; the [Step 2 lab](../labs/step-02/notes.md) includes SQL inspection; the [Step 3 lab](../labs/step-03/notes.md) verifies the relational design. Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), and [identifiers/types](../labs/step-04/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -56,13 +56,15 @@ The detailed design and concurrency guidance remains in [the mastery guide](POST
 
   Evidence: [Relational model and diagrams](RELATIONAL_MODEL.md), [Step 3 instructions](../labs/step-03/notes.md), and [executed PostgreSQL evidence](../labs/step-03/evidence.txt). The five-entity probe verified shared references, optional membership, separate reporter/assignee links, historical department attribution, and normalization counterexamples. Its tables and fixtures were rolled back, and a fresh connection confirmed cleanup. Explaining the design yourself remains your learning gate.
 
-- [ ] **04. Choose identifiers and ordinary types**
+- [x] **04. Choose identifiers and ordinary types**
 
   Learn: Compare surrogate and natural keys, UUID and identity integers, text/string limits, booleans, and application versus server-generated values.
 
   Apply: Choose UUID primary keys plus independent unique department codes, asset codes, and part SKUs; document alternatives.
 
   Prove: Demonstrate that a new UUID does not allow an existing asset_code to be inserted again.
+
+  Evidence: [Identifier/type decisions](IDENTIFIERS_AND_TYPES.md), [Step 4 instructions](../labs/step-04/notes.md), and [executed PostgreSQL evidence](../labs/step-04/evidence.txt). The lab verified client/server UUIDs, independent business-key uniqueness, identity integers and sequence gaps, character limits, and boolean defaults. A fresh UUID with an existing canonical asset code was rejected by the named asset-code constraint. All demonstration objects were rolled back and cleanup was checked through a fresh connection. Explaining the observations remains your learning gate.
 
 - [ ] **05. Represent money and time correctly**
 
