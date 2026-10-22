@@ -1,0 +1,212 @@
+Step 6: row-validity verification evidence
+Captured (Asia/Kolkata): 2026-10-22 12:55:53 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-06/query.sql
+Pager usage is off.
+=== Step 6: row validity, NULL, defaults, and uniqueness ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 38212
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+=== Three-valued logic and a nullable CHECK counterexample ===
+Null display is "(NULL)".
+ null_comparison | true_and_unknown | false_and_unknown | true_or_unknown | not_unknown
+-----------------+------------------+-------------------+-----------------+-------------
+ (NULL)          | (NULL)           | f                 | t               | (NULL)
+(1 row)
+
+PASS: SQL predicates use TRUE, FALSE, and UNKNOWN with the expected AND/OR/NOT results.
+INSERT 0 1
+INSERT 0 2
+     label     | stock_quantity
+---------------+----------------
+ omitted       |              0
+ explicit-null |         (NULL)
+ positive      |              2
+(3 rows)
+
+PASS: CHECK accepts UNKNOWN; DEFAULT fills omission but preserves an explicit NULL.
+PASS: WHERE discards UNKNOWN; IS NULL finds the missing value while = NULL does not.
+=== Valid project rows and defaults ===
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 2
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+PASS: Omission and DEFAULT supply valid initial values; explicit boolean choices are preserved.
+PASS: A student has a department; a Super Admin may have no department.
+INSERT 0 3
+            work_order_id             |            spare_part_id             | quantity_used
+--------------------------------------+--------------------------------------+---------------
+ 00000000-0000-4000-8000-000000000010 | 00000000-0000-4000-8000-000000000001 |             1
+ 00000000-0000-4000-8000-000000000010 | 00000000-0000-4000-8000-000000000002 |             2
+ 00000000-0000-4000-8000-000000000011 | 00000000-0000-4000-8000-000000000001 |             3
+(3 rows)
+
+PASS: Composite uniqueness allows different parts per order and the same part in different orders.
+INSERT 0 3
+INSERT 0 1
+PASS: Ordinary UNIQUE permits multiple NULLs; NULLS NOT DISTINCT accepts its first NULL.
+=== Invalid direct SQL: expected diagnostics, then one PASS per attempt ===
+Output format is unaligned.
+PASS: A negative stock balance fails ck_spare_parts_stock.
+psql:/labs/step-06/query.sql:235: NOTICE:  Expected SQLSTATE 23514, constraint=ck_spare_parts_stock, column=<not reported>
+psql:/labs/step-06/query.sql:237: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=stock_quantity
+PASS: Explicit NULL stock fails NOT NULL despite DEFAULT 0.
+PASS: A negative reorder level fails ck_spare_parts_reorder.
+psql:/labs/step-06/query.sql:239: NOTICE:  Expected SQLSTATE 23514, constraint=ck_spare_parts_reorder, column=<not reported>
+PASS: Explicit NULL reorder level fails NOT NULL.
+PASS: Zero consumption quantity fails ck_work_order_parts_quantity.
+PASS: Negative consumption quantity fails ck_work_order_parts_quantity.
+PASS: NULL consumption quantity fails NOT NULL rather than CHECK.
+psql:/labs/step-06/query.sql:241: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=reorder_level
+psql:/labs/step-06/query.sql:243: NOTICE:  Expected SQLSTATE 23514, constraint=ck_work_order_parts_quantity, column=<not reported>
+psql:/labs/step-06/query.sql:245: NOTICE:  Expected SQLSTATE 23514, constraint=ck_work_order_parts_quantity, column=<not reported>
+psql:/labs/step-06/query.sql:247: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=quantity_used
+psql:/labs/step-06/query.sql:249: NOTICE:  Expected SQLSTATE 23514, constraint=ck_assets_status, column=<not reported>
+PASS: An unknown asset status fails ck_assets_status.
+psql:/labs/step-06/query.sql:251: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=status
+PASS: Explicit NULL asset status fails NOT NULL despite its default.
+PASS: The undeclared approved ticket status fails ck_tickets_status.
+psql:/labs/step-06/query.sql:253: NOTICE:  Expected SQLSTATE 23514, constraint=ck_tickets_status, column=<not reported>
+PASS: Explicit NULL ticket status fails NOT NULL.
+PASS: An unknown priority fails ck_tickets_priority.
+PASS: Omitting mandatory priority fails NOT NULL; no default invents it.
+psql:/labs/step-06/query.sql:255: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=status
+psql:/labs/step-06/query.sql:257: NOTICE:  Expected SQLSTATE 23514, constraint=ck_tickets_priority, column=<not reported>
+psql:/labs/step-06/query.sql:259: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=priority
+psql:/labs/step-06/query.sql:261: NOTICE:  Expected SQLSTATE 23514, constraint=ck_tickets_title, column=<not reported>
+PASS: Whitespace-only report text fails ck_tickets_title.
+PASS: Empty report details fail ck_tickets_description.
+psql:/labs/step-06/query.sql:263: NOTICE:  Expected SQLSTATE 23514, constraint=ck_tickets_description, column=<not reported>
+psql:/labs/step-06/query.sql:265: NOTICE:  Expected SQLSTATE 23505, constraint=uq_departments_code, column=<not reported>
+PASS: A fresh UUID cannot duplicate a department code.
+PASS: A fresh UUID cannot duplicate a category code.
+psql:/labs/step-06/query.sql:267: NOTICE:  Expected SQLSTATE 23505, constraint=uq_categories_code, column=<not reported>
+PASS: A fresh UUID cannot duplicate an asset code.
+psql:/labs/step-06/query.sql:269: NOTICE:  Expected SQLSTATE 23505, constraint=uq_assets_asset_code, column=<not reported>
+PASS: A fresh UUID cannot duplicate a part SKU.
+psql:/labs/step-06/query.sql:271: NOTICE:  Expected SQLSTATE 23505, constraint=uq_spare_parts_sku, column=<not reported>
+PASS: A fresh UUID cannot duplicate a normalized user email.
+PASS: A lowercase asset code fails canonical-form CHECK before storage.
+psql:/labs/step-06/query.sql:273: NOTICE:  Expected SQLSTATE 23505, constraint=uq_users_email, column=<not reported>
+psql:/labs/step-06/query.sql:275: NOTICE:  Expected SQLSTATE 23514, constraint=ck_assets_asset_code, column=<not reported>
+PASS: A padded SKU fails canonical-form CHECK before storage.
+psql:/labs/step-06/query.sql:277: NOTICE:  Expected SQLSTATE 23514, constraint=ck_spare_parts_sku, column=<not reported>
+psql:/labs/step-06/query.sql:279: NOTICE:  Expected SQLSTATE 23514, constraint=ck_assets_asset_code, column=<not reported>
+PASS: A blank asset code fails CHECK even though it is not NULL.
+PASS: A NULL asset code fails NOT NULL.
+psql:/labs/step-06/query.sql:281: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=asset_code
+psql:/labs/step-06/query.sql:283: NOTICE:  Expected SQLSTATE 23514, constraint=ck_users_email, column=<not reported>
+PASS: A noncanonical email fails ck_users_email.
+PASS: A blank email fails ck_users_email.
+psql:/labs/step-06/query.sql:285: NOTICE:  Expected SQLSTATE 23514, constraint=ck_users_email, column=<not reported>
+PASS: An unknown user role fails ck_users_role.
+psql:/labs/step-06/query.sql:287: NOTICE:  Expected SQLSTATE 23514, constraint=ck_users_role, column=<not reported>
+PASS: A NULL role fails NOT NULL instead of slipping through CHECK.
+psql:/labs/step-06/query.sql:289: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=role
+PASS: A student without a department fails the same-row membership CHECK.
+psql:/labs/step-06/query.sql:291: NOTICE:  Expected SQLSTATE 23514, constraint=ck_users_department, column=<not reported>
+psql:/labs/step-06/query.sql:293: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=is_active
+PASS: Explicit NULL activation fails NOT NULL despite DEFAULT true.
+psql:/labs/step-06/query.sql:295: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=name
+PASS: Omitting mandatory department name fails NOT NULL.
+psql:/labs/step-06/query.sql:297: NOTICE:  Expected SQLSTATE 23505, constraint=pk_work_order_parts, column=<not reported>
+PASS: A duplicate work-order/part pair fails its composite primary key.
+psql:/labs/step-06/query.sql:299: NOTICE:  Expected SQLSTATE 23502, constraint=<not reported>, column=work_order_id
+PASS: A NULL composite-key component fails NOT NULL.
+psql:/labs/step-06/query.sql:301: NOTICE:  Expected SQLSTATE 23505, constraint=uq_nullable_unique_probe, column=<not reported>
+PASS: Ordinary nullable UNIQUE still rejects repeated non-NULL values.
+PASS: NULLS NOT DISTINCT rejects a second NULL.
+psql:/labs/step-06/query.sql:303: NOTICE:  Expected SQLSTATE 23505, constraint=uq_nulls_not_distinct_probe, column=<not reported>
+psql:/labs/step-06/query.sql:305: NOTICE:  Expected SQLSTATE 23514, constraint=ck_nullable_stock_probe, column=<not reported>
+PASS: Even the nullable CHECK rejects a known negative value.
+psql:/labs/step-06/query.sql:307: NOTICE:  Expected SQLSTATE 23514, constraint=ck_spare_parts_stock, column=<not reported>
+PASS: CHECK also rejects an invalid UPDATE of an existing stock row.
+Output format is aligned.
+=== Inspect named constraints and confirm rejected statements changed nothing ===
+                        Table "college_step06.spare_parts"
+     Column     |         Type          | Collation | Nullable |      Default
+----------------+-----------------------+-----------+----------+-------------------
+ id             | uuid                  |           | not null | gen_random_uuid()
+ sku            | character varying(50) |           | not null |
+ stock_quantity | integer               |           | not null | 0
+ reorder_level  | integer               |           | not null | 0
+ is_archived    | boolean               |           | not null | false
+Indexes:
+    "pk_spare_parts" PRIMARY KEY, btree (id)
+    "uq_spare_parts_sku" UNIQUE CONSTRAINT, btree (sku)
+Check constraints:
+    "ck_spare_parts_reorder" CHECK (reorder_level >= 0)
+    "ck_spare_parts_sku" CHECK (sku::text = upper(btrim(sku::text)) AND sku::text !~ '^[[:space:]]*$'::text)
+    "ck_spare_parts_stock" CHECK (stock_quantity >= 0)
+
+    table_name    |       conname        | contype |                 definition
+------------------+----------------------+---------+--------------------------------------------
+ spare_parts      | ck_spare_parts_stock | c       | CHECK ((stock_quantity >= 0))
+ spare_parts      | nn_spare_parts_stock | n       | NOT NULL stock_quantity
+ work_order_parts | pk_work_order_parts  | p       | PRIMARY KEY (work_order_id, spare_part_id)
+ spare_parts      | uq_spare_parts_sku   | u       | UNIQUE (sku)
+(4 rows)
+
+PASS: Named NOT NULL, CHECK, UNIQUE, and composite PRIMARY KEY constraints are visible in the catalog.
+PASS: All rejected inserts and the rejected stock update left the valid fixture unchanged.
+ROLLBACK
+PASS: All Step 6 tables, constraints, fixtures, and verification helper were rolled back.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-06/reconnect.sql
+Pager usage is off.
+=== Step 6: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 38229
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | row_validity_probe_absent
+------------------+-----------------+---------------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 6 schema remains.

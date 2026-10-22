@@ -25,7 +25,7 @@ id = UUID-B, asset_code = PRJ-001
 
 Distinct UUIDs satisfy neither the business uniqueness rule nor the requirement to reject duplicate inventory labels. Keep both `PRIMARY KEY (id)` and `UNIQUE (asset_code)`. Conversely, a new asset code cannot make a duplicate UUID primary key acceptable. UUID generation makes accidental collisions unlikely; the primary key remains the database guarantee for stored rows.
 
-The initial code convention is trimmed uppercase for department/category/asset codes and SKUs. Normalize input before checking/inserting it. Plain `varchar` and `UNIQUE` do not themselves convert `" prj-001 "` to `PRJ-001`; Step 6 will define the database validity checks. The lab normalizes its duplicate-code input explicitly.
+The initial code convention is trimmed uppercase for department/category/asset codes and SKUs. Normalize input before checking/inserting it. Plain `varchar` and `UNIQUE` do not themselves convert `" prj-001 "` to `PRJ-001`; the [Step 6 validity checks](ROW_VALIDITY.md) now demonstrate rejecting noncanonical storage. The Step 4 lab normalizes its duplicate-code input explicitly.
 
 Retirement/archive preserves the original record and its business code. The contract forbids assigning a historical asset code or SKU to another entity. A future code-correction feature must also preserve/reserve the old label; a simple update that frees it for reuse would be insufficient. The UUID remains independent of that business-label policy.
 
@@ -106,4 +106,4 @@ Use actual boolean values in application data. `psql` normally displays stored b
 
 The [executed lab](../labs/step-04/notes.md) tests server/client UUID generation, duplicate business keys with fresh IDs, duplicate UUIDs with different codes, identity alternatives and gaps, malformed UUID rejection, string length behavior, and boolean defaults. It uses reduced department/asset/part tables and comparison tables, then rolls them all back.
 
-These decisions do not install the complete application schema or replace later migration ownership. The [Step 5 decisions](MONEY_AND_TIME.md) add exact money and timezone-aware timestamps; Steps 6-7 cover the remaining validity/reference rules.
+These decisions do not install the complete application schema or replace later migration ownership. The [Step 5 decisions](MONEY_AND_TIME.md) add exact money and timezone-aware timestamps; the [Step 6 lab](../labs/step-06/notes.md) now covers row validity and NULL/default behavior. Step 7 adds referential integrity next.

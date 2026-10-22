@@ -14,6 +14,8 @@ Step 4 now has [identifier and ordinary-type decisions](IDENTIFIERS_AND_TYPES.md
 
 Step 5 now has [money/time decisions](MONEY_AND_TIME.md), a [Decimal/datetime and SQL lab](../labs/step-05/notes.md), and [executed evidence](../labs/step-05/evidence.txt). It verifies exact repair costs, validation before numeric rounding, aware instants, and local-midnight reporting across SQL and Python. Its SQL objects are rolled back.
 
+Step 6 now has [row-validity decisions](ROW_VALIDITY.md), a [constraint and NULL/default lab](../labs/step-06/notes.md), and [executed evidence](../labs/step-06/evidence.txt). Its 48 PostgreSQL checks include 37 expected rejections, independent business-key constraints, a composite primary key, and comparisons of nullable CHECK/UNIQUE behavior. Its tables and helper are rolled back; foreign keys and full workflow enforcement remain later steps.
+
 Follow the [sequential learning path](LEARNING_PATH.md): 64 project steps followed by 16 specialist extensions. Advance when you can demonstrate the result and explain the failure cases. Finishing CRUD alone will not establish practical mastery.
 
 Use PostgreSQL 18 and SQLAlchemy 2.1 documentation consistently for this route. The SQLAlchemy download page currently identifies 2.1 as the current series and 2.0 as the maintenance series. Pin the selected package versions in the project rather than depending on an unbounded latest release. Use psycopg 3, Alembic, pytest, FastAPI, Docker Compose, psql, and pgAdmin as supporting tools. Begin with synchronous SQLAlchemy; add async after the transaction and loading exercises. [SQLAlchemy release information](https://www.sqlalchemy.org/download.html), [PostgreSQL documentation](https://www.postgresql.org/docs/18/index.html).
