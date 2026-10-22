@@ -1,0 +1,139 @@
+Step 9: filtering and ordering verification evidence
+Captured (Asia/Kolkata): 2026-10-22 21:13:50 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-09/query.sql
+Pager usage is off.
+Null display is "(NULL)".
+=== Step 9: deliberate predicates, search, casts, ordering, and LIMIT ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 4155
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 2
+INSERT 0 6
+INSERT 0 6
+INSERT 0 12
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+=== Predict the active asset list and the unassigned ticket queue ===
+ asset_code |      name      | status
+------------+----------------+--------
+ PC-001     | lab computer   | active
+ PC-004     | Computer_Stand | active
+ PRJ-001    | Lab Projector  | active
+ PRJ-002    | Projector 100% | active
+(4 rows)
+
+                  id                  |       title        | priority |       created_at
+--------------------------------------+--------------------+----------+------------------------
+ 50000000-0000-4000-8000-000000000001 | Projector flickers | high     | 2026-10-22 09:00:00+00
+ 50000000-0000-4000-8000-000000000002 | Computer slow      | low      | 2026-10-22 09:00:00+00
+(2 rows)
+
+     label     | quoted_value | characters
+---------------+--------------+------------
+ bad-number    | 'two'        |          3
+ empty         | ''           |          0
+ lower         | 'lab'        |          3
+ mixed         | '  Lab  '    |          7
+ null          | NULL         |     (NULL)
+ numeric-ten   | '10'         |          2
+ numeric-two   | '2'          |          1
+ one-character | 'LabX01'     |          6
+ percent       | '100%'       |          4
+ spaces        | '   '        |          3
+ underscore    | 'Lab_01'     |          6
+ upper         | 'LAB'        |          3
+(12 rows)
+
+Output format is unaligned.
+PASS: The active-asset predicate excludes maintenance and retired assets. Observed={PC-001,PC-004,PRJ-001,PRJ-002}
+PASS: Department scope and active status together select only the two CSE active assets. Observed={PC-001,PRJ-001}
+PASS: IN selects the declared active or maintenance statuses. Observed={PC-001,PC-002,PC-004,PRJ-001,PRJ-002}
+PASS: IS NULL finds all unassigned tickets, including a terminal rejected report. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005}
+PASS: The operational unassigned queue additionally requires open status and department scope. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002}
+PASS: Comparing a nullable assignee with = NULL returns no rows. Observed={}
+PASS: A NULL equality predicate is UNKNOWN, not TRUE or FALSE.
+PASS: Parenthesized OR preserves department scope for high or critical priorities. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000003}
+PASS: Without parentheses AND binds first and the critical ECE ticket also matches. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000004}
+=== Case-aware searches and literal wildcard characters ===
+PASS: LIKE with C collation distinguishes the Lab, lab, and LAB prefixes. Observed={PRJ-001}
+PASS: ILIKE with C collation matches all three ASCII lab case variants. Observed={PC-001,PC-002,PRJ-001}
+PASS: An escaped percent searches for a literal percent in an asset name. Observed={PRJ-002}
+PASS: An escaped underscore searches for a literal underscore in an asset name. Observed={PC-004}
+PASS: An unescaped underscore matches any single character in the probe. Observed={one-character,underscore}
+=== Empty strings, whitespace, functions, and explicit casts ===
+PASS: An empty string is distinct from NULL and whitespace-only text. Observed={empty}
+PASS: btrim makes ordinary surrounding spaces irrelevant to the blank-text comparison. Observed={empty,spaces}
+PASS: NULLIF and btrim deliberately group NULL, empty, and space-only probe values. Observed={empty,"null",spaces}
+PASS: lower and btrim normalize the three chosen lab search strings. Observed={lower,mixed,upper}
+PASS: Text functions preserve NULL rather than silently replacing it with an empty value.
+PASS: Numeric-looking text sorts lexically as 10 before 2. Observed={numeric-ten,numeric-two}
+PASS: Casting the known numeric fixtures to integer sorts 2 before 10. Observed={numeric-two,numeric-ten}
+PASS: An explicitly typed UUID predicate selects the CSE technician assignment. Observed={50000000-0000-4000-8000-000000000003}
+PASS: An explicit UTC date expression selects the five October 22 ticket instants. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000006}
+=== Complete ordering, NULL placement, and LIMIT ===
+PASS: The newest timestamp is shared by four distinct ticket IDs.
+PASS: The unique ID tiebreaker fixes which two tickets LIMIT returns at a shared timestamp. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002}
+PASS: Reversing the explicit ID tie policy selects different but timestamp-equal first rows. Observed={50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000003}
+PASS: Ascending assignee order defaults to NULLS LAST and uses ID to order ties. Observed={50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000006,50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005}
+PASS: Explicit NULLS FIRST moves unassigned tickets ahead while preserving a unique order. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000006}
+PASS: Descending assignee order defaults to NULLS FIRST. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005,50000000-0000-4000-8000-000000000006,50000000-0000-4000-8000-000000000003}
+PASS: LIMIT zero returns no rows. Observed={}
+PASS: A NULL LIMIT is unbounded rather than an empty page. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000006,50000000-0000-4000-8000-000000000005}
+=== Invalid casts and LIMIT input produce their exact SQLSTATE ===
+PASS: A malformed UUID is rejected rather than matching no assignment. SQLSTATE=22P02
+PASS: Nonnumeric text cannot be converted to an integer by a cast. SQLSTATE=22P02
+PASS: A negative LIMIT is rejected. SQLSTATE=2201W
+PASS: All filter and invalid-input experiments leave the fixture rows unchanged.
+Output format is aligned.
+ROLLBACK
+PASS: All Step 9 fixtures, tables, and verification helpers were rolled back.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-09/reconnect.sql
+Pager usage is off.
+=== Step 9: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 4163
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | filter_probe_absent
+------------------+-----------------+---------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 9 schema remains.

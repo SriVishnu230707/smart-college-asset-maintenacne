@@ -2,7 +2,7 @@
 
 Learn PostgreSQL and SQLAlchemy by building a college maintenance system one step at a time.
 
-Steps 1-8 are available. The [project contract](docs/PROJECT_CONTRACT.md) and [Step 1 lab](labs/step-01/notes.md) define the business rules. The [Step 2 lab](labs/step-02/notes.md) starts and inspects PostgreSQL. The [relational model](docs/RELATIONAL_MODEL.md) and [Step 3 lab](labs/step-03/notes.md) explain entities and normalization. The [Step 4 decisions](docs/IDENTIFIERS_AND_TYPES.md) and [lab](labs/step-04/notes.md) verify identifiers and ordinary types. The [Step 5 decisions](docs/MONEY_AND_TIME.md) and [lab](labs/step-05/notes.md) cover exact money and event/reporting time. The [Step 6 decisions](docs/ROW_VALIDITY.md) and [lab](labs/step-06/notes.md) verify row constraints, NULL, defaults, and uniqueness. The [Step 7 decisions](docs/REFERENTIAL_INTEGRITY.md) and [lab](labs/step-07/notes.md) cover foreign keys and history-preserving deletion policies. The [Step 8 guide](docs/SQL_CRUD_AND_TRANSACTIONS.md) and [lab](labs/step-08/notes.md) verify CRUD, RETURNING, and explicit transactions.
+Steps 1-9 are available. The [project contract](docs/PROJECT_CONTRACT.md) and [Step 1 lab](labs/step-01/notes.md) define the business rules. The [Step 2 lab](labs/step-02/notes.md) starts and inspects PostgreSQL. The [relational model](docs/RELATIONAL_MODEL.md) and [Step 3 lab](labs/step-03/notes.md) explain entities and normalization. The [Step 4 decisions](docs/IDENTIFIERS_AND_TYPES.md) and [lab](labs/step-04/notes.md) verify identifiers and ordinary types. The [Step 5 decisions](docs/MONEY_AND_TIME.md) and [lab](labs/step-05/notes.md) cover exact money and event/reporting time. The [Step 6 decisions](docs/ROW_VALIDITY.md) and [lab](labs/step-06/notes.md) verify row constraints, NULL, defaults, and uniqueness. The [Step 7 decisions](docs/REFERENTIAL_INTEGRITY.md) and [lab](labs/step-07/notes.md) cover foreign keys and history-preserving deletion policies. The [Step 8 guide](docs/SQL_CRUD_AND_TRANSACTIONS.md) and [lab](labs/step-08/notes.md) verify CRUD, RETURNING, and explicit transactions. The [Step 9 guide](docs/FILTERING_AND_ORDERING.md) and [lab](labs/step-09/notes.md) cover predicates, text search, casts, and deterministic ordering with LIMIT.
 
 Start here:
 
@@ -14,7 +14,8 @@ Start here:
 6. Run the [Step 5 money/time lab](labs/step-05/notes.md).
 7. Run the [Step 6 row-validity lab](labs/step-06/notes.md).
 8. Run the [Step 7 referential-integrity lab](labs/step-07/notes.md).
-9. Run the [Step 8 CRUD/transaction lab](labs/step-08/notes.md), then continue with Step 9 in the [learning path](docs/LEARNING_PATH.md).
+9. Run the [Step 8 CRUD/transaction lab](labs/step-08/notes.md).
+10. Run the [Step 9 filtering/ordering lab](labs/step-09/notes.md), then continue with Step 10 in the [learning path](docs/LEARNING_PATH.md).
 
 With Docker Desktop running, use PowerShell in this project directory:
 
@@ -27,6 +28,7 @@ With Docker Desktop running, use PowerShell in this project directory:
 .\labs\step-06\verify.ps1 -WriteEvidence
 .\labs\step-07\verify.ps1 -WriteEvidence
 .\labs\step-08\verify.ps1 -WriteEvidence
+.\labs\step-09\verify.ps1 -WriteEvidence
 docker compose exec postgres sh /labs/step-02/psql.sh
 ```
 
@@ -44,6 +46,8 @@ Step 7's [captured reference-policy output](labs/step-07/evidence.txt) records 4
 
 Step 8's [captured CRUD/transaction output](labs/step-08/evidence.txt) records 23 verification checks, including three deliberate errors. It temporarily commits a small baseline, rolls back writes, verifies the original rows through another connection, and commits guarded cleanup. No study objects remain afterward; no Python dependency is needed.
 
+Step 9's [captured filtering/ordering output](labs/step-09/evidence.txt) records 37 PostgreSQL checks, including three expected rejections. It verifies active/unassigned lists, NULL and blank-text behavior, LIKE/ILIKE and literal wildcards, casts, and unique ordering before LIMIT. All objects are rolled back; no Python dependency is needed.
+
 The [mastery guide](docs/POSTGRESQL_SQLALCHEMY_MASTERY.md) explains how later SQL, ORM, transaction, and reporting lessons connect to the project.
 
-Current deliverable: the business contract, a running PostgreSQL learning environment, a verified relational model, identifier/money/time decisions, row/reference constraints, and SQL CRUD/transaction proofs with executed SQL and Python examples. Permanent application tables, SQLAlchemy models, API routes, and full business-rule enforcement follow in later learning steps.
+Current deliverable: the business contract, a running PostgreSQL learning environment, a verified relational model, identifier/money/time decisions, row/reference constraints, and SQL CRUD/transaction/filtering proofs with executed SQL and Python examples. Permanent application tables, SQLAlchemy models, API routes, and full business-rule enforcement follow in later learning steps.
