@@ -1,0 +1,163 @@
+Step 5: money and time verification evidence
+Captured (Asia/Kolkata): 2026-10-22 12:40:18 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-05/query.sql
+Pager usage is off.
+=== Step 5: exact money and event timestamps ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 34659
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+SET
+SET
+=== Exact numeric arithmetic and coercion ===
+ exact_sum |     binary_sum
+-----------+---------------------
+      0.30 | 0.30000000000000004
+(1 row)
+
+PASS: Numeric decimal arithmetic preserves the exact monetary sum; binary float differs.
+ silently_rounded_value
+------------------------
+                   1.01
+(1 row)
+
+PASS: NUMERIC(12,2) rounds excess scale, so strict input validation must precede coercion.
+CREATE FUNCTION
+DO
+PASS: Raw validation rejects excess scale, including trailing third-place zeros, before rounding.
+psql:/labs/step-05/query.sql:75: NOTICE:  Expected SQLSTATE 22023 for excess-scale input 1.005.
+psql:/labs/step-05/query.sql:75: NOTICE:  Expected SQLSTATE 22023 for excess-scale input 1.230.
+psql:/labs/step-05/query.sql:75: NOTICE:  Expected SQLSTATE 22023 for excess-scale input 0.001.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money -0.01.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money NaN.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money Infinity.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money -Infinity.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money <NULL>.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money 10000000000.00.
+psql:/labs/step-05/query.sql:90: NOTICE:  Expected SQLSTATE 22023 for invalid or out-of-range money 19999999999.98.
+DO
+PASS: Raw validation rejects nonfinite, negative, null, and oversized monetary values and repair totals.
+PASS: Zero and the selected maximum 9999999999.99 are represented exactly.
+psql:/labs/step-05/query.sql:108: NOTICE:  Expected SQLSTATE 22003 for NUMERIC(12,2) storage overflow.
+DO
+PASS: The numeric storage type also rejects values exceeding its integer capacity.
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+=== A repair cost calculated from frozen part prices ===
+INSERT 0 2
+INSERT 0 1
+INSERT 0 2
+  repair_ref  | labor_cost | parts_cost | total_cost
+--------------+------------+------------+------------
+ REPAIR-EXACT |     100.00 |     500.50 |     600.50
+(1 row)
+
+PASS: Labor 100.00 plus two parts at 250.10 and three at 0.10 is exactly 600.50 INR.
+UPDATE 1
+PASS: Changing a current catalog price does not change the recorded repair cost.
+ unrestricted_report_total
+---------------------------
+            19999999999.98
+(1 row)
+
+PASS: Report aggregates may exceed the per-repair cap without being cast back to NUMERIC(12,2).
+INSERT 0 3
+INSERT 0 1
+=== One instant displayed in UTC ===
+      completed_at      |       epoch
+------------------------+-------------------
+ 2026-10-21 18:30:00+00 | 1792607400.000000
+(1 row)
+
+PASS: One instant displays as 18:30 UTC and midnight on the following date in Asia/Kolkata.
+PASS: Offset-aware input strings with different clock readings can identify the same instant.
+=== Reporting days around midnight with the session in UTC ===
+ reporting_day | event_count | total_cost
+---------------+-------------+------------
+ 2026-10-21    |           1 |       0.10
+ 2026-10-22    |           2 |     600.70
+ 2026-10-23    |           1 |       0.30
+(3 rows)
+
+PASS: UTC and the reporting timezone assign different calendar dates without changing the instant.
+SET
+=== The same stored instant displayed in Asia/Kolkata ===
+       completed_at        |       epoch
+---------------------------+-------------------
+ 2026-10-22 00:00:00+05:30 | 1792607400.000000
+(1 row)
+
+PASS: Changing the session timezone changes display, not the stored instant.
+PASS: Input without an offset depends on the session timezone; event inputs must be aware.
+PASS: A timestamp-without-time-zone literal discards its offset rather than storing an instant.
+PASS: Local daily counts and exact totals match the hand-calculated three-day fixture.
+PASS: Explicit Asia/Kolkata reporting groups are identical in UTC and Kolkata sessions.
+PASS: A half-open local-day interval includes both October 22 events and excludes neighboring days.
+PASS: A calendar-only date is a date value, not an event instant with an assumed midnight.
+Output format is unaligned.
+PYTHON_FIXTURE={"labor_cost" : "100.00", "parts" : [{"quantity" : 3, "unit_cost" : "0.10"}, {"quantity" : 2, "unit_cost" : "250.10"}], "total_cost" : "600.50", "events" : [{"ref" : "BEFORE", "cost" : "0.10", "instant" : "2026-10-21T18:29:59.000000+00:00"}, {"ref" : "REPAIR-EXACT", "cost" : "600.50", "instant" : "2026-10-21T18:30:00.000000+00:00"}, {"ref" : "LAST-SECOND", "cost" : "0.20", "instant" : "2026-10-22T18:29:59.000000+00:00"}, {"ref" : "NEXT-DAY", "cost" : "0.30", "instant" : "2026-10-22T18:30:00.000000+00:00"}], "daily_totals" : [{"day" : "2026-10-21", "count" : 1, "total" : "0.10"}, {"day" : "2026-10-22", "count" : 2, "total" : "600.70"}, {"day" : "2026-10-23", "count" : 1, "total" : "0.30"}]}
+Output format is aligned.
+ROLLBACK
+PASS: All money/time probe tables and the raw-input helper were rolled back.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-05/reconnect.sql
+Pager usage is off.
+=== Step 5: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 34683
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | money_time_probe_absent
+------------------+-----------------+-------------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 5 schema or helper remains.
+
+Command: python -B labs/step-05/python_lab.py (PostgreSQL JSON fixture on stdin)
+Python 3.12.14; tzdata 2026.5
+PASS: Decimal string arithmetic is exact where the binary-float example differs.
+PASS: PostgreSQL's decimal text maps to Decimal without a float conversion.
+PASS: Python's exact repair calculation equals PostgreSQL's 600.50 INR result.
+PASS: Money validation rejects excess scale, invalid range, nonfinite values, and float inputs.
+PASS: Valid zero, short decimal input, and maximum amounts normalize without losing value.
+PASS: An oversized individual repair is rejected while a wider report sum remains exact.
+PASS: Python's half-even rounding illustrates why the contract rejects excess scale instead of rounding it.
+Same instant: UTC=2026-10-21T18:30:00+00:00; Asia/Kolkata=2026-10-22T00:00:00+05:30
+PASS: UTC conversion and Asia/Kolkata display preserve the same aware instant.
+PASS: Naive datetimes and date-only values cannot silently become event instants.
+PASS: An instant's UTC date can differ from its reporting date; date-only facts stay dates.
+PASS: Python and PostgreSQL agree on every local reporting day, count, and exact total.
+PASS: The half-open local-day window includes exactly the same two events in Python.
+PASS: Decimal strings and offset-aware ISO timestamps survive a JSON round trip.

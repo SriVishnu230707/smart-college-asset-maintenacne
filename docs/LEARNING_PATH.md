@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), and [identifiers/types](../labs/step-04/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), and [money/time](../labs/step-05/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -66,13 +66,15 @@ The detailed design and concurrency guidance remains in [the mastery guide](POST
 
   Evidence: [Identifier/type decisions](IDENTIFIERS_AND_TYPES.md), [Step 4 instructions](../labs/step-04/notes.md), and [executed PostgreSQL evidence](../labs/step-04/evidence.txt). The lab verified client/server UUIDs, independent business-key uniqueness, identity integers and sequence gaps, character limits, and boolean defaults. A fresh UUID with an existing canonical asset code was rejected by the named asset-code constraint. All demonstration objects were rolled back and cleanup was checked through a fresh connection. Explaining the observations remains your learning gate.
 
-- [ ] **05. Represent money and time correctly**
+- [x] **05. Represent money and time correctly**
 
   Learn: Map NUMERIC to Decimal and timestamptz to aware datetime; distinguish an instant, a calendar date, and a reporting timezone.
 
   Apply: Define costs and lifecycle timestamps; calculate an exact repair cost and display one instant in UTC and Asia/Kolkata.
 
   Prove: Explain rounding policy and group events around a local midnight without changing their instants.
+
+  Evidence: [Money/time decisions](MONEY_AND_TIME.md), [Step 5 instructions](../labs/step-05/notes.md), and [executed SQL/Python evidence](../labs/step-05/evidence.txt). PostgreSQL and Python agreed on the exact 600.50 repair cost and reporting-day totals around Kolkata midnight. Raw monetary input was validated before scaled conversion, aware timestamps retained their instants across timezone displays, and SQL cleanup was confirmed through a new connection. The proof passed 21 PostgreSQL and 13 Python checks; explaining the policy and observations remains your learning gate.
 
 - [ ] **06. Enforce row-level validity**
 

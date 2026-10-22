@@ -106,4 +106,4 @@ Use actual boolean values in application data. `psql` normally displays stored b
 
 The [executed lab](../labs/step-04/notes.md) tests server/client UUID generation, duplicate business keys with fresh IDs, duplicate UUIDs with different codes, identity alternatives and gaps, malformed UUID rejection, string length behavior, and boolean defaults. It uses reduced department/asset/part tables and comparison tables, then rolls them all back.
 
-These decisions do not install the complete application schema or replace later migration ownership. Step 5 adds exact money and timezone-aware timestamps; Steps 6-7 cover the remaining validity/reference rules.
+These decisions do not install the complete application schema or replace later migration ownership. The [Step 5 decisions](MONEY_AND_TIME.md) add exact money and timezone-aware timestamps; Steps 6-7 cover the remaining validity/reference rules.

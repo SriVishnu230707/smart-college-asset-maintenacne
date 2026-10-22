@@ -164,7 +164,7 @@ ticket_total = SUM(all completed work_order_total values for that ticket)
 department_total = SUM(completed work_order_total values attributed to ticket.department_id)
 ```
 
-The unit price is the part's standard price at successful completion, not at draft creation. A draft may display an estimate; estimates do not enter historical reports. Completion must reject totals outside the chosen storage capacity; numeric precision is selected in Step 5.
+The unit price is the part's standard price at successful completion, not at draft creation. A draft may display an estimate; estimates do not enter historical reports. Completion must reject totals outside the chosen storage capacity. The [Step 5 money/time decisions](MONEY_AND_TIME.md) specify NUMERIC(12,2), the nonnegative per-repair maximum of 9999999999.99, and validation before scaled conversion.
 
 Reports count completed work orders even while the ticket awaits verification or requires rework. Draft/in-progress estimates are excluded. Comments, attachments, and other joined children must not multiply repair totals.
 
