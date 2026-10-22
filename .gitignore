@@ -1,0 +1,9 @@
+# Local database credentials and development environment
+.local/
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/

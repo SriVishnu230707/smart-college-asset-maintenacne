@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data. The [Step 1 lab](../labs/step-01/notes.md) now contains the first worked requirements exercise; add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. The [Step 1 lab](../labs/step-01/notes.md) contains the worked requirements exercise; the [Step 2 lab](../labs/step-02/notes.md) includes SQL inspection and captured PostgreSQL output. Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -36,13 +36,15 @@ The detailed design and concurrency guidance remains in [the mastery guide](POST
 
   Evidence: [Project contract](PROJECT_CONTRACT.md) and [worked proofs S01-S02](../labs/step-01/notes.md). This marks the written contract and reasoned examples complete; runtime enforcement belongs to later steps, and explaining the rules yourself remains your learning gate.
 
-- [ ] **02. Understand the running database**
+- [x] **02. Understand the running database**
 
   Learn: Distinguish server, database, schema, role, connection, and transaction; inspect PostgreSQL through psql.
 
   Apply: Start a disposable learning database; use connection information, table descriptions, current_database(), current_user, and SHOW search_path.
 
   Prove: Reconnect without a GUI and locate the current database, role, schema, tables, and server version.
+
+  Evidence: [Step 2 instructions](../labs/step-02/notes.md), [inspection SQL](../labs/step-02/query.sql), and [executed PostgreSQL evidence](../labs/step-02/evidence.txt). PostgreSQL 18.6 was started; two authenticated psql connections confirmed the college_learning database, college_learner non-superuser role, public schema, table descriptions, and rollback. The technical proof passed; explaining the observations remains your learning gate.
 
 - [ ] **03. Design the relational model**
 
