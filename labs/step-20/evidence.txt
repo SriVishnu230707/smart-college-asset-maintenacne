@@ -1,0 +1,130 @@
+Step 20: Flush visibility, autoflush, and Session recovery verification evidence
+Captured (Asia/Kolkata): 2026-10-24 21:47:53 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 2cc4556f-48ce-4c68-82c5-61b2497b863e
+Different run ID used for the cleanup refusal proof: 69025269-9922-4b0a-8d8b-7d98b8e3d9d6
+CHECK rejection (23514), PendingRollbackError, and cleanup refusal (22023) are deliberate and asserted.
+Command: python -X utf8 -B labs/step-20/python_lab.py --run-id <run-id>
+PASS: Flush and recovery observations reuse the pinned SQLAlchemy and psycopg versions.
+PASS: The PostgreSQL 18 learner connection has a free Step 20 study namespace.
+writer_backend_pid=15236
+PASS: A distinct read-only psycopg backend observes fresh READ COMMITTED statements without consuming the shared pool slot.
+observer_backend_pid=15237
+PASS: Adding a ticket queues it in memory; neither INSERT nor independent visibility occurs yet.
+PASS: Explicit flush inserts the ticket and obtains UUID/defaults while its transaction remains open.
+PASS: The writing Session can select its own flushed ticket before commit.
+PASS: The independent backend cannot see the successfully flushed ticket before commit.
+PASS: Commit releases the write transaction and makes its ticket independently visible.
+Visibility COMMIT-TICKET: after add=0; after flush=0; after commit=1
+PASS: A second flushed ticket exists for its writer while remaining hidden from the independent reader.
+PASS: Rollback removes the successfully flushed ticket; its generated ID did not make the insert durable.
+Visibility ROLLBACK-TICKET: writer after flush=1; observer after flush=0; observer after rollback=0
+PASS: Default autoflush begins with the new ticket still pending.
+PASS: An ORM SELECT autoflushes INSERT first, but that query does not commit the ticket.
+PASS: The autoflushed ticket also disappears on rollback.
+PASS: The no_autoflush block suppresses query-triggered INSERT and leaves the ticket pending.
+PASS: Explicit flush still writes inside no_autoflush without making the row independently visible.
+PASS: Disabling Session autoflush suppresses the automatic flush before an ORM query.
+PASS: Commit flushes pending work even with autoflush disabled and the observer sees the committed ticket.
+PASS: The deliberate invalid priority fails flush with SQLSTATE 23514 and the named ticket CHECK.
+Expected ORM database error: SQLSTATE=23514; constraint=ck_maintenance_tickets_priority
+PASS: After failed flush the Session is inactive and still requires its logical transaction to be rolled back.
+PASS: The failed flush undoes both the earlier successful INSERT and UPDATE in that transaction.
+PASS: Reusing the failed Session before rollback raises PendingRollbackError without sending SQL.
+Expected Session error: PendingRollbackError before explicit rollback
+PASS: Explicit Session.rollback resets the failed logical transaction and its pending work.
+PASS: The same recovered Session reads the original committed values and no aborted ticket.
+PASS: That same Session successfully commits a valid recovery ticket after rollback.
+PASS: A fresh ORM Session finds exactly the three committed tickets with their expected IDs and values.
+PASS: The independent driver observer agrees with every final ORM ticket value.
+Final committed tickets: [(UUID('8d61f544-0c8f-46fa-a3f0-d2d89772966b'), 'COMMIT-NOAUTO', 'high', 'open', 'Original description'), (UUID('bf561f50-850c-4414-bd70-dab72d9d7cb7'), 'COMMIT-TICKET', 'high', 'open', 'Original description'), (UUID('4f8876b0-e0e9-4df8-8654-f636bea4afb9'), 'RECOVERED', 'medium', 'open', 'Original description')]
+Observed ticket SQL: {'explicit_commit': ['INSERT', 'SELECT'], 'explicit_rollback': ['INSERT', 'SELECT', 'SELECT'], 'autoflush': ['INSERT', 'SELECT'], 'no_autoflush': ['SELECT', 'INSERT'], 'commit_autoflush_disabled': ['SELECT', 'INSERT'], 'failed_flush': ['SELECT', 'UPDATE', 'INSERT', 'INSERT'], 'recovery': ['SELECT', 'SELECT', 'INSERT'], 'final_read': ['SELECT']}
+PASS: Cursor observations prove explicit, automatic, suppressed, failed, and recovered flush statement ordering.
+PASS: All write, read, rollback, and recovered Sessions return their transactions and pool resources.
+PASS: The independent observer and physical writer are both closed after all Session exits.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-20/cleanup.sql
+Pager usage is off.
+=== Step 20: remove only the current lab run tables ===
+BEGIN
+REFUSED: STEP20_RUN_ID_MISMATCH; no object was removed.
+psql:/labs/step-20/cleanup.sql:22: ERROR:  22023
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-20/reconnect.sql
+Pager usage is off.
+=== Step 20: independently inspect committed tickets and disposed backends ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 15261
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+PASS: Independent psql verifies the exact completed run and both disposed Python backends.
+ writer_backend_pid | observer_backend_pid | final_observer_pid |         committed_ticket_id          |           noauto_ticket_id           |         recovered_ticket_id
+--------------------+----------------------+--------------------+--------------------------------------+--------------------------------------+--------------------------------------
+              15236 |                15237 |              15261 | bf561f50-850c-4414-bd70-dab72d9d7cb7 | 8d61f544-0c8f-46fa-a3f0-d2d89772966b | 4f8876b0-e0e9-4df8-8654-f636bea4afb9
+(1 row)
+
+PASS: Only the three exact committed tickets remain; every rolled-back or rejected ticket is absent.
+PASS: All ticket defaults, original descriptions, references, and parent fixture rows remain exact after recovery.
+                  id                  |     title     | priority | status |     description
+--------------------------------------+---------------+----------+--------+----------------------
+ 8d61f544-0c8f-46fa-a3f0-d2d89772966b | COMMIT-NOAUTO | high     | open   | Original description
+ bf561f50-850c-4414-bd70-dab72d9d7cb7 | COMMIT-TICKET | high     | open   | Original description
+ 4f8876b0-e0e9-4df8-8654-f636bea4afb9 | RECOVERED     | medium   | open   | Original description
+(3 rows)
+
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-20/cleanup.sql
+Pager usage is off.
+=== Step 20: remove only the current lab run tables ===
+BEGIN
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP SCHEMA
+COMMIT
+PASS: Guarded cleanup committed removal of the current run schema and known objects.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-20/cleanup-check.sql
+Pager usage is off.
+=== Step 20: verify committed cleanup from another connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 15285
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | session_lab_absent
+------------------+-----------------+--------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms the Step 20 schema cleanup was committed.

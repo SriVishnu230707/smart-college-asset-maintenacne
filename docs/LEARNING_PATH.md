@@ -18,11 +18,11 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), [Python database layers](../labs/step-13/notes.md), [Core connections/binding](../labs/step-14/notes.md), [metadata/reflection](../labs/step-15/notes.md), [Core DML/results](../labs/step-16/notes.md), [typed ORM mappings](../labs/step-17/notes.md), [ORM Session persistence](../labs/step-18/notes.md), and [object lifecycle](../labs/step-19/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), [Python database layers](../labs/step-13/notes.md), [Core connections/binding](../labs/step-14/notes.md), [metadata/reflection](../labs/step-15/notes.md), [Core DML/results](../labs/step-16/notes.md), [typed ORM mappings](../labs/step-17/notes.md), [ORM Session persistence](../labs/step-18/notes.md), [object lifecycle](../labs/step-19/notes.md), and [flush/commit/recovery](../labs/step-20/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-19 without advancing this checklist. It checks 547 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-20 without advancing this checklist. It checks 582 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The detailed design and concurrency guidance remains in [the mastery guide](POSTGRESQL_SQLALCHEMY_MASTERY.md). This checklist supersedes that guide's former calendar-based roadmap.
 
@@ -230,13 +230,15 @@ Reference reading: [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/
 
   Evidence: [Lifecycle guide](ORM_OBJECT_LIFECYCLE.md), [Step 19 predictions](../labs/step-19/notes.md), and [executed evidence](../labs/step-19/evidence.txt). All 39 checks passed: 33 Python assertions and six wrapper/psql assertions. Fifteen checkpoints verify transient/pending/persistent/deleted/detached states, all unit-of-work collections, attribute history, dirty versus modified, and queued versus flushed deletion. Commit/close detachment and rollback restoration agree with exact observed SQL and independent committed-row checks. Guarded cleanup removes all study objects. Visibility and failed-flush recovery remain Step 20; freshness and relationships follow later. Explaining the predictions remains your learning gate.
 
-- [ ] **20. Distinguish flush from commit**
+- [x] **20. Distinguish flush from commit**
 
   Learn: Study autoflush, explicit flush, commit, rollback, and recovery after failed flush.
 
   Apply: Flush a new ticket, force a constraint error, and recover the Session using rollback.
 
   Prove: Prove that flush did not make the change independently visible or durable.
+
+  Evidence: [Flush/commit guide](ORM_FLUSH_AND_COMMIT.md), [Step 20 predictions](../labs/step-20/notes.md), and [executed evidence](../labs/step-20/evidence.txt). All 35 checks passed: 29 Python assertions and six wrapper/psql assertions. A distinct read-only READ COMMITTED backend cannot see a flushed ticket until commit; rollback removes a successful flush. Observed SQL proves default autoflush, no_autoflush, explicit flush, and commit with autoflush disabled. An invalid-priority CHECK failure undoes preceding writes; PendingRollbackError prevents queries until explicit rollback, after which the same Session commits valid work. Independent psql verifies exact rows and both disposed backends before guarded cleanup. Freshness, relationships, and full workflows remain later lessons. Explaining visibility and recovery remains your learning gate.
 
 - [ ] **21. Understand identity and freshness**
 
