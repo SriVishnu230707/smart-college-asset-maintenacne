@@ -1,0 +1,111 @@
+Step 10: join verification evidence
+Captured (Asia/Kolkata): 2026-10-22 21:27:43 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-10/query.sql
+Pager usage is off.
+Null display is "(NULL)".
+=== Step 10: inner, left, and self joins with explicit aliases ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 7244
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 3
+INSERT 0 2
+INSERT 0 6
+INSERT 0 5
+INSERT 0 6
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+=== Ticket details retain unassigned and historical assignments ===
+                  id                  |            title            | asset_code |      asset_name       | reporter_name | assignee_name | assignee_active
+--------------------------------------+-----------------------------+------------+-----------------------+---------------+---------------+-----------------
+ 50000000-0000-4000-8000-000000000001 | Projector flickers          | PRJ-001    | Classroom Projector   | Alex          | (NULL)        | (NULL)
+ 50000000-0000-4000-8000-000000000002 | Computer slow               | PC-001     | Lab Computer          | Alex          | Ravi          | t
+ 50000000-0000-4000-8000-000000000003 | Computer display issue      | PC-002     | Lab Computer          | Alex          | (NULL)        | (NULL)
+ 50000000-0000-4000-8000-000000000004 | Technician self-report      | PRJ-001    | Classroom Projector   | Ravi          | Ravi          | t
+ 50000000-0000-4000-8000-000000000005 | Historical projector repair | PRJ-002    | Transferred Projector | Alex          | Mira          | f
+ 50000000-0000-4000-8000-000000000006 | Computer keyboard issue     | PC-002     | Lab Computer          | Alex          | Nila          | t
+(6 rows)
+
+Output format is unaligned.
+PASS: The detail query returns all six tickets with the correct asset, reporter, and optional assignee names. Observed=[{"id": "50000000-0000-4000-8000-000000000001", "title": "Projector flickers", "asset_code": "PRJ-001", "asset_name": "Classroom Projector", "assignee_name": null, "reporter_name": "Alex", "assignee_active": null}, {"id": "50000000-0000-4000-8000-000000000002", "title": "Computer slow", "asset_code": "PC-001", "asset_name": "Lab Computer", "assignee_name": "Ravi", "reporter_name": "Alex", "assignee_active": true}, {"id": "50000000-0000-4000-8000-000000000003", "title": "Computer display issue", "asset_code": "PC-002", "asset_name": "Lab Computer", "assignee_name": null, "reporter_name": "Alex", "assignee_active": null}, {"id": "50000000-0000-4000-8000-000000000004", "title": "Technician self-report", "asset_code": "PRJ-001", "asset_name": "Classroom Projector", "assignee_name": "Ravi", "reporter_name": "Ravi", "assignee_active": true}, {"id": "50000000-0000-4000-8000-000000000005", "title": "Historical projector repair", "asset_code": "PRJ-002", "asset_name": "Transferred Projector", "assignee_name": "Mira", "reporter_name": "Alex", "assignee_active": false}, {"id": "50000000-0000-4000-8000-000000000006", "title": "Computer keyboard issue", "asset_code": "PC-002", "asset_name": "Lab Computer", "assignee_name": "Nila", "reporter_name": "Alex", "assignee_active": true}]
+PASS: LEFT JOIN preserves every ticket when the optional assignee is missing. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005,50000000-0000-4000-8000-000000000006}
+PASS: INNER JOIN to the optional assignee removes the two unassigned tickets. Observed={50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005,50000000-0000-4000-8000-000000000006}
+PASS: Repeated display names still resolve to the correct distinct reporter identities. Observed=[{"id": "50000000-0000-4000-8000-000000000001", "email": "alex.cse@example.invalid", "display_name": "Alex"}, {"id": "50000000-0000-4000-8000-000000000003", "email": "alex.ece@example.invalid", "display_name": "Alex"}]
+PASS: Separate reporter and assignee aliases allow one technician to occupy both roles.
+=== ON controls matches; WHERE filters the resulting joined rows ===
+PASS: A right-side active predicate in WHERE removes unassigned and inactive-assignee tickets. Observed={50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000006}
+PASS: Moving the active predicate into ON retains all tickets and restricts only the right-side match. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005,50000000-0000-4000-8000-000000000006}
+PASS: A filtered-out inactive assignee and an absent assignment both have NULL joined columns but different stored IDs. Observed=[{"id": "50000000-0000-4000-8000-000000000001", "stored_assignee_id": null, "matched_assignee_id": null, "matched_assignee_name": null}, {"id": "50000000-0000-4000-8000-000000000005", "stored_assignee_id": "30000000-0000-4000-8000-000000000003", "matched_assignee_id": null, "matched_assignee_name": null}]
+PASS: Testing the filtered joined ID for NULL also selects the inactive historical assignment. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000005}
+PASS: Testing the stored foreign key for NULL selects only genuinely unassigned tickets. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000003}
+PASS: Adding OR joined-ID IS NULL to WHERE still excludes a real inactive match. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000003,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000006}
+PASS: A left-side department filter keeps the scoped unassigned ticket and retained history. Observed={50000000-0000-4000-8000-000000000001,50000000-0000-4000-8000-000000000002,50000000-0000-4000-8000-000000000004,50000000-0000-4000-8000-000000000005}
+=== Choose the correct reference path for historical department ===
+PASS: Distinct department aliases preserve recorded attribution after an asset transfer. Observed=[{"id": "50000000-0000-4000-8000-000000000005", "asset_code": "PRJ-002", "recorded_department": "CSE", "current_asset_department": "ECE"}]
+=== One-to-many joins preserve multiplicity and unmatched parents ===
+PASS: The asset-to-ticket INNER JOIN repeats assets with multiple tickets and omits the unused asset. Observed={PC-001:50000000-0000-4000-8000-000000000002,PC-002:50000000-0000-4000-8000-000000000003,PC-002:50000000-0000-4000-8000-000000000006,PRJ-001:50000000-0000-4000-8000-000000000001,PRJ-001:50000000-0000-4000-8000-000000000004,PRJ-002:50000000-0000-4000-8000-000000000005}
+PASS: The asset-to-ticket LEFT JOIN additionally retains the unused asset with a NULL ticket. Observed={PC-001:50000000-0000-4000-8000-000000000002,PC-002:50000000-0000-4000-8000-000000000003,PC-002:50000000-0000-4000-8000-000000000006,"PC-003:<no match>",PRJ-001:50000000-0000-4000-8000-000000000001,PRJ-001:50000000-0000-4000-8000-000000000004,PRJ-002:50000000-0000-4000-8000-000000000005}
+PASS: Filtering child status in WHERE leaves only assets that have open tickets. Observed={PC-002:50000000-0000-4000-8000-000000000003,PRJ-001:50000000-0000-4000-8000-000000000001}
+PASS: Filtering child status in ON retains every asset while matching only its open tickets. Observed={"PC-001:<no match>",PC-002:50000000-0000-4000-8000-000000000003,"PC-003:<no match>",PRJ-001:50000000-0000-4000-8000-000000000001,"PRJ-002:<no match>"}
+PASS: Joining a reporter by department instead of the recorded user ID incorrectly multiplies six tickets into sixteen rows.
+=== Self join: one unordered same-department pair per two users ===
+PASS: A self join with distinct aliases and ordered IDs produces each same-department user pair once. Observed={"alex.cse@example.invalid -> ravi@example.invalid","alex.cse@example.invalid -> mira@example.invalid","ravi@example.invalid -> mira@example.invalid","alex.ece@example.invalid -> nila@example.invalid"}
+PASS: Without the ID ordering restriction the same-department self join includes self-pairs and reversed pairs.
+=== Invalid column and alias references fail with exact SQLSTATE ===
+PASS: An unqualified ID is ambiguous when both joined tables have that column. SQLSTATE=42702
+PASS: Two references to users require different aliases. SQLSTATE=42712
+PASS: An assigned table alias replaces the original qualifier in the query. SQLSTATE=42P01
+PASS: All join and invalid-query experiments leave the fixture rows unchanged.
+Output format is aligned.
+ROLLBACK
+PASS: All Step 10 fixtures, tables, and verification helpers were rolled back.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-10/reconnect.sql
+Pager usage is off.
+=== Step 10: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 7252
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | join_probe_absent
+------------------+-----------------+-------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 10 schema remains.
