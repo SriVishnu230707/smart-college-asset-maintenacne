@@ -1,5 +1,5 @@
 Regression suite: PowerShell 5.1.26100.9711
-Captured (UTC): 2026-10-24 02:57:26Z
+Captured (UTC): 2026-10-24 03:12:10Z
 PASS: Database startup and Compose readiness succeed.
 PASS: PowerShell syntax, SQL include paths, and assertion-exit guards are valid.
 PASS: Step 02: 5 checks pass from an unrelated working directory.
@@ -12,10 +12,11 @@ PASS: Step 08: 23 checks pass from an unrelated working directory.
 PASS: Step 09: 37 checks pass from an unrelated working directory.
 PASS: Step 10: 26 checks pass from an unrelated working directory.
 PASS: Step 11: 25 checks pass from an unrelated working directory.
+PASS: Step 12: 31 checks pass from an unrelated working directory.
 PASS: Missing required UUID fails with psql exit 3 and SQLSTATE P0001.
 PASS: The shared runner propagates an unexpected nonzero SQL exit.
 PASS: Native stderr is captured without mistaking a successful process for a failure.
 PASS: An unavailable explicit Python produces a clear preflight failure before SQL runs.
-PASS: A fresh connection confirms no Step 2-11 study schema remains.
-Result: PASSED; 10 lab suites, 271 lab checks, and 7 runner regression checks.
+PASS: A fresh connection confirms no Step 2-12 study schema remains.
+Result: PASSED; 11 lab suites, 302 lab checks, and 7 runner regression checks.
 Command: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -File tests/run.ps1 -WriteEvidence

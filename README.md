@@ -2,7 +2,7 @@
 
 Learn PostgreSQL and SQLAlchemy by building a college maintenance system one step at a time.
 
-Steps 1-11 are available. The [project contract](docs/PROJECT_CONTRACT.md) and [Step 1 lab](labs/step-01/notes.md) define the business rules. The [Step 2 lab](labs/step-02/notes.md) starts and inspects PostgreSQL. The [relational model](docs/RELATIONAL_MODEL.md) and [Step 3 lab](labs/step-03/notes.md) explain entities and normalization. The [Step 4 decisions](docs/IDENTIFIERS_AND_TYPES.md) and [lab](labs/step-04/notes.md) verify identifiers and ordinary types. The [Step 5 decisions](docs/MONEY_AND_TIME.md) and [lab](labs/step-05/notes.md) cover exact money and event/reporting time. The [Step 6 decisions](docs/ROW_VALIDITY.md) and [lab](labs/step-06/notes.md) verify row constraints, NULL, defaults, and uniqueness. The [Step 7 decisions](docs/REFERENTIAL_INTEGRITY.md) and [lab](labs/step-07/notes.md) cover foreign keys and history-preserving deletion policies. The [Step 8 guide](docs/SQL_CRUD_AND_TRANSACTIONS.md) and [lab](labs/step-08/notes.md) verify CRUD, RETURNING, and explicit transactions. The [Step 9 guide](docs/FILTERING_AND_ORDERING.md) and [lab](labs/step-09/notes.md) cover predicates, text search, casts, and deterministic ordering with LIMIT. The [Step 10 guide](docs/SQL_JOINS.md) and [lab](labs/step-10/notes.md) cover inner, left, and self joins with distinct reporter/assignee aliases. The [Step 11 guide](docs/SQL_AGGREGATION.md) and [lab](labs/step-11/notes.md) cover grouped ticket counts, conditional aggregates, and exact completed-labor totals.
+Steps 1-12 are available. The [project contract](docs/PROJECT_CONTRACT.md) and [Step 1 lab](labs/step-01/notes.md) define the business rules. The [Step 2 lab](labs/step-02/notes.md) starts and inspects PostgreSQL. The [relational model](docs/RELATIONAL_MODEL.md) and [Step 3 lab](labs/step-03/notes.md) explain entities and normalization. The [Step 4 decisions](docs/IDENTIFIERS_AND_TYPES.md) and [lab](labs/step-04/notes.md) verify identifiers and ordinary types. The [Step 5 decisions](docs/MONEY_AND_TIME.md) and [lab](labs/step-05/notes.md) cover exact money and event/reporting time. The [Step 6 decisions](docs/ROW_VALIDITY.md) and [lab](labs/step-06/notes.md) verify row constraints, NULL, defaults, and uniqueness. The [Step 7 decisions](docs/REFERENTIAL_INTEGRITY.md) and [lab](labs/step-07/notes.md) cover foreign keys and history-preserving deletion policies. The [Step 8 guide](docs/SQL_CRUD_AND_TRANSACTIONS.md) and [lab](labs/step-08/notes.md) verify CRUD, RETURNING, and explicit transactions. The [Step 9 guide](docs/FILTERING_AND_ORDERING.md) and [lab](labs/step-09/notes.md) cover predicates, text search, casts, and deterministic ordering with LIMIT. The [Step 10 guide](docs/SQL_JOINS.md) and [lab](labs/step-10/notes.md) cover inner, left, and self joins with distinct reporter/assignee aliases. The [Step 11 guide](docs/SQL_AGGREGATION.md) and [lab](labs/step-11/notes.md) cover grouped ticket counts, conditional aggregates, and exact completed-labor totals. The [Step 12 guide](docs/SQL_EXISTENCE_AND_SUBQUERIES.md) and [lab](labs/step-12/notes.md) cover scalar/correlated subqueries, EXISTS/NOT EXISTS, nullable NOT IN, and set operations.
 
 Start here:
 
@@ -17,7 +17,8 @@ Start here:
 9. Run the [Step 8 CRUD/transaction lab](labs/step-08/notes.md).
 10. Run the [Step 9 filtering/ordering lab](labs/step-09/notes.md).
 11. Run the [Step 10 join lab](labs/step-10/notes.md).
-12. Run the [Step 11 aggregation lab](labs/step-11/notes.md), then continue with Step 12 in the [learning path](docs/LEARNING_PATH.md).
+12. Run the [Step 11 aggregation lab](labs/step-11/notes.md).
+13. Run the [Step 12 existence/subquery lab](labs/step-12/notes.md), then continue with Step 13 in the [learning path](docs/LEARNING_PATH.md).
 
 With Docker Desktop running, use PowerShell in this project directory:
 
@@ -26,7 +27,7 @@ With Docker Desktop running, use PowerShell in this project directory:
 docker compose exec postgres sh /labs/step-02/psql.sh
 ```
 
-The [regression suite](tests/README.md) starts the database and checks all ten executable labs with one command. It covers 271 lab checks plus seven runner regression checks in PowerShell 7 and Windows PowerShell 5.1. Individual lessons retain their own verification commands. See the [PowerShell 7 result](tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 result](tests/evidence-powershell5.txt).
+The [regression suite](tests/README.md) starts the database and checks all eleven executable labs with one command. It covers 302 lab checks plus seven runner regression checks in PowerShell 7 and Windows PowerShell 5.1. Individual lessons retain their own verification commands. See the [PowerShell 7 result](tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 result](tests/evidence-powershell5.txt).
 
 The database is `college_learning`, with the non-superuser login `college_learner`. PostgreSQL is published on `127.0.0.1:55432`. Credentials are generated locally under the Git-ignored `.local/` directory. See the [captured verification output](labs/step-02/evidence.txt).
 
@@ -48,6 +49,8 @@ Step 10's [captured join output](labs/step-10/evidence.txt) records 26 PostgreSQ
 
 Step 11's [captured aggregation output](labs/step-11/evidence.txt) records 25 PostgreSQL checks, including three expected query rejections. It verifies all twelve department/priority buckets, COUNT variants, WHERE/HAVING/FILTER/CASE differences, completed-labor SUM/AVG, absent versus zero values, and numeric report range. All objects are rolled back and cleanup is checked through a fresh connection; no Python dependency is needed.
 
+Step 12's [captured existence/subquery output](labs/step-12/evidence.txt) records 31 PostgreSQL checks, including three expected SQL rejections. It verifies unused assets, current versus historical technician assignments, scalar and correlated subqueries, the nullable NOT IN trap, and UNION/UNION ALL/INTERSECT/EXCEPT. All objects are rolled back and cleanup is checked through a fresh connection; it reuses the shared PowerShell runner.
+
 The [mastery guide](docs/POSTGRESQL_SQLALCHEMY_MASTERY.md) explains how later SQL, ORM, transaction, and reporting lessons connect to the project.
 
-Current deliverable: the business contract, a running PostgreSQL learning environment, a verified relational model, identifier/money/time decisions, row/reference constraints, and SQL CRUD/transaction/filtering/join/aggregation proofs with executed SQL and Python examples. Permanent application tables, SQLAlchemy models, API routes, and full business-rule enforcement follow in later learning steps.
+Current deliverable: the business contract, a running PostgreSQL learning environment, a verified relational model, identifier/money/time decisions, row/reference constraints, and SQL CRUD/transaction/filtering/join/aggregation/existence proofs with executed SQL and Python examples. Permanent application tables, SQLAlchemy models, API routes, and full business-rule enforcement follow in later learning steps.

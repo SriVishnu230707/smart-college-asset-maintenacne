@@ -18,11 +18,11 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), and [aggregation](../labs/step-11/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), and [existence/subqueries](../labs/step-12/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-11 without advancing this checklist. It checks 271 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-12 without advancing this checklist. It checks 302 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The detailed design and concurrency guidance remains in [the mastery guide](POSTGRESQL_SQLALCHEMY_MASTERY.md). This checklist supersedes that guide's former calendar-based roadmap.
 
@@ -144,13 +144,15 @@ Reference reading: [PostgreSQL SQL language](https://www.postgresql.org/docs/18/
 
   Evidence: [Aggregation guide](SQL_AGGREGATION.md), [Step 11 hand-counted fixture and instructions](../labs/step-11/notes.md), and [executed PostgreSQL evidence](../labs/step-11/evidence.txt). All 25 checks passed: nineteen complete report-row comparisons, one fixture assertion, three expected SQL rejections, and two cleanup checks. The lab verifies all twelve department/priority buckets, COUNT(*) versus COUNT(column), conditional and filtered aggregates, WHERE versus HAVING, completed-labor SUM/AVG, NULL versus zero, join multiplicity, and wider exact numeric totals. All objects were rolled back and cleanup was checked from a fresh connection. Recalculating and explaining the results remains your learning gate.
 
-- [ ] **12. Ask existence questions**
+- [x] **12. Ask existence questions**
 
   Learn: Study scalar/correlated subqueries, EXISTS/NOT EXISTS, and set operations.
 
   Apply: Find assets with no tickets and technicians with assigned work; compare alternative SQL formulations.
 
   Prove: Explain the NULL-related trap in a NOT IN query and produce a correct alternative.
+
+  Evidence: [Existence/subquery guide](SQL_EXISTENCE_AND_SUBQUERIES.md), [Step 12 fixture and predictions](../labs/step-12/notes.md), and [executed PostgreSQL evidence](../labs/step-12/evidence.txt). All 31 checks passed: twenty-five exact projected-row comparisons, three expected scalar/set errors, one fixture assertion, and two cleanup checks. NOT EXISTS, a left anti-join, EXCEPT, and a correlated count agree on the unused asset; current technician assignments are distinguished from retained terminal history. The nullable NOT IN failure and both qualified corrections are verified alongside scalar cardinality, empty-input behavior, and set multiplicity. All objects were rolled back and cleanup was confirmed from a fresh connection. Explaining the predicates and predicting results remains your learning gate.
 
 - [ ] **13. Understand the Python database layers**
 

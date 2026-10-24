@@ -1,0 +1,107 @@
+Step 12: existence and subquery verification evidence
+Captured (Asia/Kolkata): 2026-10-24 08:38:59 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-12/query.sql
+Pager usage is off.
+Null display is "(NULL)".
+=== Step 12: scalar and correlated subqueries, existence, and sets ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 6431
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 3
+INSERT 0 7
+INSERT 0 5
+INSERT 0 6
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+=== Ask whether each asset has any ticket, including history ===
+ asset_code
+------------
+ PC-003
+(1 row)
+
+Output format is unaligned.
+PASS: Correlated NOT EXISTS finds exactly the unused asset. Observed=[{"asset_code": "PC-003"}]
+PASS: A left anti-join on the nonnullable child primary key finds the same unused asset. Observed=[{"asset_code": "PC-003"}]
+PASS: EXCEPT subtracts ticketed asset identities from the full asset set. Observed=[{"asset_code": "PC-003"}]
+PASS: EXISTS returns each ticketed asset once despite repeated tickets. Observed=[{"asset_code": "PC-001"}, {"asset_code": "PC-002"}, {"asset_code": "PRJ-001"}, {"asset_code": "PRJ-002"}]
+PASS: Removing the correlation asks one global question and wrongly excludes every asset. Observed=[]
+=== Scalar subqueries: one value, NULL when empty, error when multiple rows ===
+PASS: A unique scalar lookup returns one value; a zero-row scalar lookup returns NULL. Observed=[{"known_department": "CSE", "missing_department": null}]
+PASS: A correlated aggregate scalar reports the complete hand-counted ticket totals per asset. Observed=[{"tickets": 1, "asset_code": "PC-001"}, {"tickets": 2, "asset_code": "PC-002"}, {"tickets": 0, "asset_code": "PC-003"}, {"tickets": 2, "asset_code": "PRJ-001"}, {"tickets": 1, "asset_code": "PRJ-002"}]
+PASS: Filtering the correlated scalar count to zero agrees with NOT EXISTS. Observed=[{"asset_code": "PC-003"}]
+PASS: EXISTS tests returned rows: a selected NULL is still a row, while a false predicate returns none. Observed=[{"empty_exists": false, "null_row_exists": true}]
+PASS: An ungrouped COUNT over empty input still returns a row, so wrapping it in EXISTS is a trap. Observed=[{"matching_row_exists": false, "aggregate_row_exists": true}]
+=== Current assigned tickets differ from retained terminal assignments ===
+PASS: Active technicians with nonterminal assigned tickets are Ravi and Nila, each returned once. Observed=[{"email": "ravi@example.invalid"}, {"email": "nila@example.invalid"}]
+PASS: The equivalent raw inner join repeats Ravi because he has two matching tickets. Observed=[{"email": "ravi@example.invalid"}, {"email": "ravi@example.invalid"}, {"email": "nila@example.invalid"}]
+PASS: DISTINCT on user identity and email restores the same one-row-per-technician result. Observed=[{"email": "ravi@example.invalid"}, {"email": "nila@example.invalid"}]
+PASS: Any-assignment history also includes inactive Mira and active Leela, whose only tickets are terminal. Observed=[{"email": "ravi@example.invalid"}, {"email": "nila@example.invalid"}, {"email": "mira@example.invalid"}, {"email": "leela@example.invalid"}]
+PASS: Active technicians without current assigned tickets include both never-assigned Omar and historical-only Leela. Observed=[{"email": "omar@example.invalid"}, {"email": "leela@example.invalid"}]
+=== NOT IN over the nullable assignee column can return UNKNOWN ===
+PASS: For the different question of no assignment ever, correlated NOT EXISTS returns only Omar. Observed=[{"email": "omar@example.invalid"}]
+PASS: Raw NOT IN incorrectly loses Omar because the assignee subquery contains NULL. Observed=[]
+PASS: The raw NOT IN predicate is false for a real match and NULL for the unmatched Omar. Observed=[{"email": "ravi@example.invalid", "never_assigned": false}, {"email": "omar@example.invalid", "never_assigned": null}]
+PASS: Removing NULL right-side values makes NOT IN agree for the nonnullable outer user key. Observed=[{"email": "omar@example.invalid"}]
+PASS: NOT IN against an empty assignment result includes all four active technicians. Observed=[{"email": "ravi@example.invalid"}, {"email": "nila@example.invalid"}, {"email": "omar@example.invalid"}, {"email": "leela@example.invalid"}]
+PASS: An isolated nullable outer value remains UNKNOWN against nonempty values but passes an empty NOT IN set. Observed=[{"null_against_empty": true, "null_against_values": null}]
+=== Set operations compare projected rows, with explicit final ordering ===
+PASS: UNION merges the open-ticket and current-assigned-asset sets without duplicate asset codes. Observed=[{"asset_code": "PC-001"}, {"asset_code": "PC-002"}, {"asset_code": "PRJ-001"}]
+PASS: UNION ALL keeps PRJ-001 twice because it belongs to both input sets. Observed=[{"asset_code": "PC-001"}, {"asset_code": "PC-002"}, {"asset_code": "PRJ-001"}, {"asset_code": "PRJ-001"}]
+PASS: INTERSECT retains only PRJ-001, the asset in both input sets. Observed=[{"asset_code": "PRJ-001"}]
+PASS: Ticketed assets EXCEPT current-assigned assets finds historical-only PRJ-002, not unused PC-003. Observed=[{"asset_code": "PRJ-002"}]
+=== Invalid scalar and set shapes fail with exact SQLSTATE ===
+PASS: A multirow scalar lookup fails instead of choosing an arbitrary user. SQLSTATE=21000
+PASS: Set inputs must project the same number of columns. SQLSTATE=42601
+PASS: Corresponding set columns must have compatible types. SQLSTATE=42804
+PASS: The three departments, seven users, five assets, and six tickets remain unchanged.
+ROLLBACK
+PASS: ROLLBACK removed the Step 12 schema, fixture, and helpers.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-12/reconnect.sql
+Pager usage is off.
+=== Step 12: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 6440
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | existence_probe_absent
+------------------+-----------------+------------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 12 schema remains.
