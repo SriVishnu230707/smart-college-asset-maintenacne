@@ -1,0 +1,130 @@
+Step 11: aggregate verification evidence
+Captured (Asia/Kolkata): 2026-10-24 08:09:59 +05:30
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-11/query.sql
+Pager usage is off.
+Null display is "(NULL)".
+=== Step 11: grouped ticket counts and exact completed-labor aggregates ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 51
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 3
+INSERT 0 2
+INSERT 0 6
+INSERT 0 5
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+=== COUNT star counts joined rows; COUNT child-ID counts real tickets ===
+ code | joined_rows | tickets | assignments
+------+-------------+---------+-------------
+ CSE  |           4 |       4 |           3
+ ECE  |           2 |       2 |           1
+ MECH |           1 |       0 |           0
+(3 rows)
+
+Output format is unaligned.
+PASS: Department totals distinguish joined rows, real tickets, and non-NULL assignments. Observed=[{"code": "CSE", "tickets": 4, "assignments": 3, "joined_rows": 4}, {"code": "ECE", "tickets": 2, "assignments": 1, "joined_rows": 2}, {"code": "MECH", "tickets": 0, "assignments": 0, "joined_rows": 1}]
+PASS: Grouping only observed priorities retains MECH as one NULL-priority group, not four zero buckets. Observed=[{"code": "CSE", "tickets": 1, "priority": "critical"}, {"code": "CSE", "tickets": 2, "priority": "high"}, {"code": "CSE", "tickets": 1, "priority": "low"}, {"code": "ECE", "tickets": 1, "priority": "high"}, {"code": "ECE", "tickets": 1, "priority": "medium"}, {"code": "MECH", "tickets": 0, "priority": null}]
+=== Explicit reporting axes produce all twelve department-priority buckets ===
+Output format is aligned.
+ code | priority | tickets
+------+----------+---------
+ CSE  | low      |       1
+ CSE  | medium   |       0
+ CSE  | high     |       2
+ CSE  | critical |       1
+ ECE  | low      |       0
+ ECE  | medium   |       1
+ ECE  | high     |       1
+ ECE  | critical |       0
+ MECH | low      |       0
+ MECH | medium   |       0
+ MECH | high     |       0
+ MECH | critical |       0
+(12 rows)
+
+Output format is unaligned.
+PASS: All twelve priority buckets match the hand-counted matrix, including every empty MECH bucket. Observed=[{"code": "CSE", "tickets": 1, "priority": "low"}, {"code": "CSE", "tickets": 0, "priority": "medium"}, {"code": "CSE", "tickets": 2, "priority": "high"}, {"code": "CSE", "tickets": 1, "priority": "critical"}, {"code": "ECE", "tickets": 0, "priority": "low"}, {"code": "ECE", "tickets": 1, "priority": "medium"}, {"code": "ECE", "tickets": 1, "priority": "high"}, {"code": "ECE", "tickets": 0, "priority": "critical"}, {"code": "MECH", "tickets": 0, "priority": "low"}, {"code": "MECH", "tickets": 0, "priority": "medium"}, {"code": "MECH", "tickets": 0, "priority": "high"}, {"code": "MECH", "tickets": 0, "priority": "critical"}]
+=== FILTER and CASE select inputs for one metric without dropping other rows ===
+PASS: FILTER and CASE agree on open counts while total, unassigned, and distinct-assignee metrics retain their meanings. Observed=[{"code": "CSE", "total": 4, "unassigned": 1, "open_filter": 1, "open_sum_case": 1, "open_count_case": 1, "distinct_assignees": 1}, {"code": "ECE", "total": 2, "unassigned": 1, "open_filter": 1, "open_sum_case": 1, "open_count_case": 1, "distinct_assignees": 1}, {"code": "MECH", "total": 0, "unassigned": 0, "open_filter": 0, "open_sum_case": 0, "open_count_case": 0, "distinct_assignees": 0}]
+PASS: Wrong COUNT expressions count false, zero, or an unmatched placeholder instead of the intended condition. Observed=[{"code": "CSE", "nonnull_cases": 4, "nonnull_booleans": 4, "null_assignee_rows": 1}, {"code": "ECE", "nonnull_cases": 2, "nonnull_booleans": 2, "null_assignee_rows": 1}, {"code": "MECH", "nonnull_cases": 1, "nonnull_booleans": 0, "null_assignee_rows": 1}]
+PASS: A child-status WHERE predicate drops the empty department before grouping. Observed=[{"code": "CSE", "tickets": 1}, {"code": "ECE", "tickets": 1}]
+PASS: The same status predicate in ON preserves all departments with zero counts where needed. Observed=[{"code": "CSE", "tickets": 1}, {"code": "ECE", "tickets": 1}, {"code": "MECH", "tickets": 0}]
+=== WHERE selects rows; HAVING selects groups ===
+PASS: HAVING at least three tickets retains only CSE with all four input tickets. Observed=[{"code": "CSE", "tickets": 4}]
+PASS: HAVING a filtered urgent count retains the complete qualifying group and its total. Observed=[{"code": "CSE", "total": 4, "urgent": 3}]
+PASS: Moving the urgent predicate to WHERE changes the inputs and the reported total to three. Observed=[{"code": "CSE", "total": 3}]
+PASS: HAVING a zero child count selects the genuinely empty department. Observed=[{"code": "MECH", "tickets": 0}]
+=== Completed labor uses frozen NUMERIC inputs and recorded ticket department ===
+Output format is aligned.
+ code | completed_orders | raw_labor_sum | labor_total | mean_completed_labor
+------+------------------+---------------+-------------+----------------------
+ CSE  |                2 |        600.50 |      600.50 | 300.2500000000000000
+ ECE  |                1 |         75.50 |       75.50 |  75.5000000000000000
+ MECH |                0 |        (NULL) |        0.00 |               (NULL)
+(3 rows)
+
+Output format is unaligned.
+PASS: Completed labor excludes both unfinished estimates, includes real zero cost, and preserves an absent mean as NULL. Observed=[{"code": "CSE", "labor_total": 600.50, "raw_labor_sum": 600.50, "completed_orders": 2, "mean_completed_labor": 300.2500000000000000}, {"code": "ECE", "labor_total": 75.50, "raw_labor_sum": 75.50, "completed_orders": 1, "mean_completed_labor": 75.5000000000000000}, {"code": "MECH", "labor_total": 0.00, "raw_labor_sum": null, "completed_orders": 0, "mean_completed_labor": null}]
+PASS: CASE without ELSE matches filtered SUM and AVG; ELSE zero biases the average denominator. Observed=[{"code": "CSE", "case_sum": 600.50, "case_mean": 300.2500000000000000, "zero_filled_mean": 120.1000000000000000}, {"code": "ECE", "case_sum": 75.50, "case_mean": 75.5000000000000000, "zero_filled_mean": 37.7500000000000000}, {"code": "MECH", "case_sum": null, "case_mean": null, "zero_filled_mean": 0.00000000000000000000}]
+PASS: The isolated nullable-value probe distinguishes a missing observation from a real zero. Observed=[{"rows": 3, "total": 6.00, "known_mean": 3.0000000000000000, "known_values": 2, "zero_filled_mean": 2.0000000000000000}]
+PASS: An ungrouped empty input returns one aggregate row with zero COUNT and NULL SUM and AVG. Observed=[{"mean": null, "rows": 0, "total": null}]
+PASS: A grouped empty input has no groups, so COALESCE cannot manufacture a missing group row. Observed=[]
+PASS: Joining work orders changes row grain: T4 repeats, while DISTINCT ticket IDs still count tickets. Observed=[{"code": "CSE", "tickets": 4, "repeated_ticket_ids": 5}, {"code": "ECE", "tickets": 2, "repeated_ticket_ids": 2}, {"code": "MECH", "tickets": 0, "repeated_ticket_ids": 0}]
+PASS: COUNT returns bigint and SUM and AVG of numeric inputs remain numeric. Observed=[{"sum_type": "numeric", "mean_type": "numeric", "count_type": "bigint"}]
+PASS: A report SUM can exceed the per-record NUMERIC(12,2) range without losing exact cents. Observed=[{"report_total": 19999999999.98}]
+=== Invalid aggregate queries fail with exact SQLSTATE ===
+PASS: An aggregate cannot select its own input rows in WHERE. SQLSTATE=42803
+PASS: A varying non-grouped ticket priority cannot be projected beside a department aggregate. SQLSTATE=42803
+PASS: Narrowing the valid report SUM back to a per-record money type overflows. SQLSTATE=22003
+PASS: All fixture rows are unchanged after the read queries and expected errors.
+ROLLBACK
+PASS: ROLLBACK removed the Step 11 schema, fixture, and helpers.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-11/reconnect.sql
+Pager usage is off.
+=== Step 11: verify cleanup from a new connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 67
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | aggregate_probe_absent
+------------------+-----------------+------------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms no Step 11 schema remains.

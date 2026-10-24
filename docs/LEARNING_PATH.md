@@ -18,7 +18,7 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), and [joins](../labs/step-10/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), and [aggregation](../labs/step-11/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
@@ -132,13 +132,15 @@ Reference reading: [PostgreSQL SQL language](https://www.postgresql.org/docs/18/
 
   Evidence: [Join guide](SQL_JOINS.md), [Step 10 predictions and instructions](../labs/step-10/notes.md), and [executed PostgreSQL evidence](../labs/step-10/evidence.txt). All 26 checks passed: thirteen ordered-key comparisons, four complete projected-row checks, four scalar/fixture assertions, three expected query rejections, and two cleanup checks. Required and optional reference paths display all six tickets with correct asset/reporter/assignee values; ON/WHERE variants, historical departments, self joins, and one-to-many multiplicity have hand-predicted results. All objects were rolled back and cleanup was checked from a fresh connection. Predicting and explaining the results remains your learning gate.
 
-- [ ] **11. Aggregate data**
+- [x] **11. Aggregate data**
 
   Learn: Study COUNT, SUM, AVG, GROUP BY, HAVING, CASE, COALESCE, and filtered aggregates.
 
   Apply: Count tickets by department and priority, including departments with no tickets.
 
   Prove: Verify results against a tiny hand-counted fixture and distinguish COUNT(*) from COUNT(column).
+
+  Evidence: [Aggregation guide](SQL_AGGREGATION.md), [Step 11 hand-counted fixture and instructions](../labs/step-11/notes.md), and [executed PostgreSQL evidence](../labs/step-11/evidence.txt). All 25 checks passed: nineteen complete report-row comparisons, one fixture assertion, three expected SQL rejections, and two cleanup checks. The lab verifies all twelve department/priority buckets, COUNT(*) versus COUNT(column), conditional and filtered aggregates, WHERE versus HAVING, completed-labor SUM/AVG, NULL versus zero, join multiplicity, and wider exact numeric totals. All objects were rolled back and cleanup was checked from a fresh connection. Recalculating and explaining the results remains your learning gate.
 
 - [ ] **12. Ask existence questions**
 
