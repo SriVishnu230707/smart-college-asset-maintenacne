@@ -1,0 +1,162 @@
+Step 15: Core schema metadata, inspection, and reflection verification evidence
+Captured (Asia/Kolkata): 2026-10-24 11:28:38 +05:30
+Command: python -X utf8 -B labs/step-15/python_lab.py
+SQLAlchemy 2.1.6; psycopg 3.3.6
+PASS: The metadata lab reuses the pinned SQLAlchemy and psycopg versions.
+PASS: MetaData registers three schema-qualified Core tables without ORM mappings.
+PASS: Column collections retain the chosen code length and required versus optional fields.
+PASS: Naming conventions assign stable primary, unique, check, foreign-key, and index names.
+PASS: Resolved foreign keys put both parents before assets in dependency order.
+Compiled asset DDL:
+CREATE TABLE college_step15.assets (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	asset_code VARCHAR(50) NOT NULL,
+	name VARCHAR(150) NOT NULL,
+	department_id UUID NOT NULL,
+	category_id UUID NOT NULL,
+	location VARCHAR(200),
+	status TEXT DEFAULT 'active' NOT NULL,
+	CONSTRAINT pk_assets PRIMARY KEY (id),
+	CONSTRAINT ck_assets_asset_code_canonical CHECK (asset_code = upper(btrim(asset_code)) AND asset_code !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_assets_name_nonblank CHECK (name !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_assets_status_allowed CHECK (status = 'active' OR status = 'under_maintenance' OR status = 'retired'),
+	CONSTRAINT uq_assets_asset_code UNIQUE (asset_code),
+	CONSTRAINT fk_assets_department_id_departments FOREIGN KEY(department_id) REFERENCES college_step15.departments (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT fk_assets_category_id_asset_categories FOREIGN KEY(category_id) REFERENCES college_step15.asset_categories (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+
+
+PASS: DDL compilation includes schema-qualified references, named constraints, and server defaults.
+PASS: An unresolved foreign key fails at compilation before any physical connection opens.
+PASS: The PostgreSQL 18 learner connection has a free disposable Step 15 namespace.
+engine_backend_pid=46063
+Observed CREATE TABLE order: ['college_step15.departments', 'college_step15.asset_categories', 'college_step15.assets']
+PASS: create_all creates exactly the three declared tables in dependency order.
+PASS: Explicit schema inspection finds the tables even though their schema is outside search_path.
+Inspected college_step15.asset_categories:
+{'columns': [('id', 'UUID', False, 'gen_random_uuid'),
+             ('code', 'VARCHAR(30)', False, None),
+             ('name', 'VARCHAR(100)', False, None),
+             ('is_archived', 'BOOLEAN', False, 'false')],
+ 'primary_key': ('pk_asset_categories', ('id',)),
+ 'unique': [('uq_asset_categories_code', ('code',))],
+ 'checks': [('ck_asset_categories_code_canonical',
+             "code=upperbtrimcodeANDcode!~'^[[:space:]]*$'"),
+            ('ck_asset_categories_name_nonblank', "name!~'^[[:space:]]*$'")],
+ 'foreign_keys': [],
+ 'indexes': []}
+PASS: asset_categories: inspected column order, PostgreSQL types, lengths, nullability, and server defaults match declarations.
+PASS: asset_categories: inspected primary, unique, check, foreign-key policies, and explicit indexes match declarations.
+Inspected college_step15.departments:
+{'columns': [('id', 'UUID', False, 'gen_random_uuid'),
+             ('code', 'VARCHAR(20)', False, None),
+             ('name', 'VARCHAR(150)', False, None),
+             ('is_archived', 'BOOLEAN', False, 'false')],
+ 'primary_key': ('pk_departments', ('id',)),
+ 'unique': [('uq_departments_code', ('code',))],
+ 'checks': [('ck_departments_code_canonical',
+             "code=upperbtrimcodeANDcode!~'^[[:space:]]*$'"),
+            ('ck_departments_name_nonblank', "name!~'^[[:space:]]*$'")],
+ 'foreign_keys': [],
+ 'indexes': []}
+PASS: departments: inspected column order, PostgreSQL types, lengths, nullability, and server defaults match declarations.
+PASS: departments: inspected primary, unique, check, foreign-key policies, and explicit indexes match declarations.
+Inspected college_step15.assets:
+{'columns': [('id', 'UUID', False, 'gen_random_uuid'),
+             ('asset_code', 'VARCHAR(50)', False, None),
+             ('name', 'VARCHAR(150)', False, None),
+             ('department_id', 'UUID', False, None),
+             ('category_id', 'UUID', False, None),
+             ('location', 'VARCHAR(200)', True, None),
+             ('status', 'TEXT', False, "'active'")],
+ 'primary_key': ('pk_assets', ('id',)),
+ 'unique': [('uq_assets_asset_code', ('asset_code',))],
+ 'checks': [('ck_assets_asset_code_canonical',
+             "asset_code=upperbtrimasset_codeANDasset_code!~'^[[:space:]]*$'"),
+            ('ck_assets_name_nonblank', "name!~'^[[:space:]]*$'"),
+            ('ck_assets_status_allowed',
+             "status='active'ORstatus='under_maintenance'ORstatus='retired'")],
+ 'foreign_keys': [('fk_assets_category_id_asset_categories',
+                   ('category_id',),
+                   'college_step15',
+                   'asset_categories',
+                   ('id',),
+                   'RESTRICT',
+                   'RESTRICT'),
+                  ('fk_assets_department_id_departments',
+                   ('department_id',),
+                   'college_step15',
+                   'departments',
+                   ('id',),
+                   'RESTRICT',
+                   'RESTRICT')],
+ 'indexes': [('ix_assets_category_id', ('category_id',), False),
+             ('ix_assets_department_id', ('department_id',), False)]}
+PASS: assets: inspected column order, PostgreSQL types, lengths, nullability, and server defaults match declarations.
+PASS: assets: inspected primary, unique, check, foreign-key policies, and explicit indexes match declarations.
+PASS: Repeating create_all with checkfirst emits no additional CREATE statements.
+PASS: Reflection fills a separate MetaData registry with distinct schema-qualified Table objects.
+PASS: Reflected columns, server defaults, constraints, reference actions, and indexes match the declared database shape.
+PASS: Reflected foreign keys resolve within their own registry and table lookup reuses that registry's object.
+PASS: Reflection preserves the server default but cannot recover Python defaults or Table.info.
+PASS: Reflecting an absent table raises NoSuchTableError instead of creating it.
+Deliberate drift:
+{'columns': {'declared': [('id', 'UUID', False, 'gen_random_uuid'),
+                          ('asset_code', 'VARCHAR(50)', False, None),
+                          ('name', 'VARCHAR(150)', False, None),
+                          ('department_id', 'UUID', False, None),
+                          ('category_id', 'UUID', False, None),
+                          ('location', 'VARCHAR(200)', True, None),
+                          ('status', 'TEXT', False, "'active'")],
+             'database': [('id', 'UUID', False, 'gen_random_uuid'),
+                          ('asset_code', 'VARCHAR(50)', False, None),
+                          ('name', 'VARCHAR(150)', False, None),
+                          ('department_id', 'UUID', False, None),
+                          ('category_id', 'UUID', False, None),
+                          ('location', 'VARCHAR(200)', True, None),
+                          ('status', 'TEXT', False, "'active'"),
+                          ('audit_note', 'TEXT', True, None)]},
+ 'checks': {'declared': [('ck_assets_asset_code_canonical',
+                          "asset_code=upperbtrimasset_codeANDasset_code!~'^[[:space:]]*$'"),
+                         ('ck_assets_name_nonblank', "name!~'^[[:space:]]*$'"),
+                         ('ck_assets_status_allowed',
+                          "status='active'ORstatus='under_maintenance'ORstatus='retired'")],
+            'database': [('ck_assets_asset_code_canonical',
+                          "asset_code=upperbtrimasset_codeANDasset_code!~'^[[:space:]]*$'"),
+                         ('ck_assets_name_nonblank',
+                          "name!~'^[[:space:]]*$'")]}}
+PASS: After clearing the cache, inspection detects exactly the extra column and removed status constraint.
+PASS: create_all neither adds a newly declared column nor removes extra columns or restores a dropped constraint.
+PASS: Declared, reflected, and proposed metadata remain separate Python descriptions after database drift.
+PASS: A fresh reflection observes the altered database without changing the original declarations or earlier snapshot.
+PASS: The lab rolls back its entire schema-creation and drift transaction.
+PASS: A subsequent checkout confirms rollback removed the Step 15 schema and every study object.
+PASS: All checkouts return before Engine disposal closes the physical connection.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=engine_backend_pid=46063 --file /labs/step-15/reconnect.sql
+Pager usage is off.
+=== Step 15: independently inspect metadata-lab cleanup ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 46079
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+PASS: Independent psql connects as the learner to PostgreSQL 18 using a different backend.
+ disposed_engine_backend | backend_absent | schema_absent
+-------------------------+----------------+---------------
+                   46063 | t              | t
+(1 row)
+
+PASS: The disposed Engine backend is gone and the entire Step 15 study schema was rolled back.
