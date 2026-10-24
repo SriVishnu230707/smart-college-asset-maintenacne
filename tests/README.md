@@ -1,0 +1,52 @@
+# Run all implemented labs
+
+With Docker Desktop running, execute this from the project root in PowerShell 7 or Windows PowerShell 5.1:
+
+```powershell
+.\tests\run.ps1 -WriteEvidence
+```
+
+The suite starts the existing Compose database, preserves its credentials and volume, and runs Steps 2-11 sequentially. Step 1 contains written business proofs. Run an individual lesson using its own `labs/step-NN/verify.ps1` command. The suite does not advance the learning checklist.
+
+Step 5 needs Python 3.10+ and [its requirements](../labs/step-05/requirements.txt). It tries a project virtual environment, normal PATH interpreters, then an existing bundled interpreter. Windows Store aliases are skipped during automatic selection. Every candidate must pass a version, tzdata-package, and Asia/Kolkata availability check before SQL runs. An explicit choice is respected:
+
+```powershell
+.\tests\run.ps1 -PythonExecutable C:\path\to\python.exe -WriteEvidence
+```
+
+No interpreter or package is installed automatically. Python JSON input uses UTF-8. The [ZoneInfo documentation](https://docs.python.org/3/library/zoneinfo.html#data-sources) explains its timezone-data dependency.
+
+## What is verified
+
+The suite requires all **271 checks across ten labs** to pass. This includes the thirteen Python checks in Step 5. Each lab runs in a child process using the current PowerShell executable, from an unrelated working directory. Absolute Compose paths and argument arrays handle this project's spaces and ampersand.
+
+Seven additional regression checks verify:
+
+1. Database startup and Compose readiness.
+2. PowerShell syntax, existing relative SQL include targets, and absence of invalid numeric quit commands.
+3. A missing required Step 4 UUID returns psql exit 3 with SQLSTATE P0001.
+4. The shared runner throws for an unexpected nonzero SQL exit.
+5. Native stderr is captured while a zero-exit process still succeeds.
+6. An unavailable explicit Python fails clearly before the SQL exercise starts.
+7. A fresh connection finds no Step 2-11 study schemas after the suite.
+
+Steps deliberately reject invalid values. In particular, Step 8 expects SQL errors 23505 and 25P02 while recovering its transaction, plus a guarded cleanup refusal with exit 3 and SQLSTATE 22023. These remain asserted behavior. Actual unexpected process exits fail the suite. See [psql exit status](https://www.postgresql.org/docs/18/app-psql.html#APP-PSQL-EXIT-STATUS).
+
+## Fixes and simpler runner logic
+
+Earlier Steps 2-7 used `\quit 1` for failed assertions. Reproducing Step 4 without its UUID printed FAIL but returned exit 0, because psql ignores the extra argument. Their guards now include [one shared SQL failure handler](../labs/shared/fail.sql), which raises a real error under ON_ERROR_STOP. An open transaction then rolls back when the failed client closes.
+
+Step 8 also failed on Windows PowerShell 5.1 before the fix: native stderr interrupted the wrapper before its expected-error logic could run. The [shared PowerShell helper](../labs/shared/verify.ps1) captures native output, restores the caller's error preference, and compares the real exit code with the expected value. That helper replaces repeated process invocation and evidence-writing logic across the ten verifiers and database startup.
+
+The executable lookup selects one resolved application path, and Step 5 validates Python candidates instead of choosing the first unverified installation. Existing lesson queries and expected business results are preserved.
+
+## Evidence and scope
+
+The original per-step evidence remains alongside each lesson. This maintenance pass has separate suite summaries:
+
+- [PowerShell 7 evidence](evidence-powershell7.txt)
+- [Windows PowerShell 5.1 evidence](evidence-powershell5.txt)
+
+Full current lab output is saved locally under ignored `.local/test-results/powershell-<version>/`. `-WriteEvidence` saves the suite summary here as UTF-8 without a BOM. A failed run reports FAILED and exits nonzero. Run suites sequentially because they use the same study namespaces.
+
+Compatibility was exercised on Windows with both installed PowerShell versions and the existing PostgreSQL 18 Docker image. These checks cover the currently implemented SQL/Python learning labs; API, frontend, ORM, other operating systems, and older PostgreSQL versions are outside this test result.

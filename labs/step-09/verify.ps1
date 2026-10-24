@@ -1,21 +1,10 @@
 [CmdletBinding()]
 param([switch]$WriteEvidence)
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$composeFile = Join-Path $projectRoot 'compose.yaml'
+. (Join-Path $PSScriptRoot '../shared/verify.ps1')
 
-function Invoke-FilterExercise([string]$SqlFile) {
-    $result = @(& docker compose --file $composeFile exec -T postgres sh /labs/step-02/psql.sh --file $SqlFile 2>&1)
-    if ($LASTEXITCODE -ne 0) {
-        $result | ForEach-Object { Write-Host "$_" }
-        throw "Step 9 filtering/ordering exercise failed: $SqlFile"
-    }
-    return ($result | ForEach-Object { "$($_)".TrimEnd() })
-}
-
-$exerciseOutput = @(Invoke-FilterExercise '/labs/step-09/query.sql')
-$reconnectOutput = @(Invoke-FilterExercise '/labs/step-09/reconnect.sql')
+$exerciseOutput = @(Invoke-LabSql '/labs/step-09/query.sql')
+$reconnectOutput = @(Invoke-LabSql '/labs/step-09/reconnect.sql')
 $capturedAt = [DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromMinutes(330)).ToString('yyyy-MM-dd HH:mm:ss zzz')
 $transcript = @(
     'Step 9: filtering and ordering verification evidence',
@@ -26,11 +15,4 @@ $transcript = @(
     'Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-09/reconnect.sql',
     ($reconnectOutput -join "`n")
 ) -join "`n"
-Write-Output $transcript
-
-if ($WriteEvidence) {
-    $evidenceFile = Join-Path $PSScriptRoot 'evidence.txt'
-    $utf8 = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($evidenceFile, $transcript + "`n", $utf8)
-    Write-Output "Evidence saved: $evidenceFile"
-}
+Write-LabEvidence -Transcript $transcript -Path (Join-Path $PSScriptRoot 'evidence.txt') -Save:$WriteEvidence

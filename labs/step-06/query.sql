@@ -7,13 +7,13 @@ SELECT current_database() = 'college_learning'
 \if :identity_ok
 \else
   \echo FAIL: Use the learning database and role.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT to_regnamespace('college_step06') IS NULL AS namespace_free \gset
 \if :namespace_free
 \else
   \echo FAIL: college_step06 already exists; inspect it before rerunning.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 BEGIN;
@@ -142,7 +142,7 @@ SELECT (NULL::integer >= 0) IS UNKNOWN
   \echo PASS: SQL predicates use TRUE, FALSE, and UNKNOWN with the expected AND/OR/NOT results.
 \else
   \echo FAIL: Three-valued logic differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 INSERT INTO nullable_stock_probe (label) VALUES ('omitted');
 INSERT INTO nullable_stock_probe VALUES ('explicit-null', NULL), ('positive', 2);
@@ -154,7 +154,7 @@ SELECT (SELECT stock_quantity = 0 FROM nullable_stock_probe WHERE label = 'omitt
   \echo PASS: CHECK accepts UNKNOWN; DEFAULT fills omission but preserves an explicit NULL.
 \else
   \echo FAIL: Nullable CHECK/default behavior differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT (SELECT count(*) FROM nullable_stock_probe WHERE stock_quantity = NULL) = 0
        AND (SELECT count(*) FROM nullable_stock_probe WHERE stock_quantity IS NULL) = 1
@@ -163,7 +163,7 @@ SELECT (SELECT count(*) FROM nullable_stock_probe WHERE stock_quantity = NULL) =
   \echo PASS: WHERE discards UNKNOWN; IS NULL finds the missing value while = NULL does not.
 \else
   \echo FAIL: NULL filtering differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Valid project rows and defaults ===
@@ -188,7 +188,7 @@ SELECT (SELECT status = 'active' FROM assets WHERE asset_code = 'PRJ-001')
   \echo PASS: Omission and DEFAULT supply valid initial values; explicit boolean choices are preserved.
 \else
   \echo FAIL: Project defaults differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT EXISTS (SELECT 1 FROM users WHERE role = 'student' AND department_id IS NOT NULL)
        AND EXISTS (SELECT 1 FROM users WHERE role = 'super_admin' AND department_id IS NULL)
@@ -197,7 +197,7 @@ SELECT EXISTS (SELECT 1 FROM users WHERE role = 'student' AND department_id IS N
   \echo PASS: A student has a department; a Super Admin may have no department.
 \else
   \echo FAIL: Conditional department membership differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 INSERT INTO work_order_parts VALUES
@@ -211,7 +211,7 @@ SELECT count(*) = 3 AND count(DISTINCT work_order_id) = 2
   \echo PASS: Composite uniqueness allows different parts per order and the same part in different orders.
 \else
   \echo FAIL: Composite-key fixtures differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 INSERT INTO nullable_unique_probe VALUES (1, NULL), (2, NULL), (3, 'OPTIONAL-1');
 INSERT INTO nulls_not_distinct_probe VALUES (1, NULL);
@@ -222,7 +222,7 @@ SELECT (SELECT count(*) FROM nullable_unique_probe WHERE optional_code IS NULL) 
   \echo PASS: Ordinary UNIQUE permits multiple NULLs; NULLS NOT DISTINCT accepts its first NULL.
 \else
   \echo FAIL: Nullable uniqueness fixtures differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Invalid direct SQL: expected diagnostics, then one PASS per attempt ===
@@ -323,7 +323,7 @@ WHERE connamespace = 'college_step06'::regnamespace
   \echo PASS: Named NOT NULL, CHECK, UNIQUE, and composite PRIMARY KEY constraints are visible in the catalog.
 \else
   \echo FAIL: The expected named constraints were not found.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT (SELECT count(*) FROM departments) = 1
        AND (SELECT count(*) FROM categories) = 1
@@ -340,7 +340,7 @@ SELECT (SELECT count(*) FROM departments) = 1
   \echo PASS: All rejected inserts and the rejected stock update left the valid fixture unchanged.
 \else
   \echo FAIL: An invalid attempt changed the valid fixture.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 ROLLBACK;
 SELECT to_regnamespace('college_step06') IS NULL AS cleanup_ok \gset
@@ -348,5 +348,5 @@ SELECT to_regnamespace('college_step06') IS NULL AS cleanup_ok \gset
   \echo PASS: All Step 6 tables, constraints, fixtures, and verification helper were rolled back.
 \else
   \echo FAIL: The Step 6 demonstration left an unexpected schema behind.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif

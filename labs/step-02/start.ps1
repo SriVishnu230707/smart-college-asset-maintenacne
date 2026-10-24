@@ -2,14 +2,13 @@
 [CmdletBinding()]
 param()
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$composeFile = Join-Path $projectRoot 'compose.yaml'
+. (Join-Path $PSScriptRoot '../shared/verify.ps1')
 $secretDirectory = Join-Path $projectRoot '.local'
 
-& docker info --format '{{.ServerVersion}}'
-if ($LASTEXITCODE -ne 0) {
-    throw 'Docker is not ready. Run docker desktop start, wait for the engine, then run this script again.'
+try {
+    Invoke-LabProcess docker @('info', '--format', '{{.ServerVersion}}')
+} catch {
+    throw "Docker is not ready. Run docker desktop start, then retry. $($_.Exception.Message)"
 }
 
 [System.IO.Directory]::CreateDirectory($secretDirectory) | Out-Null
@@ -25,11 +24,8 @@ foreach ($name in @('postgres-admin-password', 'college-learner-password')) {
     }
 }
 
-& docker compose --file $composeFile config --quiet
-if ($LASTEXITCODE -ne 0) { throw 'Docker Compose configuration is invalid.' }
-
-& docker compose --file $composeFile up --detach --wait --wait-timeout 60 postgres
-if ($LASTEXITCODE -ne 0) { throw 'The learning database did not become ready. Inspect docker compose logs postgres.' }
+Invoke-LabProcess docker @('compose', '--file', $composeFile, 'config', '--quiet')
+Invoke-LabProcess docker @('compose', '--file', $composeFile, 'up', '--detach', '--wait', '--wait-timeout', '60', 'postgres')
 
 Write-Output 'Learning database is ready: college_learning; role: college_learner.'
 Write-Output 'Connect: docker compose exec postgres sh /labs/step-02/psql.sh'

@@ -18,5 +18,5 @@ SELECT current_database() = 'college_learning'
   \echo PASS: Reconnected without a GUI; identity is correct and rolled-back objects are absent.
 \else
   \echo FAIL: Reconnection observations differ from the expected lab environment.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif

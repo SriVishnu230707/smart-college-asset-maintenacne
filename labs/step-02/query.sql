@@ -41,7 +41,7 @@ FROM pg_catalog.pg_roles WHERE rolname = current_user
   \echo PASS: PostgreSQL 18, correct database, and non-superuser learning role.
 \else
   \echo FAIL: Unexpected server, database, schema, or role.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 -- Refuse to touch a schema that someone created outside this exercise.
@@ -49,7 +49,7 @@ SELECT to_regnamespace('college_step02') IS NULL AS probe_namespace_free \gset
 \if :probe_namespace_free
 \else
   \echo FAIL: college_step02 already exists; inspect it before rerunning.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === A table that exists only inside this transaction ===
@@ -73,7 +73,7 @@ SELECT count(*) = 1 AS probe_visible FROM connection_probe \gset
   \echo PASS: The current transaction can inspect its own table and row.
 \else
   \echo FAIL: Transaction probe is missing.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 ROLLBACK;
 
@@ -86,5 +86,5 @@ SELECT to_regnamespace('college_step02') IS NULL
   \echo PASS: Schema, table, row, and local search_path change were rolled back.
 \else
   \echo FAIL: The exercise left unexpected state behind.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif

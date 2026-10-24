@@ -1,21 +1,10 @@
 [CmdletBinding()]
 param([switch]$WriteEvidence)
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$composeFile = Join-Path $projectRoot 'compose.yaml'
+. (Join-Path $PSScriptRoot '../shared/verify.ps1')
 
-function Invoke-Inspection([string]$SqlFile) {
-    $result = @(& docker compose --file $composeFile exec -T postgres sh /labs/step-02/psql.sh --file $SqlFile 2>&1)
-    if ($LASTEXITCODE -ne 0) {
-        $result | ForEach-Object { Write-Host "$_" }
-        throw "PostgreSQL inspection failed: $SqlFile"
-    }
-    return ($result | ForEach-Object { "$($_)".TrimEnd() })
-}
-
-$first = @(Invoke-Inspection '/labs/step-02/query.sql')
-$second = @(Invoke-Inspection '/labs/step-02/reconnect.sql')
+$first = @(Invoke-LabSql '/labs/step-02/query.sql')
+$second = @(Invoke-LabSql '/labs/step-02/reconnect.sql')
 $firstText = $first -join "`n"
 $secondText = $second -join "`n"
 $firstPid = [regex]::Match($firstText, '(?m)^connection_backend_pid=(\d+)\s*$')
@@ -35,11 +24,4 @@ $transcript = @(
     '',
     'PASS: The two psql invocations used different PostgreSQL backend identifiers.'
 ) -join "`n"
-Write-Output $transcript
-
-if ($WriteEvidence) {
-    $evidenceFile = Join-Path $PSScriptRoot 'evidence.txt'
-    $utf8 = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($evidenceFile, $transcript + "`n", $utf8)
-    Write-Output "Evidence saved: $evidenceFile"
-}
+Write-LabEvidence -Transcript $transcript -Path (Join-Path $PSScriptRoot 'evidence.txt') -Save:$WriteEvidence

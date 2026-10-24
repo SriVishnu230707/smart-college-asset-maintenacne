@@ -7,13 +7,13 @@ SELECT current_database() = 'college_learning'
 \if :identity_ok
 \else
   \echo FAIL: Use the learning database and role.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT to_regnamespace('college_step05') IS NULL AS namespace_free \gset
 \if :namespace_free
 \else
   \echo FAIL: college_step05 already exists; inspect it before rerunning.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 BEGIN;
@@ -32,7 +32,7 @@ SELECT 0.10::numeric + 0.20::numeric = 0.30::numeric
   \echo PASS: Numeric decimal arithmetic preserves the exact monetary sum; binary float differs.
 \else
   \echo FAIL: The numeric/float comparison differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT 1.005::numeric(12,2) AS silently_rounded_value;
 SELECT 1.005::numeric(12,2) = 1.01 AS coercion_rounds \gset
@@ -40,7 +40,7 @@ SELECT 1.005::numeric(12,2) = 1.01 AS coercion_rounds \gset
   \echo PASS: NUMERIC(12,2) rounds excess scale, so strict input validation must precede coercion.
 \else
   \echo FAIL: Numeric coercion differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 -- A lab input guard accepts unconstrained numeric, so the original scale is
@@ -95,7 +95,7 @@ SELECT require_money(9999999999.99)::numeric(12,2) = 9999999999.99
   \echo PASS: Zero and the selected maximum 9999999999.99 are represented exactly.
 \else
   \echo FAIL: Monetary boundary values were not preserved.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 DO $$
 BEGIN
@@ -153,7 +153,7 @@ GROUP BY r.repair_ref, r.labor_cost \gset
   \echo PASS: Labor 100.00 plus two parts at 250.10 and three at 0.10 is exactly 600.50 INR.
 \else
   \echo FAIL: The exact repair-cost fixture is incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 UPDATE part_catalog SET standard_unit_cost = require_money(300.00) WHERE part_code = 'LAMP';
 SELECT r.labor_cost + sum(p.quantity_used * p.unit_cost_at_use) = 600.50 AS frozen_price_ok
@@ -163,7 +163,7 @@ GROUP BY r.repair_ref, r.labor_cost \gset
   \echo PASS: Changing a current catalog price does not change the recorded repair cost.
 \else
   \echo FAIL: Historical cost was calculated from mutable catalog prices.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT sum(value) AS unrestricted_report_total
 FROM (VALUES (9999999999.99::numeric(12,2)), (9999999999.99::numeric(12,2))) AS amounts(value);
@@ -174,7 +174,7 @@ FROM (VALUES (9999999999.99::numeric(12,2)), (9999999999.99::numeric(12,2))) AS 
   \echo PASS: Report aggregates may exceed the per-repair cap without being cast back to NUMERIC(12,2).
 \else
   \echo FAIL: The unrestricted report aggregate lost precision.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 INSERT INTO cost_events VALUES
@@ -201,7 +201,7 @@ FROM cost_events WHERE event_ref = 'REPAIR-EXACT' \gset
   \echo PASS: One instant displays as 18:30 UTC and midnight on the following date in Asia/Kolkata.
 \else
   \echo FAIL: Explicit timezone displays were incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT timestamptz '2026-10-22 00:00:00+05:30' = timestamptz '2026-10-21 18:30:00+00'
        AS same_instant_ok \gset
@@ -209,7 +209,7 @@ SELECT timestamptz '2026-10-22 00:00:00+05:30' = timestamptz '2026-10-21 18:30:0
   \echo PASS: Offset-aware input strings with different clock readings can identify the same instant.
 \else
   \echo FAIL: Equivalent offset-aware timestamps were not equal.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Reporting days around midnight with the session in UTC ===
@@ -224,7 +224,7 @@ FROM cost_events WHERE event_ref = 'REPAIR-EXACT' \gset
   \echo PASS: UTC and the reporting timezone assign different calendar dates without changing the instant.
 \else
   \echo FAIL: The midnight calendar-date example is incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT json_agg(d ORDER BY reporting_day)::text AS original_daily_totals
 FROM (
@@ -243,7 +243,7 @@ FROM cost_events WHERE event_ref = 'REPAIR-EXACT' \gset
   \echo PASS: Changing the session timezone changes display, not the stored instant.
 \else
   \echo FAIL: The observed instant changed.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT :'naive_utc_epoch'::numeric
        - extract(epoch FROM '2026-10-22 00:00:00'::timestamptz) = 19800
@@ -252,7 +252,7 @@ SELECT :'naive_utc_epoch'::numeric
   \echo PASS: Input without an offset depends on the session timezone; event inputs must be aware.
 \else
   \echo FAIL: The missing-offset counterexample was not demonstrated.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT timestamp '2026-10-22 00:00:00+05:30' = timestamp '2026-10-22 00:00:00'
        AS timestamp_drops_offset \gset
@@ -260,7 +260,7 @@ SELECT timestamp '2026-10-22 00:00:00+05:30' = timestamp '2026-10-22 00:00:00'
   \echo PASS: A timestamp-without-time-zone literal discards its offset rather than storing an instant.
 \else
   \echo FAIL: The timestamp-without-time-zone counterexample differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 WITH actual AS (
@@ -281,7 +281,7 @@ FROM actual FULL JOIN expected USING (day) \gset
   \echo PASS: Local daily counts and exact totals match the hand-calculated three-day fixture.
 \else
   \echo FAIL: Local-day grouping or totals were incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT json_agg(d ORDER BY reporting_day)::text = :'original_daily_totals'
        AS grouping_session_independent
@@ -294,7 +294,7 @@ FROM (
   \echo PASS: Explicit Asia/Kolkata reporting groups are identical in UTC and Kolkata sessions.
 \else
   \echo FAIL: The report depended on the session timezone.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT count(*) = 2 AND sum(total_cost) = 600.70 AS day_window_ok
 FROM cost_events
@@ -305,7 +305,7 @@ WHERE completed_at >= (timestamp '2026-10-22 00:00:00' AT TIME ZONE 'Asia/Kolkat
   \echo PASS: A half-open local-day interval includes both October 22 events and excludes neighboring days.
 \else
   \echo FAIL: The local-day interval has a boundary error.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT pg_typeof(date '2026-10-22')::text = 'date'
        AND date '2026-10-22'::text = '2026-10-22' AS date_only_ok \gset
@@ -313,7 +313,7 @@ SELECT pg_typeof(date '2026-10-22')::text = 'date'
   \echo PASS: A calendar-only date is a date value, not an event instant with an assumed midnight.
 \else
   \echo FAIL: The date-only observation differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 -- Send actual SQL results to the Python exercise using decimal/ISO strings.
@@ -345,5 +345,5 @@ SELECT to_regnamespace('college_step05') IS NULL AS cleanup_ok \gset
   \echo PASS: All money/time probe tables and the raw-input helper were rolled back.
 \else
   \echo FAIL: The Step 5 demonstration left an unexpected schema behind.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif

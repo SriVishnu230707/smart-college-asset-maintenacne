@@ -11,7 +11,7 @@ Use the [Step 2 PostgreSQL environment](../step-02/notes.md), Python 3.10+, and 
 .\labs\step-05\verify.ps1 -WriteEvidence
 ```
 
-The verifier uses a normal Python executable on PATH, skipping Windows Store aliases. If none is available, it can use the existing Codex bundled interpreter on this machine. Supply an explicit interpreter with `-PythonExecutable` when needed. No Python packages are installed automatically. For a separate Python installation, install the lab requirements into that interpreter:
+The verifier tries a project virtual environment, normal Python executables on PATH (skipping Windows Store aliases), then an existing bundled interpreter. It checks Python 3.10+, the tzdata package, and Asia/Kolkata availability before running SQL. Supply an explicit interpreter with `-PythonExecutable` when needed; that choice is checked without silently substituting another interpreter. No packages are installed automatically. For a separate Python installation, install the lab requirements into that interpreter:
 
 ```powershell
 python -m pip install -r labs/step-05/requirements.txt

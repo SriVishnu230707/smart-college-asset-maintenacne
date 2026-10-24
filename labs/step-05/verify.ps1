@@ -1,45 +1,40 @@
 [CmdletBinding()]
 param([switch]$WriteEvidence, [string]$PythonExecutable)
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$composeFile = Join-Path $projectRoot 'compose.yaml'
+. (Join-Path $PSScriptRoot '../shared/verify.ps1')
 
-if (-not $PythonExecutable) {
-    $installedPython = Get-Command python3, python -CommandType Application -ErrorAction SilentlyContinue |
-        Where-Object { $_.Source -notmatch '[\\/]WindowsApps[\\/]' } | Select-Object -First 1
-    if ($installedPython) {
-        $PythonExecutable = $installedPython.Source
-    } else {
-        $profileDirectory = [Environment]::GetFolderPath('UserProfile')
-        $bundledPython = Join-Path $profileDirectory '.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe'
-        if (Test-Path -LiteralPath $bundledPython) { $PythonExecutable = $bundledPython }
+if ($PythonExecutable) {
+    $candidates = @($PythonExecutable)
+} else {
+    $candidates = @(
+        (Join-Path $projectRoot '.venv/Scripts/python.exe'),
+        (Join-Path $projectRoot '.venv/bin/python')
+    ) + @(Get-Command python3, python -CommandType Application -ErrorAction SilentlyContinue |
+        Where-Object { $_.Source -notmatch '[\\/]WindowsApps[\\/]' } | ForEach-Object { $_.Source }) + @(
+        (Join-Path ([Environment]::GetFolderPath('UserProfile')) '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe')
+    )
+}
+$PythonExecutable = $null
+foreach ($candidate in $candidates | Select-Object -Unique) {
+    try {
+        Invoke-LabProcess $candidate @('-c', "import sys; from importlib.metadata import version; from zoneinfo import ZoneInfo; version('tzdata'); ZoneInfo('Asia/Kolkata'); sys.exit(0 if sys.version_info >= (3, 10) else 1)") | Out-Null
+        $PythonExecutable = $candidate
+        break
+    } catch {
+        # Try the next candidate; an explicit choice remains the only candidate.
     }
 }
 if (-not $PythonExecutable) {
-    throw 'Python 3.10+ is required. Supply -PythonExecutable and install labs/step-05/requirements.txt.'
+    throw 'No usable Python 3.10+ with tzdata was found. Supply -PythonExecutable and install labs/step-05/requirements.txt.'
 }
 
-function Invoke-MoneyTimeExercise([string]$SqlFile) {
-    $result = @(& docker compose --file $composeFile exec -T postgres sh /labs/step-02/psql.sh --file $SqlFile 2>&1)
-    if ($LASTEXITCODE -ne 0) {
-        $result | ForEach-Object { Write-Host "$_" }
-        throw "Step 5 money/time exercise failed: $SqlFile"
-    }
-    return ($result | ForEach-Object { "$($_)".TrimEnd() })
-}
-
-$sqlOutput = @(Invoke-MoneyTimeExercise '/labs/step-05/query.sql')
-$reconnectOutput = @(Invoke-MoneyTimeExercise '/labs/step-05/reconnect.sql')
+$sqlOutput = @(Invoke-LabSql '/labs/step-05/query.sql')
+$reconnectOutput = @(Invoke-LabSql '/labs/step-05/reconnect.sql')
 $fixtureLines = @($sqlOutput | Where-Object { $_.StartsWith('PYTHON_FIXTURE=') })
 if ($fixtureLines.Count -ne 1) { throw 'Expected one PostgreSQL result payload for the Python exercise.' }
 $payload = $fixtureLines[0].Substring('PYTHON_FIXTURE='.Length)
 $pythonScript = Join-Path $PSScriptRoot 'python_lab.py'
-$pythonOutput = @($payload | & $PythonExecutable -B $pythonScript 2>&1)
-if ($LASTEXITCODE -ne 0) {
-    $pythonOutput | ForEach-Object { Write-Host "$_" }
-    throw 'Python Decimal/datetime verification failed. Check Python 3.10+ and the lab requirements.'
-}
+$pythonOutput = @(Invoke-LabProcess $PythonExecutable @('-X', 'utf8', '-B', $pythonScript) -InputText $payload)
 $capturedAt = [DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromMinutes(330)).ToString('yyyy-MM-dd HH:mm:ss zzz')
 $transcript = @(
     'Step 5: money and time verification evidence',
@@ -50,13 +45,7 @@ $transcript = @(
     'Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --file /labs/step-05/reconnect.sql',
     ($reconnectOutput -join "`n"),
     '',
-    'Command: python -B labs/step-05/python_lab.py (PostgreSQL JSON fixture on stdin)',
+    'Command: python -X utf8 -B labs/step-05/python_lab.py (PostgreSQL JSON fixture on stdin)',
     (($pythonOutput | ForEach-Object { "$($_)".TrimEnd() }) -join "`n")
 ) -join "`n"
-Write-Output $transcript
-if ($WriteEvidence) {
-    $evidenceFile = Join-Path $PSScriptRoot 'evidence.txt'
-    $utf8 = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($evidenceFile, $transcript + "`n", $utf8)
-    Write-Output "Evidence saved: $evidenceFile"
-}
+Write-LabEvidence -Transcript $transcript -Path (Join-Path $PSScriptRoot 'evidence.txt') -Save:$WriteEvidence

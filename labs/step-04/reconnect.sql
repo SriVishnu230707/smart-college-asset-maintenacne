@@ -12,5 +12,5 @@ SELECT current_database() = 'college_learning'
   \echo PASS: A fresh connection confirms no Step 4 schema remains.
 \else
   \echo FAIL: The Step 4 cleanup or connection identity is incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif

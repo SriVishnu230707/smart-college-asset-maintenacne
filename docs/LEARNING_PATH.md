@@ -22,6 +22,8 @@ Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-11 without advancing this checklist. It checks 271 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+
 The detailed design and concurrency guidance remains in [the mastery guide](POSTGRESQL_SQLALCHEMY_MASTERY.md). This checklist supersedes that guide's former calendar-based roadmap.
 
 **Steps 1–8: Foundation: define the system and understand PostgreSQL**

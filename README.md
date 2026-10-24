@@ -22,19 +22,11 @@ Start here:
 With Docker Desktop running, use PowerShell in this project directory:
 
 ```powershell
-.\labs\step-02\start.ps1
-.\labs\step-02\verify.ps1 -WriteEvidence
-.\labs\step-03\verify.ps1 -WriteEvidence
-.\labs\step-04\verify.ps1 -WriteEvidence
-.\labs\step-05\verify.ps1 -WriteEvidence
-.\labs\step-06\verify.ps1 -WriteEvidence
-.\labs\step-07\verify.ps1 -WriteEvidence
-.\labs\step-08\verify.ps1 -WriteEvidence
-.\labs\step-09\verify.ps1 -WriteEvidence
-.\labs\step-10\verify.ps1 -WriteEvidence
-.\labs\step-11\verify.ps1 -WriteEvidence
+.\tests\run.ps1 -WriteEvidence
 docker compose exec postgres sh /labs/step-02/psql.sh
 ```
+
+The [regression suite](tests/README.md) starts the database and checks all ten executable labs with one command. It covers 271 lab checks plus seven runner regression checks in PowerShell 7 and Windows PowerShell 5.1. Individual lessons retain their own verification commands. See the [PowerShell 7 result](tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 result](tests/evidence-powershell5.txt).
 
 The database is `college_learning`, with the non-superuser login `college_learner`. PostgreSQL is published on `127.0.0.1:55432`. Credentials are generated locally under the Git-ignored `.local/` directory. See the [captured verification output](labs/step-02/evidence.txt).
 
@@ -42,7 +34,7 @@ Step 3's [captured model-verification output](labs/step-03/evidence.txt) demonst
 
 Step 4's [captured identifier/type output](labs/step-04/evidence.txt) proves a fresh UUID cannot bypass a duplicate asset code, alongside generator, string, and boolean comparisons. Its probe is also rolled back.
 
-Step 5's [captured SQL/Python output](labs/step-05/evidence.txt) verifies exact Decimal costs, strict raw-money validation, aware timestamps, and reporting around Kolkata midnight. It requires Python 3.10+ with the [lab requirements](labs/step-05/requirements.txt); an existing bundled interpreter is detected when available. The SQL probe is rolled back.
+Step 5's [captured SQL/Python output](labs/step-05/evidence.txt) verifies exact Decimal costs, strict raw-money validation, aware timestamps, and reporting around Kolkata midnight. It requires Python 3.10+ with the [lab requirements](labs/step-05/requirements.txt); the runner checks virtual-environment, PATH, and existing bundled candidates before executing SQL. The SQL probe is rolled back.
 
 Step 6's [captured constraint output](labs/step-06/evidence.txt) records 48 PostgreSQL checks, including 37 expected rejections for invalid inserts/updates. It explains required values versus defaults, CHECK's NULL behavior, independent business uniqueness, and a composite primary key. All demonstration objects are rolled back; no Python dependency is needed.
 

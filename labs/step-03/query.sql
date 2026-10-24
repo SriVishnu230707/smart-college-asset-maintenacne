@@ -7,13 +7,13 @@ SELECT current_database() = 'college_learning'
 \if :identity_ok
 \else
   \echo FAIL: Use the college_learning database and college_learner role.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT to_regnamespace('college_step03') IS NULL AS namespace_free \gset
 \if :namespace_free
 \else
   \echo FAIL: college_step03 already exists; inspect it before rerunning.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 -- These fixed synthetic IDs make relationships easy to trace. UUID generation,
@@ -114,7 +114,7 @@ WHERE c.code = 'COMPUTER'
   \echo PASS: Three distinct computers share one category record; names need not be unique.
 \else
   \echo FAIL: Shared category relationships are incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT department_id IS NULL AND role = 'super_admin' AS optional_department_ok
 FROM users WHERE id = :'super_admin'
@@ -123,7 +123,7 @@ FROM users WHERE id = :'super_admin'
   \echo PASS: A Super Admin can have no department while assets still have a required parent.
 \else
   \echo FAIL: Optional user department fixture is incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Reporter and assignee are different user relationships ===
@@ -145,7 +145,7 @@ WHERE t.id = :'assigned_ticket'
   \echo PASS: Reporter and assignee resolve to separate user identities.
 \else
   \echo FAIL: Reporter/assignee links are incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === A terminal ticket keeps its department after asset transfer ===
@@ -158,7 +158,7 @@ SELECT NOT EXISTS (
   \echo PASS: The transfer fixture has no nonterminal tickets for this asset.
 \else
   \echo FAIL: This fixture cannot transfer its asset yet.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 UPDATE assets SET department_id = :'ece' WHERE id = :'projector';
 INSERT INTO maintenance_tickets
@@ -184,7 +184,7 @@ SELECT (SELECT department_id = :'cse' FROM maintenance_tickets WHERE id = :'old_
   \echo PASS: The old ticket stays CSE; the transferred asset and new ticket belong to ECE.
 \else
   \echo FAIL: Current ownership and recorded history were confused.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Counterexample: repeated current supplier details can disagree ===
@@ -203,7 +203,7 @@ FROM bad_ticket_copies WHERE supplier_ref = 'SUP-1'
   \echo PASS: The bad design permits contradictory copies of one supplier contact.
 \else
   \echo FAIL: The supplier counterexample was not demonstrated.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 WITH suppliers(supplier_ref, current_contact) AS (
     VALUES ('SUP-1', 'CONTACT-NEW')
@@ -218,7 +218,7 @@ JOIN suppliers AS s ON s.supplier_ref = p.preferred_supplier_ref
   \echo PASS: Two parts reference one authoritative supplier contact record.
 \else
   \echo FAIL: Normalized supplier references are incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Counterexample: substring lookup confuses PART-1 and PART-10 ===
@@ -237,7 +237,7 @@ FROM bad_ticket_lists WHERE part_codes LIKE '%PART-1%'
   \echo PASS: The encoded part list gives a false substring match for PART-10.
 \else
   \echo FAIL: The comma-separated-list counterexample was not demonstrated.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 WITH work_order_parts(work_order_ref, part_code, quantity_used) AS (
     VALUES ('WO-WRONG', 'PART-10', 1), ('WO-WRONG', 'PART-20', 1),
@@ -251,7 +251,7 @@ FROM work_order_parts WHERE part_code = 'PART-1'
   \echo PASS: Separate part-use rows give one exact relationship with its own quantity.
 \else
   \echo FAIL: Normalized part relationships are incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 ROLLBACK;
@@ -260,5 +260,5 @@ SELECT to_regnamespace('college_step03') IS NULL AS cleanup_ok \gset
   \echo PASS: All five demonstration tables and fixtures were rolled back.
 \else
   \echo FAIL: The demonstration left an unexpected schema behind.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif

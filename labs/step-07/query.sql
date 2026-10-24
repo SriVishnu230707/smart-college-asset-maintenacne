@@ -7,13 +7,13 @@ SELECT current_database() = 'college_learning'
 \if :identity_ok
 \else
   \echo FAIL: Use the learning database and role.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT to_regnamespace('college_step07') IS NULL AS namespace_free \gset
 \if :namespace_free
 \else
   \echo FAIL: college_step07 already exists; inspect it before rerunning.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 BEGIN;
@@ -196,7 +196,7 @@ SELECT (SELECT count(*) FROM maintenance_tickets t
   \echo PASS: Required parents exist; a ticket can be unassigned and a Super Admin can lack a department.
 \else
   \echo FAIL: The required/optional reference graph is incorrect.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Missing, NULL, and changed references are checked directly by PostgreSQL ===
@@ -256,7 +256,7 @@ FROM maintenance_tickets WHERE asset_id = '40000000-0000-4000-8000-000000000001'
   \echo PASS: All retained tickets are terminal before the illustrated asset transfer.
 \else
   \echo FAIL: The transfer fixture has a nonterminal ticket.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 UPDATE assets SET department_id = '10000000-0000-4000-8000-000000000002' WHERE asset_code = 'PRJ-001';
 UPDATE users SET department_id = '10000000-0000-4000-8000-000000000002'
@@ -275,7 +275,7 @@ FROM maintenance_tickets t JOIN assets a ON a.id = t.asset_id \gset
   \echo PASS: Asset and user transfers leave both tickets attributed to the original department.
 \else
   \echo FAIL: Current ownership changed the recorded ticket department.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 \pset format unaligned
 \pset tuples_only on
@@ -300,7 +300,7 @@ JOIN departments history_department ON history_department.id = t.department_id \
   \echo PASS: Retirement, deactivation, and archival preserve all historical reference identities.
 \else
   \echo FAIL: History was lost while updating lifecycle flags.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Composite references match one whole parent key ===
@@ -316,7 +316,7 @@ SELECT (SELECT count(*) FROM simple_reference_probe) = 3
   \echo PASS: MATCH SIMPLE skips partial NULL pairs; MATCH FULL permits a complete pair or all NULLs.
 \else
   \echo FAIL: Composite nullable-reference behavior differed from expectations.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 \pset format unaligned
 \pset tuples_only on
@@ -347,7 +347,7 @@ SELECT NOT EXISTS (SELECT 1 FROM cascade_child_probe)
   \echo PASS: ON DELETE CASCADE deletes the comparison child with its parent.
 \else
   \echo FAIL: The CASCADE probe did not delete the expected child.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 DELETE FROM deletion_parent_probe WHERE id = 2;
 SELECT count(*) = 1 AND bool_and(parent_id IS NULL) AS set_null_ok FROM nullable_child_probe \gset
@@ -355,7 +355,7 @@ SELECT count(*) = 1 AND bool_and(parent_id IS NULL) AS set_null_ok FROM nullable
   \echo PASS: ON DELETE SET NULL retains the comparison child and clears its optional link.
 \else
   \echo FAIL: The SET NULL probe did not preserve the child with a NULL link.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 DELETE FROM deletion_parent_probe WHERE id = 3;
 SELECT count(*) = 1 AND bool_and(parent_id = 0) AS set_default_ok FROM default_child_probe \gset
@@ -363,7 +363,7 @@ SELECT count(*) = 1 AND bool_and(parent_id = 0) AS set_default_ok FROM default_c
   \echo PASS: ON DELETE SET DEFAULT changes the child to its existing fallback parent.
 \else
   \echo FAIL: The SET DEFAULT probe did not use the valid fallback parent.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 \pset format unaligned
 \pset tuples_only on
@@ -383,7 +383,7 @@ SELECT (SELECT count(*) FROM deletion_parent_probe) = 3
   \echo PASS: Rejected deletion actions retain their parents and leave comparison children unchanged.
 \else
   \echo FAIL: A failed referential action partially changed the comparison fixture.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 
 \echo === Inspect actual foreign-key policy and unchanged project fixtures ===
@@ -403,7 +403,7 @@ WHERE connamespace = 'college_step07'::regnamespace AND contype = 'f'
   \echo PASS: All seven project foreign keys are validated, nondeferrable, and RESTRICT parent deletion/key updates.
 \else
   \echo FAIL: The catalog does not match the chosen project reference policy.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT count(*) = 5 AND count(DISTINCT confdeltype) = 5 AS deletion_choices_ok
 FROM pg_constraint
@@ -413,7 +413,7 @@ WHERE connamespace = 'college_step07'::regnamespace
   \echo PASS: Catalog definitions distinguish RESTRICT, CASCADE, SET NULL, SET DEFAULT, and NO ACTION.
 \else
   \echo FAIL: The comparison actions were not defined as expected.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT count(*) = 7 AND bool_and(i.indisvalid) AS reference_indexes_ok
 FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
@@ -424,7 +424,7 @@ WHERE c.relnamespace = 'college_step07'::regnamespace
   \echo PASS: Seven explicit child-reference indexes accompany the project foreign keys.
 \else
   \echo FAIL: The explicit child-reference indexes are missing or invalid.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 SELECT (SELECT count(*) FROM departments) = 3
        AND (SELECT count(*) FROM asset_categories) = 2
@@ -439,7 +439,7 @@ SELECT (SELECT count(*) FROM departments) = 3
   \echo PASS: Rejected reference writes, parent deletes, and invalid DDL left no extra or missing fixture rows.
 \else
   \echo FAIL: An invalid attempt changed the expected fixture or created invalid DDL.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
 ROLLBACK;
 SELECT to_regnamespace('college_step07') IS NULL AS cleanup_ok \gset
@@ -447,5 +447,5 @@ SELECT to_regnamespace('college_step07') IS NULL AS cleanup_ok \gset
   \echo PASS: All Step 7 tables, indexes, constraints, fixtures, and the helper were rolled back.
 \else
   \echo FAIL: The Step 7 demonstration left an unexpected schema behind.
-  \quit 1
+  \ir ../shared/fail.sql
 \endif
