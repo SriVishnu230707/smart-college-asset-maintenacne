@@ -1,0 +1,114 @@
+Step 17: Typed mapped classes and database enforcement verification evidence
+Captured (Asia/Kolkata): 2026-10-24 12:00:56 +05:30
+Command: python -X utf8 -B labs/step-17/python_lab.py
+SQLAlchemy 2.1.6; psycopg 3.3.6
+PASS: The typed-mapping lab reuses the pinned SQLAlchemy and psycopg versions.
+PASS: One DeclarativeBase registers exactly the five agreed mapped classes and their unqualified tables.
+PASS: Department: Mapped annotations, mapper properties, and registered Table columns agree.
+PASS: AssetCategory: Mapped annotations, mapper properties, and registered Table columns agree.
+PASS: Asset: Mapped annotations, mapper properties, and registered Table columns agree.
+PASS: User: Mapped annotations, mapper properties, and registered Table columns agree.
+PASS: MaintenanceTicket: Mapped annotations, mapper properties, and registered Table columns agree.
+PASS: Instrumented class attributes and the mapped class expose the same underlying Core table for SQL compilation.
+PASS: Mapped optional annotations infer nullable membership, location, and assignee while required references stay NOT NULL.
+PASS: Lifecycle instants use timezone-aware SQL types with required creation and optional later events.
+PASS: The initial mapping contains columns and foreign keys; ORM navigation remains for the relationship lessons.
+PASS: A plain Python annotation neither creates a mapper nor validates a runtime assignment.
+PASS: The mapped keyword constructor accepts invalid field values and does not evaluate server defaults.
+PASS: The ORM constructor rejects an unknown attribute even though it does not validate field values.
+Compiled mapped Asset DDL:
+CREATE TABLE assets (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	asset_code VARCHAR(50) NOT NULL,
+	name VARCHAR(150) NOT NULL,
+	department_id UUID NOT NULL,
+	category_id UUID NOT NULL,
+	status TEXT DEFAULT 'active' NOT NULL,
+	location VARCHAR(200),
+	CONSTRAINT pk_assets PRIMARY KEY (id),
+	CONSTRAINT ck_assets_asset_code CHECK (asset_code = upper(btrim(asset_code)) AND asset_code !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_assets_name CHECK (name !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_assets_status CHECK (status IN ('active', 'under_maintenance', 'retired')),
+	CONSTRAINT uq_assets_asset_code UNIQUE (asset_code),
+	CONSTRAINT fk_assets_department FOREIGN KEY(department_id) REFERENCES departments (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT fk_assets_category FOREIGN KEY(category_id) REFERENCES asset_categories (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+
+
+PASS: Mapping, object construction, inspection, and DDL compilation open no physical database connection.
+PASS: The PostgreSQL 18 learner connection has a free disposable Step 17 namespace.
+engine_backend_pid=54367
+PASS: Schema translation creates only five lab-qualified tables, ordered after their referenced parents.
+Installed departments columns: [('id', 'UUID', False, 'gen_random_uuid()'), ('code', 'VARCHAR(20)', False, None), ('name', 'VARCHAR(150)', False, None), ('is_archived', 'BOOLEAN', False, 'false')]
+PASS: departments: PostgreSQL column order, SQL types, lengths, nullability, and server defaults match the mapped table.
+PASS: departments: PostgreSQL installed the declared primary key, business uniqueness, and named checks.
+Installed asset_categories columns: [('id', 'UUID', False, 'gen_random_uuid()'), ('code', 'VARCHAR(30)', False, None), ('name', 'VARCHAR(100)', False, None), ('is_archived', 'BOOLEAN', False, 'false')]
+PASS: asset_categories: PostgreSQL column order, SQL types, lengths, nullability, and server defaults match the mapped table.
+PASS: asset_categories: PostgreSQL installed the declared primary key, business uniqueness, and named checks.
+Installed assets columns: [('id', 'UUID', False, 'gen_random_uuid()'), ('asset_code', 'VARCHAR(50)', False, None), ('name', 'VARCHAR(150)', False, None), ('department_id', 'UUID', False, None), ('category_id', 'UUID', False, None), ('status', 'TEXT', False, "'active'"), ('location', 'VARCHAR(200)', True, None)]
+PASS: assets: PostgreSQL column order, SQL types, lengths, nullability, and server defaults match the mapped table.
+PASS: assets: PostgreSQL installed the declared primary key, business uniqueness, and named checks.
+Installed users columns: [('id', 'UUID', False, 'gen_random_uuid()'), ('email', 'TEXT', False, None), ('display_name', 'VARCHAR(150)', False, None), ('password_hash', 'TEXT', False, None), ('role', 'TEXT', False, None), ('department_id', 'UUID', True, None), ('is_active', 'BOOLEAN', False, 'true')]
+PASS: users: PostgreSQL column order, SQL types, lengths, nullability, and server defaults match the mapped table.
+PASS: users: PostgreSQL installed the declared primary key, business uniqueness, and named checks.
+Installed maintenance_tickets columns: [('id', 'UUID', False, 'gen_random_uuid()'), ('asset_id', 'UUID', False, None), ('reported_by_id', 'UUID', False, None), ('assigned_to_id', 'UUID', True, None), ('department_id', 'UUID', False, None), ('title', 'VARCHAR(200)', False, None), ('description', 'TEXT', False, None), ('priority', 'TEXT', False, None), ('status', 'TEXT', False, "'open'"), ('created_at', 'TIMESTAMP WITH TIME ZONE', False, 'current_timestamp'), ('assigned_at', 'TIMESTAMP WITH TIME ZONE', True, None), ('rejected_at', 'TIMESTAMP WITH TIME ZONE', True, None), ('closed_at', 'TIMESTAMP WITH TIME ZONE', True, None), ('rejection_reason', 'TEXT', True, None)]
+PASS: maintenance_tickets: PostgreSQL column order, SQL types, lengths, nullability, and server defaults match the mapped table.
+PASS: maintenance_tickets: PostgreSQL installed the declared primary key, business uniqueness, and named checks.
+PASS: All seven installed foreign keys preserve their target identities and RESTRICT update/delete policies.
+PASS: Every referencing column has its declared supporting index without duplicating unique backing indexes.
+PASS: Core inserts through mapped tables obtain server UUID/boolean/status defaults and allow a departmentless Super Admin.
+PASS: A new ticket receives an aware creation instant and open status while optional assignment/lifecycle fields remain NULL.
+PASS: Direct SQL cannot omit the required department name despite permissive Python construction.
+Expected PostgreSQL rejection: SQLSTATE=23502; table=departments; diagnostic=name
+PASS: Direct SQL rejects noncanonical department codes without relying on a Python type hint.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=departments; diagnostic=ck_departments_code
+PASS: A newly generated UUID cannot bypass the installed unique asset-code constraint.
+Expected PostgreSQL rejection: SQLSTATE=23505; table=assets; diagnostic=uq_assets_asset_code
+PASS: The installed asset-status CHECK rejects an arbitrary string that Python str typing permits.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=assets; diagnostic=ck_assets_status
+PASS: The installed asset department foreign key rejects an unknown UUID.
+Expected PostgreSQL rejection: SQLSTATE=23503; table=assets; diagnostic=fk_assets_department
+PASS: The installed email CHECK rejects noncanonical storage independently of the mapper.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=users; diagnostic=ck_users_email
+PASS: The installed user-role CHECK rejects a role outside the agreed set.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=users; diagnostic=ck_users_role
+PASS: A nullable membership column still rejects a departmentless student through its same-row CHECK.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=users; diagnostic=ck_users_department
+PASS: The installed ticket-priority CHECK rejects an unrecognized priority.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=maintenance_tickets; diagnostic=ck_maintenance_tickets_priority
+PASS: An optional assignee must still reference an existing user when supplied.
+Expected PostgreSQL rejection: SQLSTATE=23503; table=maintenance_tickets; diagnostic=fk_tickets_assignee
+PASS: The installed ticket-title CHECK rejects whitespace-only text.
+Expected PostgreSQL rejection: SQLSTATE=23514; table=maintenance_tickets; diagnostic=ck_maintenance_tickets_title
+PASS: All direct-SQL rejections leave the valid five-entity fixture unchanged and the transaction usable.
+PASS: The mapping lab rolls back schema creation, valid inserts, and every failure probe.
+PASS: The lab schema is absent after rollback and application metadata retains its original schema ownership.
+PASS: All checkouts return before final Engine disposal closes the physical mapping-lab connection.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=engine_backend_pid=54367 --file /labs/step-17/reconnect.sql
+Pager usage is off.
+=== Step 17: independently inspect typed mapping lab cleanup ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 54383
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+PASS: Independent psql connects as the learner to PostgreSQL 18 using a different backend.
+ disposed_engine_backend | backend_absent | schema_absent
+-------------------------+----------------+---------------
+                   54367 | t              | t
+(1 row)
+
+PASS: The disposed Engine backend is gone and the entire Step 17 study schema was rolled back.

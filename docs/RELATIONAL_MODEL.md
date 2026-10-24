@@ -1,6 +1,6 @@
 # Step 3: relational model
 
-This is the logical design for the first five application entities, following the [project contract](PROJECT_CONTRACT.md). It identifies which facts belong together, their keys, and their relationships. The [Step 3 lab](../labs/step-03/notes.md) verifies a small version in PostgreSQL and rolls it back. Permanent schema creation, full type/constraint decisions, and SQLAlchemy mappings remain later lessons.
+This is the logical design for the first five application entities, following the [project contract](PROJECT_CONTRACT.md). It identifies which facts belong together, their keys, and their relationships. The [Step 3 lab](../labs/step-03/notes.md) verifies a small version in PostgreSQL and rolls it back. The [Step 17 typed mappings](../college_maintenance/models.py) now represent these entities using the later type/constraint decisions; the [mapping guide](TYPED_ORM_MAPPINGS.md) explains their verified scope. Permanent schema installation and complete workflow enforcement remain later lessons.
 
 ## 1. Identify the entities and facts
 
