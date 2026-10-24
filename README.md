@@ -37,7 +37,7 @@ python -m venv .venv
 docker compose exec postgres sh /labs/step-02/psql.sh
 ```
 
-The [regression suite](tests/README.md) starts the database and checks all nineteen executable labs with one command. It covers 582 lab checks plus seven runner regression checks in PowerShell 7 and Windows PowerShell 5.1. Individual lessons retain their own verification commands. See the [PowerShell 7 result](tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 result](tests/evidence-powershell5.txt).
+The [regression suite](tests/README.md) starts the database and checks all nineteen executable labs with one command. It covers 582 lab checks plus fourteen runner regression checks in PowerShell 7 and Windows PowerShell 5.1. Individual lessons retain their own verification commands. See the [PowerShell 7 result](tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 result](tests/evidence-powershell5.txt).
 
 The database is `college_learning`, with the non-superuser login `college_learner`. PostgreSQL is published on `127.0.0.1:55432`. Credentials are generated locally under the Git-ignored `.local/` directory. See the [captured verification output](labs/step-02/evidence.txt).
 
@@ -76,6 +76,8 @@ Step 18's [captured ORM persistence output](labs/step-18/evidence.txt) records 3
 Step 19's [lifecycle guide](docs/ORM_OBJECT_LIFECYCLE.md), [lab](labs/step-19/notes.md), and [evidence](labs/step-19/evidence.txt) record 39 checks at 15 state checkpoints, including dirty versus modified, queued versus flushed deletion, detachment, rollback restoration, and exact SQL. Independent psql and guarded cleanup verify the final survivor and complete study-schema removal.
 
 Step 20's [captured flush/commit evidence](labs/step-20/evidence.txt) records 35 checks for ticket visibility before/after commit, rollback of successful flushes, autoflush controls, and explicit rollback/reuse after a CHECK failure. A simultaneous independent reader and final psql observer agree on exact committed rows; both Python backends and all study objects are cleaned up.
+
+The [maintenance review](docs/MAINTENANCE_REVIEW.md) fixes original-error masking and stale failure logs, shares repeated runners, and groups SQL traces in one pass. Its seven additional runner checks bring the complete suite to 596 checks.
 
 The [mastery guide](docs/POSTGRESQL_SQLALCHEMY_MASTERY.md) explains how later SQL, ORM, transaction, and reporting lessons connect to the project.
 

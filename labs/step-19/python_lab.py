@@ -14,6 +14,7 @@ from sqlalchemy.schema import CreateSchema
 from college_maintenance.database import engine
 from college_maintenance.models import Asset, AssetCategory, Base, Department
 from college_maintenance.sessions import SessionFactory
+from labs.shared.observations import statements_by_phase
 
 SCHEMA = "college_step19"
 STATES = ("transient", "pending", "persistent", "deleted", "detached")
@@ -173,7 +174,7 @@ def main(run_id):
         print("Final lifecycle rows:", rows)
         expected = {"lifecycle": ["INSERT", "UPDATE", "DELETE"], "survivor": ["INSERT"],
                     "delete_rollback": ["SELECT", "DELETE"], "pending_rollback": [], "final_read": ["SELECT", "SELECT"]}
-        actual = {label: [kind for recorded, kind in trace if recorded == label] for label in expected}
+        actual = statements_by_phase(trace, expected)
         print("Observed asset SQL:", actual)
         check(actual == expected, "Observed SQL agrees with lifecycle predictions, including both branches that issue no write.")
         check(all(not item.in_transaction() and not item.identity_map and not item.new and not item.dirty and not item.deleted for item in sessions)

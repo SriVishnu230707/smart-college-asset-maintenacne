@@ -45,9 +45,8 @@ try {
         $verifier = Join-Path $projectRoot "labs/step-$step/verify.ps1"
         $arguments = @('-NoProfile', '-NonInteractive', '-File', $verifier)
         if ($step -in @('05', '13', '14', '15', '16', '17', '18', '19', '20') -and $PythonExecutable) { $arguments += @('-PythonExecutable', $PythonExecutable) }
-        $output = @(Invoke-LabProcess $shellExecutable $arguments)
+        $output = @(Invoke-LabProcess $shellExecutable $arguments -LogPath (Join-Path $logDirectory "step-$step.txt"))
         $text = $output -join "`n"
-        [IO.File]::WriteAllText((Join-Path $logDirectory "step-$step.txt"), $text + "`n", (New-Object System.Text.UTF8Encoding($false)))
         $passCount = [regex]::Matches($text, '(?m)^PASS:').Count
         Assert-Suite ($passCount -eq $expectedCounts[$step] -and $text -notmatch '(?m)FAIL:|WARNING:') "Step ${step}: $($expectedCounts[$step]) checks pass from an unrelated working directory."
     }
@@ -70,12 +69,18 @@ try {
         (Join-Path $logDirectory 'missing-python.exe')) -ExpectedExitCode 1) -join "`n"
     Assert-Suite ($missingPython -match 'No usable Python' -and $missingPython -notmatch 'Command: docker') 'An unavailable explicit Python produces a clear preflight failure before SQL runs.'
 
+    foreach ($proof in @(& (Join-Path $PSScriptRoot 'runner-regressions.ps1'))) {
+        $report += $proof
+        Write-Output $proof
+    }
+
     $remaining = @(Invoke-LabProcess docker @('compose', '--file', $composeFile, 'exec', '-T', 'postgres', 'sh',
         '/labs/step-02/psql.sh', '--tuples-only', '--no-align', '--command',
         "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|1[0-9]|20)$'")) -join ''
     Assert-Suite ($remaining.Trim() -eq '0') 'A fresh connection confirms no Step 2-20 study schema remains.'
     $labCheckCount = ($expectedCounts.Values | Measure-Object -Sum).Sum
-    $report += "Result: PASSED; $($expectedCounts.Count) lab suites, $labCheckCount lab checks, and 7 runner regression checks."
+    $runnerCheckCount = @($report | Where-Object { $_ -like 'PASS:*' }).Count - $expectedCounts.Count
+    $report += "Result: PASSED; $($expectedCounts.Count) lab suites, $labCheckCount lab checks, and $runnerCheckCount runner regression checks."
     $result = 'PASSED'
 } finally {
     Pop-Location

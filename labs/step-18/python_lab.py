@@ -18,6 +18,7 @@ from sqlalchemy.schema import CreateSchema
 from college_maintenance.database import engine
 from college_maintenance.models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
 from college_maintenance.sessions import SessionFactory
+from labs.shared.observations import statements_by_phase
 from asset_crud import create_asset, delete_fixture_asset, get_asset, list_assets, update_asset_location
 
 SCHEMA = "college_step18"
@@ -64,7 +65,7 @@ def main(run_id):
     def before_cursor(connection, cursor, statement, parameters, context, executemany):
         kind = statement.lstrip().split(None, 1)[0].upper()
         if kind in {"SELECT", "INSERT", "UPDATE", "DELETE"} and f"{SCHEMA}.assets" in statement:
-            sql_trace.append((phase, kind, statement))
+            sql_trace.append((phase, kind))
 
     def checkout(dbapi_connection, record, proxy):
         pool_counts["checkout"] += 1
@@ -232,7 +233,7 @@ def main(run_id):
             "application_failure": ["SELECT", "UPDATE", "INSERT"],
             "database_failure": ["SELECT", "UPDATE", "INSERT"], "reference_failure": ["SELECT", "DELETE"],
         }
-        actual_sql = {name: [kind for recorded, kind, sql in sql_trace if recorded == name] for name in expected_sql}
+        actual_sql = statements_by_phase(sql_trace, expected_sql)
         print("Observed asset SQL by operation:", actual_sql)
         check(actual_sql == expected_sql, "Cursor observations identify the exact asset statements attempted by each ORM operation.")
         check(len({id(session) for session in used_sessions}) == len(used_sessions)

@@ -16,6 +16,7 @@ from sqlalchemy.schema import CreateSchema
 from college_maintenance.database import engine
 from college_maintenance.models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
 from college_maintenance.sessions import SessionFactory
+from labs.shared.observations import statements_by_phase
 
 SCHEMA = "college_step20"
 
@@ -240,7 +241,7 @@ def main(run_id):
                         "autoflush": ["INSERT", "SELECT"], "no_autoflush": ["SELECT", "INSERT"],
                         "commit_autoflush_disabled": ["SELECT", "INSERT"], "failed_flush": ["SELECT", "UPDATE", "INSERT", "INSERT"],
                         "recovery": ["SELECT", "SELECT", "INSERT"], "final_read": ["SELECT"]}
-        actual = {label: [kind for recorded, kind in trace if recorded == label] for label in expected_sql}
+        actual = statements_by_phase(trace, expected_sql)
         print("Observed ticket SQL:", actual)
         check(actual == expected_sql, "Cursor observations prove explicit, automatic, suppressed, failed, and recovered flush statement ordering.")
         check(all(not item.in_transaction() and not item.identity_map and not item.new and not item.dirty and not item.deleted for item in sessions)

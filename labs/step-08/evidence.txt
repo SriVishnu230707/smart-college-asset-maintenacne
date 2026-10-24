@@ -1,7 +1,7 @@
-Step 8: SQL CRUD and transaction verification evidence
-Captured (Asia/Kolkata): 2026-10-22 20:58:06 +05:30
-Lab run ID (synthetic cleanup marker, not a credential): f7082c57-f011-4ae2-a3c2-78f84c9886ed
-Different run ID used for the cleanup refusal proof: 4ccdf8d6-32bb-4982-b658-90b06e5471f5
+Step 08: SQL CRUD and transaction verification evidence
+Captured (Asia/Kolkata): 2026-10-24 22:30:31 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): d51bf5f1-5bc4-4881-807c-73ad06bf1945
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
 Two deliberate statement errors (23505, 25P02) and one cleanup refusal (22023) are asserted below.
 Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-08/query.sql
 Pager usage is off.
@@ -17,7 +17,7 @@ Pager usage is off.
  Protocol Version     | 3.0
  Password Used        | true
  GSSAPI Authenticated | false
- Backend PID          | 645
+ Backend PID          | 27229
  SSL Connection       | false
  Superuser            | off
  Hot Standby          | off
@@ -40,9 +40,9 @@ INSERT 0 1
 INSERT 0 1
                   id                  | asset_code |    location     | status
 --------------------------------------+------------+-----------------+--------
- e5d71bb7-fd0c-48e3-8f3b-6595bc6efb2b | PRJ-001    | Lecture Hall A  | active
- 6f303931-96be-4d62-bf09-41ccf3624879 | PC-001     | Computer Lab 1  | active
- cfb0605b-4b88-41a0-ae90-5a87b43d71d3 | PC-002     | Electronics Lab | active
+ 78e3d7c1-f36b-4c5a-8dca-3f3fd19dd071 | PRJ-001    | Lecture Hall A  | active
+ 7007ed37-edaa-4547-82f0-3d5963f50502 | PC-001     | Computer Lab 1  | active
+ 7fc4cf65-164f-4deb-84c8-5fd0f69688e9 | PC-002     | Electronics Lab | active
 (3 rows)
 
 INSERT 0 3
@@ -62,7 +62,7 @@ SET
 PASS: SELECT reads the three committed asset rows with an explicit projection and order.
 INSERT 0 1
 INSERT 0 1
-INSERT RETURNING: id=ec7de3bc-c978-4fb8-bcfa-07ba452d318b asset_code=LAB-TEMP status=active
+INSERT RETURNING: id=5c8999ea-56fa-4c76-a92d-28fe34dd5504 asset_code=LAB-TEMP status=active
 PASS: INSERT RETURNING supplies the generated UUID/default and the writer can read its uncommitted row.
 UPDATE 1
 UPDATE RETURNING: location=Lecture Hall A -> Room 204 status=active -> under_maintenance
@@ -73,7 +73,7 @@ DELETE 1
 PASS: DELETE RETURNING identifies removed rows; deleting the temporary child first permits its parent deletion.
 INSERT 0 1
 DELETE 1
-DELETE RETURNING: id=cfb0605b-4b88-41a0-ae90-5a87b43d71d3 asset_code=PC-002 location=Electronics Lab
+DELETE RETURNING: id=7fc4cf65-164f-4deb-84c8-5fd0f69688e9 asset_code=PC-002 location=Electronics Lab
 PASS: Before ROLLBACK the writer sees the new asset and the deletion of committed PC-002.
  id
 ----
@@ -99,11 +99,11 @@ SET
 (1 row)
 
 UPDATE 1
+psql:/labs/step-08/query.sql:218: ERROR:  23505
+psql:/labs/step-08/query.sql:220: ERROR:  25P02
 ROLLBACK
 PASS: EXPECTED ERROR 23505 rejects the duplicate business identifier inside the transaction.
 PASS: EXPECTED ERROR 25P02 prevents the next SELECT from running in the aborted transaction.
-psql:/labs/step-08/query.sql:218: ERROR:  23505
-psql:/labs/step-08/query.sql:220: ERROR:  25P02
 PASS: ROLLBACK recovers the connection and undoes the earlier successful update in the failed transaction.
 INFO: The committed baseline remains for independent verification, then guarded cleanup.
 
@@ -129,7 +129,7 @@ Pager usage is off.
  Protocol Version     | 3.0
  Password Used        | true
  GSSAPI Authenticated | false
- Backend PID          | 669
+ Backend PID          | 27254
  SSL Connection       | false
  Superuser            | off
  Hot Standby          | off
@@ -139,7 +139,7 @@ BEGIN
 PASS: A different backend reads the committed metadata for this exact lab run.
  writer_backend_pid | observer_backend_pid
 --------------------+----------------------
-                645 |                  669
+              27229 |                27254
 (1 row)
 
  code |       name       | is_archived
@@ -188,7 +188,7 @@ Pager usage is off.
  Protocol Version     | 3.0
  Password Used        | true
  GSSAPI Authenticated | false
- Backend PID          | 693
+ Backend PID          | 27278
  SSL Connection       | false
  Superuser            | off
  Hot Standby          | off

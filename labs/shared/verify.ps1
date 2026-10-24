@@ -5,8 +5,12 @@ $composeFile = Join-Path $projectRoot 'compose.yaml'
 
 function Invoke-LabProcess {
     param([string]$FilePath, [string[]]$Arguments = @(),
-          [int]$ExpectedExitCode = 0, [string]$InputText)
+          [int]$ExpectedExitCode = 0, [string]$InputText, [string]$LogPath)
 
+    if ($LogPath) {
+        $logEncoding = New-Object System.Text.UTF8Encoding($false)
+        [IO.File]::WriteAllText($LogPath, '', $logEncoding)
+    }
     $executable = (Get-Command $FilePath -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     $previousPreference = $ErrorActionPreference
     try {
@@ -24,6 +28,7 @@ function Invoke-LabProcess {
         $ErrorActionPreference = $previousPreference
     }
     $lines = @($result | ForEach-Object { "$($_)".TrimEnd() })
+    if ($LogPath) { [IO.File]::WriteAllText($LogPath, ($lines -join "`n") + "`n", $logEncoding) }
     if ($exitCode -ne $ExpectedExitCode) {
         throw "$FilePath exited $exitCode (expected $ExpectedExitCode).`n$($lines -join "`n")"
     }
@@ -68,4 +73,72 @@ function Write-LabEvidence {
         [IO.File]::WriteAllText($Path, $Transcript + "`n", (New-Object System.Text.UTF8Encoding($false)))
         Write-Output "Evidence saved: $Path"
     }
+}
+
+function Invoke-CommittedLab {
+    param([string]$Step, [string]$Title, [string]$ExpectedBehavior,
+          [string]$PythonExecutable, [switch]$WriteEvidence, [switch]$SqlOnly)
+
+    if (-not $SqlOnly) {
+        $probe = "import sys, sqlalchemy, psycopg; from importlib.metadata import version; sys.exit(0 if sys.version_info >= (3, 10) and version('SQLAlchemy') == '2.1.6' and version('psycopg') == '3.3.6' and version('psycopg-binary') == '3.3.6' else 1)"
+        $PythonExecutable = Resolve-LabPython -Executable $PythonExecutable -Probe $probe -Requirements 'requirements.txt'
+    }
+    $labDirectory = Join-Path $projectRoot "labs/step-$Step"
+    $labRunId = [guid]::NewGuid().ToString('D')
+    $differentRunId = [guid]::Empty.ToString('D')
+    $sqlRoot = "/labs/step-$Step"
+    $outputs = @{}
+    $labFailure = $null
+    $cleanupErrors = New-Object 'System.Collections.Generic.List[string]'
+    try {
+        if ($SqlOnly) {
+            $outputs.exercise = @(Invoke-LabSql "$sqlRoot/query.sql" -PsqlArguments @("--set=lab_run_id=$labRunId"))
+        } else {
+            $outputs.exercise = @(Invoke-LabProcess $PythonExecutable @('-X', 'utf8', '-B',
+                (Join-Path $labDirectory 'python_lab.py'), '--run-id', $labRunId))
+        }
+        $outputs.guard = @(Invoke-LabSql "$sqlRoot/cleanup.sql" -PsqlArguments @("--set=lab_run_id=$differentRunId") -ExpectedExitCode 3)
+        $guardTranscript = $outputs.guard -join "`n"
+        if ($guardTranscript -notmatch "REFUSED: STEP${Step}_RUN_ID_MISMATCH" -or $guardTranscript -notmatch 'ERROR:\s+22023\b') {
+            throw 'Cleanup did not report the exact expected run-ID refusal.'
+        }
+        $outputs.guard += 'PASS: Cleanup refuses a different run ID before removing any study object.'
+        $outputs.observer = @(Invoke-LabSql "$sqlRoot/reconnect.sql" -PsqlArguments @("--set=lab_run_id=$labRunId"))
+    } catch {
+        $labFailure = $_
+    } finally {
+        # Attempt both checks, and never replace the original failure with a
+        # secondary cleanup error. No evidence is saved when either fails.
+        foreach ($file in @('cleanup.sql', 'cleanup-check.sql')) {
+            try {
+                $outputs[$file] = @(Invoke-LabSql "$sqlRoot/$file" -PsqlArguments @("--set=lab_run_id=$labRunId"))
+            } catch {
+                $cleanupErrors.Add("${file}: $($_.Exception.Message)")
+            }
+        }
+    }
+    if ($cleanupErrors.Count) {
+        $original = if ($labFailure) { $labFailure.Exception.Message } else { 'The lab completed but cleanup failed.' }
+        throw "$original`nCleanup errors:`n$($cleanupErrors -join "`n")"
+    }
+    if ($labFailure) { throw $labFailure }
+
+    $capturedAt = [DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromMinutes(330)).ToString('yyyy-MM-dd HH:mm:ss zzz')
+    $exerciseCommand = if ($SqlOnly) {
+        "Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file $sqlRoot/query.sql"
+    } else { "Command: python -X utf8 -B labs/step-$Step/python_lab.py --run-id <run-id>" }
+    $transcript = @(
+        "Step ${Step}: $Title verification evidence", "Captured (Asia/Kolkata): $capturedAt",
+        "Lab run ID (synthetic cleanup marker, not a credential): $labRunId",
+        "Different run ID used for the cleanup refusal proof: $differentRunId", $ExpectedBehavior,
+        $exerciseCommand, ($outputs.exercise -join "`n"), '',
+        "Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file $sqlRoot/cleanup.sql",
+        ($outputs.guard -join "`n"), ''
+        foreach ($section in @(@('reconnect.sql', 'observer'), @('cleanup.sql', 'cleanup.sql'), @('cleanup-check.sql', 'cleanup-check.sql'))) {
+            "Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file $sqlRoot/$($section[0])"
+            $outputs[$section[1]] -join "`n"
+            ''
+        }
+    ) -join "`n"
+    Write-LabEvidence -Transcript $transcript.TrimEnd() -Path (Join-Path $labDirectory 'evidence.txt') -Save:$WriteEvidence
 }
