@@ -1,0 +1,395 @@
+Step 18: ORM Session persistence and resource cleanup verification evidence
+Captured (Asia/Kolkata): 2026-10-24 18:28:15 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 7652eb0c-0927-48f1-9890-b8271412a8bd
+Different run ID used for the cleanup refusal proof: 09597bc7-0924-4ba5-b8d0-f190eeae009c
+Application rollback, duplicate code (23505), referenced deletion (23001), and cleanup refusal (22023) are deliberate and asserted.
+Command: python -X utf8 -B labs/step-18/python_lab.py --run-id <run-id>
+SQLAlchemy 2.1.6; psycopg 3.3.6; run_id=7652eb0c-0927-48f1-9890-b8271412a8bd
+PASS: The ORM persistence lab reuses the pinned SQLAlchemy and psycopg versions.
+PASS: The shared sessionmaker creates a lazy Session bound to the one application Engine with standard defaults.
+2026-10-24 18:28:09,226 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-10-24 18:28:09,226 INFO sqlalchemy.engine.Engine [raw sql] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,234 INFO sqlalchemy.engine.Engine select current_schema()
+2026-10-24 18:28:09,234 INFO sqlalchemy.engine.Engine [raw sql] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,240 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-10-24 18:28:09,240 INFO sqlalchemy.engine.Engine [raw sql] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,256 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,258 INFO sqlalchemy.engine.Engine SELECT current_database(), current_user,
+                current_setting('server_version_num')::integer, pg_backend_pid(),
+                to_regnamespace('college_step18') IS NULL
+2026-10-24 18:28:09,258 INFO sqlalchemy.engine.Engine [generated in 0.00052s] [SQL parameters hidden due to hide_parameters=True]
+PASS: The PostgreSQL 18 learner connection has a free disposable Step 18 namespace.
+2026-10-24 18:28:09,264 INFO sqlalchemy.engine.Engine CREATE SCHEMA college_step18
+2026-10-24 18:28:09,264 INFO sqlalchemy.engine.Engine [no key 0.00045s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,274 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace
+WHERE pg_catalog.pg_class.relname IN (%(table_names_1)s::VARCHAR, %(table_names_2)s::VARCHAR, %(table_names_3)s::VARCHAR, %(table_names_4)s::VARCHAR, %(table_names_5)s::VARCHAR) AND pg_catalog.pg_class.relkind = ANY (ARRAY[%(param_1)s::VARCHAR, %(param_2)s::VARCHAR, %(param_3)s::VARCHAR, %(param_4)s::VARCHAR, %(param_5)s::VARCHAR]) AND pg_catalog.pg_namespace.nspname = %(nspname_1)s::VARCHAR
+2026-10-24 18:28:09,275 INFO sqlalchemy.engine.Engine [generated in 0.00088s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,284 INFO sqlalchemy.engine.Engine
+CREATE TABLE college_step18.departments (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	code VARCHAR(20) NOT NULL,
+	name VARCHAR(150) NOT NULL,
+	is_archived BOOLEAN DEFAULT false NOT NULL,
+	CONSTRAINT pk_departments PRIMARY KEY (id),
+	CONSTRAINT ck_departments_code CHECK (code = upper(btrim(code)) AND code !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_departments_name CHECK (name !~ '^[[:space:]]*$'),
+	CONSTRAINT uq_departments_code UNIQUE (code)
+)
+
+
+2026-10-24 18:28:09,284 INFO sqlalchemy.engine.Engine [no key 0.00041s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,291 INFO sqlalchemy.engine.Engine
+CREATE TABLE college_step18.asset_categories (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	code VARCHAR(30) NOT NULL,
+	name VARCHAR(100) NOT NULL,
+	is_archived BOOLEAN DEFAULT false NOT NULL,
+	CONSTRAINT pk_asset_categories PRIMARY KEY (id),
+	CONSTRAINT ck_asset_categories_code CHECK (code = upper(btrim(code)) AND code !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_asset_categories_name CHECK (name !~ '^[[:space:]]*$'),
+	CONSTRAINT uq_asset_categories_code UNIQUE (code)
+)
+
+
+2026-10-24 18:28:09,291 INFO sqlalchemy.engine.Engine [no key 0.00037s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,299 INFO sqlalchemy.engine.Engine
+CREATE TABLE college_step18.users (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	email TEXT NOT NULL,
+	display_name VARCHAR(150) NOT NULL,
+	password_hash TEXT NOT NULL,
+	role TEXT NOT NULL,
+	department_id UUID,
+	is_active BOOLEAN DEFAULT true NOT NULL,
+	CONSTRAINT pk_users PRIMARY KEY (id),
+	CONSTRAINT ck_users_email CHECK (email = lower(btrim(email)) AND email <> '' AND email !~ '[[:space:]]'),
+	CONSTRAINT ck_users_display_name CHECK (display_name !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_users_password_hash CHECK (password_hash !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_users_role CHECK (role IN ('student', 'technician', 'department_admin', 'super_admin')),
+	CONSTRAINT ck_users_department CHECK (role = 'super_admin' OR department_id IS NOT NULL),
+	CONSTRAINT uq_users_email UNIQUE (email),
+	CONSTRAINT fk_users_department FOREIGN KEY(department_id) REFERENCES college_step18.departments (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+
+
+2026-10-24 18:28:09,299 INFO sqlalchemy.engine.Engine [no key 0.00026s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,305 INFO sqlalchemy.engine.Engine CREATE INDEX ix_users_department_id ON college_step18.users (department_id)
+2026-10-24 18:28:09,305 INFO sqlalchemy.engine.Engine [no key 0.00032s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,309 INFO sqlalchemy.engine.Engine
+CREATE TABLE college_step18.assets (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	asset_code VARCHAR(50) NOT NULL,
+	name VARCHAR(150) NOT NULL,
+	department_id UUID NOT NULL,
+	category_id UUID NOT NULL,
+	status TEXT DEFAULT 'active' NOT NULL,
+	location VARCHAR(200),
+	CONSTRAINT pk_assets PRIMARY KEY (id),
+	CONSTRAINT ck_assets_asset_code CHECK (asset_code = upper(btrim(asset_code)) AND asset_code !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_assets_name CHECK (name !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_assets_status CHECK (status IN ('active', 'under_maintenance', 'retired')),
+	CONSTRAINT uq_assets_asset_code UNIQUE (asset_code),
+	CONSTRAINT fk_assets_department FOREIGN KEY(department_id) REFERENCES college_step18.departments (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT fk_assets_category FOREIGN KEY(category_id) REFERENCES college_step18.asset_categories (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+
+
+2026-10-24 18:28:09,309 INFO sqlalchemy.engine.Engine [no key 0.00026s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,316 INFO sqlalchemy.engine.Engine CREATE INDEX ix_assets_department_id ON college_step18.assets (department_id)
+2026-10-24 18:28:09,316 INFO sqlalchemy.engine.Engine [no key 0.00036s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,320 INFO sqlalchemy.engine.Engine CREATE INDEX ix_assets_category_id ON college_step18.assets (category_id)
+2026-10-24 18:28:09,320 INFO sqlalchemy.engine.Engine [no key 0.00039s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,326 INFO sqlalchemy.engine.Engine
+CREATE TABLE college_step18.maintenance_tickets (
+	id UUID DEFAULT gen_random_uuid() NOT NULL,
+	asset_id UUID NOT NULL,
+	reported_by_id UUID NOT NULL,
+	assigned_to_id UUID,
+	department_id UUID NOT NULL,
+	title VARCHAR(200) NOT NULL,
+	description TEXT NOT NULL,
+	priority TEXT NOT NULL,
+	status TEXT DEFAULT 'open' NOT NULL,
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	assigned_at TIMESTAMP WITH TIME ZONE,
+	rejected_at TIMESTAMP WITH TIME ZONE,
+	closed_at TIMESTAMP WITH TIME ZONE,
+	rejection_reason TEXT,
+	CONSTRAINT pk_maintenance_tickets PRIMARY KEY (id),
+	CONSTRAINT ck_maintenance_tickets_title CHECK (title !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_maintenance_tickets_description CHECK (description !~ '^[[:space:]]*$'),
+	CONSTRAINT ck_maintenance_tickets_priority CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+	CONSTRAINT ck_maintenance_tickets_status CHECK (status IN ('open', 'assigned', 'in_progress', 'awaiting_verification', 'closed', 'rejected')),
+	CONSTRAINT fk_tickets_asset FOREIGN KEY(asset_id) REFERENCES college_step18.assets (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT fk_tickets_reporter FOREIGN KEY(reported_by_id) REFERENCES college_step18.users (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT fk_tickets_assignee FOREIGN KEY(assigned_to_id) REFERENCES college_step18.users (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT fk_tickets_department FOREIGN KEY(department_id) REFERENCES college_step18.departments (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+)
+
+
+2026-10-24 18:28:09,326 INFO sqlalchemy.engine.Engine [no key 0.00040s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,333 INFO sqlalchemy.engine.Engine CREATE INDEX ix_maintenance_tickets_asset_id ON college_step18.maintenance_tickets (asset_id)
+2026-10-24 18:28:09,333 INFO sqlalchemy.engine.Engine [no key 0.00033s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,337 INFO sqlalchemy.engine.Engine CREATE INDEX ix_maintenance_tickets_reported_by_id ON college_step18.maintenance_tickets (reported_by_id)
+2026-10-24 18:28:09,337 INFO sqlalchemy.engine.Engine [no key 0.00034s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,341 INFO sqlalchemy.engine.Engine CREATE INDEX ix_maintenance_tickets_assigned_to_id ON college_step18.maintenance_tickets (assigned_to_id)
+2026-10-24 18:28:09,342 INFO sqlalchemy.engine.Engine [no key 0.00031s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,345 INFO sqlalchemy.engine.Engine CREATE INDEX ix_maintenance_tickets_department_id ON college_step18.maintenance_tickets (department_id)
+2026-10-24 18:28:09,345 INFO sqlalchemy.engine.Engine [no key 0.00029s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,349 INFO sqlalchemy.engine.Engine CREATE TABLE college_step18.lab_run (
+                run_id uuid PRIMARY KEY, writer_backend_pid integer NOT NULL,
+                protected_asset_id uuid NOT NULL, created_asset_id uuid)
+2026-10-24 18:28:09,349 INFO sqlalchemy.engine.Engine [generated in 0.00032s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,353 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.departments (code, name) VALUES (%(code)s::VARCHAR, %(name)s::VARCHAR) RETURNING college_step18.departments.id
+2026-10-24 18:28:09,353 INFO sqlalchemy.engine.Engine [generated in 0.00027s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,359 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.departments (code, name) VALUES (%(code)s::VARCHAR, %(name)s::VARCHAR) RETURNING college_step18.departments.id
+2026-10-24 18:28:09,360 INFO sqlalchemy.engine.Engine [cached since 0.007048s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,363 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.asset_categories (code, name) VALUES (%(code)s::VARCHAR, %(name)s::VARCHAR) RETURNING college_step18.asset_categories.id
+2026-10-24 18:28:09,364 INFO sqlalchemy.engine.Engine [generated in 0.00031s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,368 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.users (email, display_name, password_hash, role, department_id) VALUES (%(email)s::VARCHAR, %(display_name)s::VARCHAR, %(password_hash)s::VARCHAR, %(role)s::VARCHAR, %(department_id)s::UUID) RETURNING college_step18.users.id
+2026-10-24 18:28:09,368 INFO sqlalchemy.engine.Engine [generated in 0.00037s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,374 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.assets (asset_code, name, department_id, category_id, location) VALUES (%(asset_code)s::VARCHAR, %(name)s::VARCHAR, %(department_id)s::UUID, %(category_id)s::UUID, %(location)s::VARCHAR) RETURNING college_step18.assets.id
+2026-10-24 18:28:09,374 INFO sqlalchemy.engine.Engine [generated in 0.00040s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,379 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.maintenance_tickets (asset_id, reported_by_id, department_id, title, description, priority) VALUES (%(asset_id)s::UUID, %(reported_by_id)s::UUID, %(department_id)s::UUID, %(title)s::VARCHAR, %(description)s::VARCHAR, %(priority)s::VARCHAR) RETURNING college_step18.maintenance_tickets.id
+2026-10-24 18:28:09,380 INFO sqlalchemy.engine.Engine [generated in 0.00048s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,386 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.lab_run VALUES (%(run)s, %(pid)s, %(protected)s, NULL)
+2026-10-24 18:28:09,386 INFO sqlalchemy.engine.Engine [generated in 0.00059s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,391 INFO sqlalchemy.engine.Engine COMMIT
+writer_backend_pid=73071
+2026-10-24 18:28:09,416 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,418 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.assets (asset_code, name, department_id, category_id, location) VALUES (%(asset_code)s::VARCHAR, %(name)s::VARCHAR, %(department_id)s::UUID, %(category_id)s::UUID, %(location)s::VARCHAR) RETURNING college_step18.assets.id, college_step18.assets.status
+2026-10-24 18:28:09,418 INFO sqlalchemy.engine.Engine [generated in 0.00044s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,426 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.assets (asset_code, name, department_id, category_id, location) VALUES (%(asset_code)s::VARCHAR, %(name)s::VARCHAR, %(department_id)s::UUID, %(category_id)s::UUID, %(location)s::VARCHAR) RETURNING college_step18.assets.id, college_step18.assets.status
+2026-10-24 18:28:09,426 INFO sqlalchemy.engine.Engine [cached since 0.008563s ago] [SQL parameters hidden due to hide_parameters=True]
+PASS: Session.add and the create helper obtain generated UUIDs and server defaults on real Asset instances.
+2026-10-24 18:28:09,431 INFO sqlalchemy.engine.Engine UPDATE college_step18.lab_run SET created_asset_id = %(id)s WHERE run_id = %(run)s
+2026-10-24 18:28:09,431 INFO sqlalchemy.engine.Engine [generated in 0.00033s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,433 INFO sqlalchemy.engine.Engine COMMIT
+PASS: The successful write context commits and closes its Session, returning the pool checkout.
+2026-10-24 18:28:09,441 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,444 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,444 INFO sqlalchemy.engine.Engine [generated in 0.00036s] [SQL parameters hidden due to hide_parameters=True]
+PASS: A fresh Session.get loads the committed row as an Asset, rather than a Core Row.
+2026-10-24 18:28:09,450 INFO sqlalchemy.engine.Engine ROLLBACK
+PASS: The read-only Session context closes and releases its implicit transaction.
+2026-10-24 18:28:09,454 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,455 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets ORDER BY college_step18.assets.asset_code
+2026-10-24 18:28:09,455 INFO sqlalchemy.engine.Engine [generated in 0.00023s] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,462 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.department_id = %(department_id_1)s::UUID ORDER BY college_step18.assets.asset_code
+2026-10-24 18:28:09,462 INFO sqlalchemy.engine.Engine [generated in 0.00026s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Session.scalars(select(Asset)) returns ordered mapped objects and applies the requested department filter.
+2026-10-24 18:28:09,466 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-24 18:28:09,471 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,472 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,472 INFO sqlalchemy.engine.Engine [cached since 0.02779s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,478 INFO sqlalchemy.engine.Engine UPDATE college_step18.assets SET location=%(location)s::VARCHAR WHERE college_step18.assets.id = %(assets_id)s::UUID
+2026-10-24 18:28:09,478 INFO sqlalchemy.engine.Engine [generated in 0.00027s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Assigning a mapped location and flushing emits the ORM asset update.
+2026-10-24 18:28:09,482 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-24 18:28:09,490 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,491 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,491 INFO sqlalchemy.engine.Engine [cached since 0.04695s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,496 INFO sqlalchemy.engine.Engine DELETE FROM college_step18.assets WHERE college_step18.assets.id = %(id)s::UUID
+2026-10-24 18:28:09,497 INFO sqlalchemy.engine.Engine [generated in 0.00029s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Session.delete removes the disposable temporary asset inside the caller's transaction.
+2026-10-24 18:28:09,500 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-24 18:28:09,509 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,511 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,511 INFO sqlalchemy.engine.Engine [cached since 0.06718s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,519 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,519 INFO sqlalchemy.engine.Engine [cached since 0.07499s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,522 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,522 INFO sqlalchemy.engine.Engine [cached since 0.07833s ago] [SQL parameters hidden due to hide_parameters=True]
+PASS: Missing gets and updates return None, and deleting an absent fixture returns False without a write.
+2026-10-24 18:28:09,525 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-24 18:28:09,529 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,529 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.assets (asset_code, name, department_id, category_id, location) VALUES (%(asset_code)s::VARCHAR, %(name)s::VARCHAR, %(department_id)s::UUID, %(category_id)s::UUID, %(location)s::VARCHAR) RETURNING college_step18.assets.id, college_step18.assets.status
+2026-10-24 18:28:09,529 INFO sqlalchemy.engine.Engine [cached since 0.1113s ago] [SQL parameters hidden due to hide_parameters=True]
+PASS: A Session context can execute an INSERT before any explicit commit.
+2026-10-24 18:28:09,534 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-24 18:28:09,539 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,540 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id
+FROM college_step18.assets
+WHERE college_step18.assets.asset_code = %(asset_code_1)s::VARCHAR
+2026-10-24 18:28:09,540 INFO sqlalchemy.engine.Engine [generated in 0.00025s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Closing a Session context alone rolls back its pending write; it does not commit automatically.
+2026-10-24 18:28:09,545 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-24 18:28:09,549 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,549 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,550 INFO sqlalchemy.engine.Engine [cached since 0.106s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,556 INFO sqlalchemy.engine.Engine UPDATE college_step18.assets SET location=%(location)s::VARCHAR WHERE college_step18.assets.id = %(assets_id)s::UUID
+2026-10-24 18:28:09,556 INFO sqlalchemy.engine.Engine [cached since 0.07841s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,561 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.assets (asset_code, name, department_id, category_id, location) VALUES (%(asset_code)s::VARCHAR, %(name)s::VARCHAR, %(department_id)s::UUID, %(category_id)s::UUID, %(location)s::VARCHAR) RETURNING college_step18.assets.id, college_step18.assets.status
+2026-10-24 18:28:09,561 INFO sqlalchemy.engine.Engine [cached since 0.1433s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,566 INFO sqlalchemy.engine.Engine ROLLBACK
+PASS: A propagated application error rolls back and closes the write Session.
+2026-10-24 18:28:09,575 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,575 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,576 INFO sqlalchemy.engine.Engine [cached since 0.132s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,584 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id
+FROM college_step18.assets
+WHERE college_step18.assets.asset_code = %(asset_code_1)s::VARCHAR
+2026-10-24 18:28:09,585 INFO sqlalchemy.engine.Engine [cached since 0.04467s ago] [SQL parameters hidden due to hide_parameters=True]
+PASS: A fresh Session finds neither the aborted location change nor the aborted inserted asset.
+2026-10-24 18:28:09,589 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-24 18:28:09,598 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,599 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,600 INFO sqlalchemy.engine.Engine [cached since 0.1555s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,609 INFO sqlalchemy.engine.Engine UPDATE college_step18.assets SET location=%(location)s::VARCHAR WHERE college_step18.assets.id = %(assets_id)s::UUID
+2026-10-24 18:28:09,609 INFO sqlalchemy.engine.Engine [cached since 0.1314s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,618 INFO sqlalchemy.engine.Engine INSERT INTO college_step18.assets (asset_code, name, department_id, category_id, location) VALUES (%(asset_code)s::VARCHAR, %(name)s::VARCHAR, %(department_id)s::UUID, %(category_id)s::UUID, %(location)s::VARCHAR) RETURNING college_step18.assets.id, college_step18.assets.status
+2026-10-24 18:28:09,618 INFO sqlalchemy.engine.Engine [cached since 0.1998s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,625 INFO sqlalchemy.engine.Engine ROLLBACK
+PASS: The duplicate-code 23505 escapes the operation after rollback and Session cleanup.
+Expected ORM database error: SQLSTATE=23505; constraint=uq_assets_asset_code
+2026-10-24 18:28:09,634 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,636 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,636 INFO sqlalchemy.engine.Engine [cached since 0.1918s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,648 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.asset_code = %(asset_code_1)s::VARCHAR
+2026-10-24 18:28:09,648 INFO sqlalchemy.engine.Engine [generated in 0.00035s] [SQL parameters hidden due to hide_parameters=True]
+PASS: A new Session confirms the failed INSERT also rolled back its preceding successful UPDATE.
+2026-10-24 18:28:09,653 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-24 18:28:09,662 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,664 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets
+WHERE college_step18.assets.id = %(pk_1)s::UUID
+2026-10-24 18:28:09,664 INFO sqlalchemy.engine.Engine [cached since 0.2201s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,673 INFO sqlalchemy.engine.Engine DELETE FROM college_step18.assets WHERE college_step18.assets.id = %(id)s::UUID
+2026-10-24 18:28:09,674 INFO sqlalchemy.engine.Engine [cached since 0.1774s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,678 INFO sqlalchemy.engine.Engine ROLLBACK
+PASS: A referenced-asset delete raises 23001 while still rolling back and closing the Session.
+Expected ORM database error: SQLSTATE=23001; constraint=fk_tickets_asset
+2026-10-24 18:28:09,688 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,689 INFO sqlalchemy.engine.Engine SELECT college_step18.assets.id, college_step18.assets.asset_code, college_step18.assets.name, college_step18.assets.department_id, college_step18.assets.category_id, college_step18.assets.status, college_step18.assets.location
+FROM college_step18.assets ORDER BY college_step18.assets.asset_code
+2026-10-24 18:28:09,689 INFO sqlalchemy.engine.Engine [cached since 0.2336s ago] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 18:28:09,695 INFO sqlalchemy.engine.Engine SELECT college_step18.maintenance_tickets.id, college_step18.maintenance_tickets.asset_id, college_step18.maintenance_tickets.reported_by_id, college_step18.maintenance_tickets.assigned_to_id, college_step18.maintenance_tickets.department_id, college_step18.maintenance_tickets.title, college_step18.maintenance_tickets.description, college_step18.maintenance_tickets.priority, college_step18.maintenance_tickets.status, college_step18.maintenance_tickets.created_at, college_step18.maintenance_tickets.assigned_at, college_step18.maintenance_tickets.rejected_at, college_step18.maintenance_tickets.closed_at, college_step18.maintenance_tickets.rejection_reason
+FROM college_step18.maintenance_tickets
+2026-10-24 18:28:09,696 INFO sqlalchemy.engine.Engine [generated in 0.00028s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Fresh ORM reads show the exact committed create/update/delete results and the preserved ticket reference.
+2026-10-24 18:28:09,700 INFO sqlalchemy.engine.Engine ROLLBACK
+Final committed ORM rows: [(UUID('6925fe85-4d41-49ae-83cc-911f7431c713'), 'KEEP-001', 'Referenced Computer', 'Electronics Lab', 'active'), (UUID('6ce62cf7-2199-4d3d-8b03-5eeff2117494'), 'PC-001', 'Lab Computer', 'Computer Lab 2', 'active')]
+2026-10-24 18:28:09,707 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 18:28:09,709 INFO sqlalchemy.engine.Engine SELECT id, asset_code, name, location, status FROM college_step18.assets ORDER BY asset_code
+2026-10-24 18:28:09,709 INFO sqlalchemy.engine.Engine [generated in 0.00047s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Independent Core SQL agrees with the final ORM object values after all Session exits.
+2026-10-24 18:28:09,713 INFO sqlalchemy.engine.Engine ROLLBACK
+Observed asset SQL by operation: {'create': ['INSERT', 'INSERT'], 'get': ['SELECT'], 'list': ['SELECT', 'SELECT'], 'update': ['SELECT', 'UPDATE'], 'delete': ['SELECT', 'DELETE'], 'missing': ['SELECT', 'SELECT', 'SELECT'], 'no_commit': ['INSERT'], 'application_failure': ['SELECT', 'UPDATE', 'INSERT'], 'database_failure': ['SELECT', 'UPDATE', 'INSERT'], 'reference_failure': ['SELECT', 'DELETE']}
+PASS: Cursor observations identify the exact asset statements attempted by each ORM operation.
+PASS: Every operation uses its own closed Session, with empty identity maps and balanced returned checkouts.
+PASS: Local SQL logging includes ORM INSERT/SELECT/UPDATE/DELETE activity and transaction completion.
+PASS: Automatic parameter logging stays hidden and the captured SQL log contains no learner credential or fixture hash.
+PASS: All Sessions return their resources before Engine disposal closes the physical writer connection.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-18/cleanup.sql
+Pager usage is off.
+=== Step 18: remove only the current lab run tables ===
+BEGIN
+REFUSED: STEP18_RUN_ID_MISMATCH; no object was removed.
+psql:/labs/step-18/cleanup.sql:22: ERROR:  22023
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-18/reconnect.sql
+Pager usage is off.
+=== Step 18: independent observer verifies ORM commits, rollbacks, and Session disposal ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 73095
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+BEGIN
+PASS: Independent psql observes the exact completed run after the Python writer has disconnected.
+ writer_backend_pid | observer_backend_pid |           created_asset_id           |          protected_asset_id
+--------------------+----------------------+--------------------------------------+--------------------------------------
+              73071 |                73095 | 6ce62cf7-2199-4d3d-8b03-5eeff2117494 | 6925fe85-4d41-49ae-83cc-911f7431c713
+(1 row)
+
+PASS: The committed department/category/reporter fixture remains exact after every ORM operation.
+PASS: Independent SQL confirms the generated asset ID, committed update, and preserved referenced asset.
+PASS: The deleted/uncommitted/aborted fixtures are absent and failed deletion preserved the original ticket reference.
+                  id                  | asset_code |        name         |    location     | status | department
+--------------------------------------+------------+---------------------+-----------------+--------+------------
+ 6925fe85-4d41-49ae-83cc-911f7431c713 | KEEP-001   | Referenced Computer | Electronics Lab | active | ECE
+ 6ce62cf7-2199-4d3d-8b03-5eeff2117494 | PC-001     | Lab Computer        | Computer Lab 2  | active | CSE
+(2 rows)
+
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-18/cleanup.sql
+Pager usage is off.
+=== Step 18: remove only the current lab run tables ===
+BEGIN
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP SCHEMA
+COMMIT
+PASS: Guarded cleanup committed removal of the current run schema and known objects.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-18/cleanup-check.sql
+Pager usage is off.
+=== Step 18: verify committed cleanup from another connection ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 73119
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+  database_name   |    role_name    | session_lab_absent
+------------------+-----------------+--------------------
+ college_learning | college_learner | t
+(1 row)
+
+PASS: A fresh connection confirms the Step 18 schema cleanup was committed.

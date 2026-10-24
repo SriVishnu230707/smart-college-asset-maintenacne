@@ -18,11 +18,11 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), [Python database layers](../labs/step-13/notes.md), [Core connections/binding](../labs/step-14/notes.md), [metadata/reflection](../labs/step-15/notes.md), [Core DML/results](../labs/step-16/notes.md), and [typed ORM mappings](../labs/step-17/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), [Python database layers](../labs/step-13/notes.md), [Core connections/binding](../labs/step-14/notes.md), [metadata/reflection](../labs/step-15/notes.md), [Core DML/results](../labs/step-16/notes.md), [typed ORM mappings](../labs/step-17/notes.md), and [ORM Session persistence](../labs/step-18/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-17 without advancing this checklist. It checks 476 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-18 without advancing this checklist. It checks 508 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The detailed design and concurrency guidance remains in [the mastery guide](POSTGRESQL_SQLALCHEMY_MASTERY.md). This checklist supersedes that guide's former calendar-based roadmap.
 
@@ -210,13 +210,15 @@ Reference reading: [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/
 
   Evidence: [Typed-mapping guide](TYPED_ORM_MAPPINGS.md), [application models](../college_maintenance/models.py), [Step 17 predictions](../labs/step-17/notes.md), and [executed evidence](../labs/step-17/evidence.txt). All 48 checks passed: 46 Python observations/assertions and two independent psql checks. Five typed mapped classes register 36 columns with shared metadata, named constraints, defaults, timezone-aware lifecycle instants, and seven reference policies. Mapper configuration and Python construction require no connection and do not validate every field; eleven direct-SQL rejections prove installed database enforcement. The lab creates only translated study tables, verifies actual columns/constraints/indexes, and rolls back completely. Session persistence, relationships, migration installation, and full workflow enforcement remain later lessons. Explaining the three layers remains your learning gate.
 
-- [ ] **18. Perform ORM persistence**
+- [x] **18. Perform ORM persistence**
 
   Learn: Use sessionmaker and a short-lived Session for add/get/select/update/delete.
 
   Apply: Implement the smallest asset CRUD functions with SQL logging enabled.
 
   Prove: Identify the statements emitted and close the Session reliably on success and error.
+
+  Evidence: [Session persistence guide](ORM_SESSION_PERSISTENCE.md), [shared Session factory](../college_maintenance/sessions.py), [lesson-local CRUD helpers](../labs/step-18/asset_crud.py), [Step 18 predictions](../labs/step-18/notes.md), and [executed evidence](../labs/step-18/evidence.txt). All 32 checks passed: 25 Python observations/assertions and seven wrapper/psql checks. Fresh Sessions commit asset creates/updates and a disposable delete, return mapped objects, handle missing rows, and roll back on close, application errors, duplicate-code 23505, and reference restriction 23001. Cursor observations identify exact attempted SQL, logging hides bound parameters, and all checkouts are returned before disposal. Independent psql agrees on final committed rows before exact-run guarded cleanup. Detailed lifecycle, failed-Session recovery, relationships, migrations, and authorized workflows remain later lessons. Explaining SQL and cleanup remains your learning gate.
 
 - [ ] **19. Inspect object lifecycle states**
 
