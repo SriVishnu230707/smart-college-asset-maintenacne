@@ -1,0 +1,86 @@
+Step 16: Core DML and result cardinality verification evidence
+Captured (Asia/Kolkata): 2026-10-24 11:42:13 +05:30
+Command: python -X utf8 -B labs/step-16/python_lab.py
+SQLAlchemy 2.1.6; psycopg 3.3.6
+PASS: The Core DML lab reuses the pinned SQLAlchemy and psycopg versions.
+PASS: The PostgreSQL 18 learner connection has a free disposable Step 16 namespace.
+engine_backend_pid=49635
+PASS: Parent INSERT RETURNING exposes generated UUIDs and database defaults, correlated by business code.
+Compiled INSERT RETURNING SQL: INSERT INTO college_step16.assets (asset_code, name, department_id, category_id, location, status) VALUES (%(asset_code_m0)s::VARCHAR, %(name_m0)s::VARCHAR, %(department_id_m0)s::UUID, %(category_id_m0)s::UUID, %(location_m0)s::VARCHAR, %(status)s::VARCHAR), (%(asset_code_m1)s::VARCHAR, %(name_m1)s::VARCHAR, %(department_id_m1)s::UUID, %(category_id_m1)s::UUID, %(location_m1)s::VARCHAR, %(status_m1)s::VARCHAR), (%(asset_code_m2)s::VARCHAR, %(name_m2)s::VARCHAR, %(department_id_m2)s::UUID, %(category_id_m2)s::UUID, %(location_m2)s::VARCHAR, %(status_m2)s::VARCHAR) RETURNING college_step16.assets.id, college_step16.assets.asset_code, college_step16.assets.status
+PASS: Asset INSERT explicitly returns each generated UUID and status without assuming RETURNING row order.
+Returned asset IDs: {'PC-001': UUID('528a9d70-e921-4d88-be2b-76a76850735e'), 'PC-002': UUID('0b4d1ac4-a7a6-443f-9a52-5d30513f3b66'), 'PRJ-001': UUID('dfcb564a-761e-471d-85ef-95105316136f')}
+PASS: all returns every ordered projected Row with the original nullable value.
+PASS: A consumed result does not replay its rows on a second all call.
+PASS: Row supports tuple positions, labeled attributes, and explicit mapping access.
+PASS: mappings returns named RowMapping values suitable for explicit dictionary conversion.
+PASS: scalars filters a multi-column projection down to its first column without checking row count.
+PASS: An explicit scalars index selects the intended alternate projected column.
+Compiled bound SELECT SQL: SELECT college_step16.assets.asset_code, college_step16.assets.name AS asset_name, college_step16.assets.location
+FROM college_step16.assets
+WHERE college_step16.assets.asset_code = %(lookup_code)s::VARCHAR ORDER BY college_step16.assets.asset_code
+PASS: one returns the required asset Row when the unique lookup matches exactly once.
+PASS: one_or_none distinguishes a found asset Row from an absent optional lookup.
+PASS: Empty all and first results are an empty sequence and None respectively.
+PASS: first accepts multiple matching rows, closes the result, and adds no SQL LIMIT.
+PASS: Reading again after first raises ResourceClosedError because the remaining rows were discarded.
+Expected result error: ResourceClosedError
+PASS: An explicit ordered limit bounds the SELECT in SQL when only the first asset is wanted.
+PASS: one rejects zero matching assets with NoResultFound.
+Expected result error: NoResultFound
+PASS: one rejects a department lookup that matches multiple assets.
+Expected result error: MultipleResultsFound
+PASS: one_or_none also rejects multiple rows instead of silently choosing an asset.
+Expected result error: MultipleResultsFound
+PASS: scalar_one checks exactly one row and returns its first column, not the entire Row.
+PASS: scalar_one rejects a missing required ID with NoResultFound.
+Expected result error: NoResultFound
+PASS: scalar_one rejects multiple IDs with MultipleResultsFound.
+Expected result error: MultipleResultsFound
+PASS: A present SQL NULL is a one-column Row containing None, distinct from no row.
+PASS: Client-side result cardinality errors leave the database transaction usable.
+PASS: A single asset INSERT RETURNING provides the same generated ID seen by a later SELECT.
+Compiled UPDATE RETURNING SQL: UPDATE college_step16.assets SET location=%(location)s::VARCHAR, status=%(status)s::VARCHAR WHERE college_step16.assets.id = %(id_1)s::UUID RETURNING college_step16.assets.id, college_step16.assets.asset_code, college_step16.assets.location, college_step16.assets.status
+PASS: UPDATE RETURNING exposes the exact changed asset ID and new field values.
+PASS: A zero-match UPDATE RETURNING succeeds with no returned row.
+PASS: A non-returning UPDATE reports one matched row even when the stored value stays unchanged.
+PASS: A statement without returned rows cannot be consumed as a row-producing result.
+Expected result error: ResourceClosedError
+PASS: A non-returning zero-match UPDATE reports rowcount zero without a database error.
+Compiled DELETE RETURNING SQL: DELETE FROM college_step16.assets WHERE college_step16.assets.id = %(id_1)s::UUID RETURNING college_step16.assets.id, college_step16.assets.asset_code
+PASS: DELETE RETURNING identifies the removed disposable asset and a later SELECT confirms absence.
+PASS: Repeating the same DELETE RETURNING succeeds with no row instead of inventing a deletion.
+PASS: A multi-match UPDATE is verified by its two returned identities without relying on rowcount or row order.
+PASS: The Core delete operation returns the original ID of the removed Electronics asset.
+Final transaction rows: [('PC-001', 'Lab Computer', 'Computer Lab 1', 'under_maintenance'), ('PRJ-001', 'Classroom Projector', 'Room 204', 'under_maintenance')]
+PASS: Core and equivalent raw SQL agree on the exact rows after insert, update, and delete operations.
+PASS: The complete fixture and all Core writes roll back in one cleanup transaction.
+PASS: A subsequent checkout confirms no Step 16 schema or fixture row persists.
+PASS: All result work and connection contexts finish before Engine disposal closes the physical backend.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=engine_backend_pid=49635 --file /labs/step-16/reconnect.sql
+Pager usage is off.
+=== Step 16: independently inspect Core DML lab cleanup ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 49651
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+PASS: Independent psql connects as the learner to PostgreSQL 18 using a different backend.
+ disposed_engine_backend | backend_absent | schema_absent
+-------------------------+----------------+---------------
+                   49635 | t              | t
+(1 row)
+
+PASS: The disposed Engine backend is gone and the entire Step 16 study schema was rolled back.

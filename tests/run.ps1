@@ -9,7 +9,7 @@ $logDirectory = Join-Path $projectRoot ".local/test-results/powershell-$shellVer
 [IO.Directory]::CreateDirectory($logDirectory) | Out-Null
 $report = @("Regression suite: PowerShell $shellVersion", "Captured (UTC): $([DateTimeOffset]::UtcNow.ToString('u'))")
 $result = 'FAILED'
-$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31 }
+$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40 }
 
 function Assert-Suite([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
@@ -44,7 +44,7 @@ try {
     foreach ($step in $expectedCounts.Keys) {
         $verifier = Join-Path $projectRoot "labs/step-$step/verify.ps1"
         $arguments = @('-NoProfile', '-NonInteractive', '-File', $verifier)
-        if ($step -in @('05', '13', '14', '15') -and $PythonExecutable) { $arguments += @('-PythonExecutable', $PythonExecutable) }
+        if ($step -in @('05', '13', '14', '15', '16') -and $PythonExecutable) { $arguments += @('-PythonExecutable', $PythonExecutable) }
         $output = @(Invoke-LabProcess $shellExecutable $arguments)
         $text = $output -join "`n"
         [IO.File]::WriteAllText((Join-Path $logDirectory "step-$step.txt"), $text + "`n", (New-Object System.Text.UTF8Encoding($false)))
@@ -72,8 +72,8 @@ try {
 
     $remaining = @(Invoke-LabProcess docker @('compose', '--file', $composeFile, 'exec', '-T', 'postgres', 'sh',
         '/labs/step-02/psql.sh', '--tuples-only', '--no-align', '--command',
-        "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|1[0-5])$'")) -join ''
-    Assert-Suite ($remaining.Trim() -eq '0') 'A fresh connection confirms no Step 2-15 study schema remains.'
+        "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|1[0-6])$'")) -join ''
+    Assert-Suite ($remaining.Trim() -eq '0') 'A fresh connection confirms no Step 2-16 study schema remains.'
     $labCheckCount = ($expectedCounts.Values | Measure-Object -Sum).Sum
     $report += "Result: PASSED; $($expectedCounts.Count) lab suites, $labCheckCount lab checks, and 7 runner regression checks."
     $result = 'PASSED'

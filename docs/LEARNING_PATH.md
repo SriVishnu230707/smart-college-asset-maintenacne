@@ -18,11 +18,11 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), [Python database layers](../labs/step-13/notes.md), [Core connections/binding](../labs/step-14/notes.md), and [metadata/reflection](../labs/step-15/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), [Python database layers](../labs/step-13/notes.md), [Core connections/binding](../labs/step-14/notes.md), [metadata/reflection](../labs/step-15/notes.md), and [Core DML/results](../labs/step-16/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-15 without advancing this checklist. It checks 388 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-16 without advancing this checklist. It checks 428 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The detailed design and concurrency guidance remains in [the mastery guide](POSTGRESQL_SQLALCHEMY_MASTERY.md). This checklist supersedes that guide's former calendar-based roadmap.
 
@@ -184,13 +184,15 @@ Reference reading: [PostgreSQL SQL language](https://www.postgresql.org/docs/18/
 
   Evidence: [Metadata/reflection guide](SCHEMA_METADATA_AND_REFLECTION.md), [Core declarations](../labs/step-15/schema.py), [Step 15 predictions and instructions](../labs/step-15/notes.md), and [executed evidence](../labs/step-15/evidence.txt). All 31 checks passed: 29 Python observations/assertions and two independent psql checks. Declared columns, defaults, named constraints, reference policies, and explicit indexes match PostgreSQL inspection and a separate reflected registry. Missing-reference/missing-table failures, schema qualification outside search_path, and reflection limits are verified. Deliberate column/check drift is detected; create_all neither applies proposed changes nor repairs existing drift. All DDL is rolled back and disposal/cleanup is independently confirmed. No migration history or permanent application schema is introduced. Explaining declaration, database, and reflection ownership remains your learning gate.
 
-- [ ] **16. Execute Core DML and understand results**
+- [x] **16. Execute Core DML and understand results**
 
   Learn: Use select/insert/update/delete, RETURNING, Row, mappings, scalar results, and expected cardinality.
 
   Apply: Reproduce the SQL asset operations through Core; explicitly request returned IDs.
 
   Prove: Choose correctly among all(), first(), one(), one_or_none(), scalar_one(), scalars(), and mappings() for specific result shapes.
+
+  Evidence: [Core DML/results guide](CORE_DML_AND_RESULTS.md), [Step 16 fixture and predictions](../labs/step-16/notes.md), and [executed evidence](../labs/step-16/evidence.txt). All 40 checks passed: 38 Python observations/assertions and two independent psql checks. Core insert/select/update/delete operations explicitly return generated/affected IDs, compare projected Row/mapping/scalar values, and distinguish zero, one, and multiple matches. Seven expected result errors, first versus SQL LIMIT, NULL versus no row, result exhaustion, and matched-row counts are verified. Core and raw SQL agree on exact final rows. The entire fixture rolls back, and independent psql confirms schema removal and writer disposal. No mapped ORM model or permanent schema is introduced. Choosing and explaining result contracts remains your learning gate.
 
 Checkpoint: You can express and execute the same small use case in SQL and SQLAlchemy Core, including bound parameters and result handling.
 
