@@ -37,6 +37,30 @@ function Invoke-LabSql {
         $PsqlArguments + @('--file', $SqlFile))
 }
 
+function Resolve-LabPython {
+    param([string]$Executable, [string]$Probe, [string]$Requirements)
+    if ($Executable) {
+        $candidates = @($Executable)
+    } else {
+        $candidates = @(
+            (Join-Path $projectRoot '.venv/Scripts/python.exe'),
+            (Join-Path $projectRoot '.venv/bin/python')
+        ) + @(Get-Command python3, python -CommandType Application -ErrorAction SilentlyContinue |
+            Where-Object { $_.Source -notmatch '[\\/]WindowsApps[\\/]' } | ForEach-Object { $_.Source }) + @(
+            (Join-Path ([Environment]::GetFolderPath('UserProfile')) '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe')
+        )
+    }
+    foreach ($candidate in $candidates | Select-Object -Unique) {
+        try {
+            Invoke-LabProcess $candidate @('-c', $Probe) | Out-Null
+            return $candidate
+        } catch {
+            # An explicit interpreter is the only candidate; do not replace it.
+        }
+    }
+    throw "No usable Python 3.10+ matching $Requirements was found. Supply -PythonExecutable and install $Requirements."
+}
+
 function Write-LabEvidence {
     param([string]$Transcript, [string]$Path, [switch]$Save)
     Write-Output $Transcript

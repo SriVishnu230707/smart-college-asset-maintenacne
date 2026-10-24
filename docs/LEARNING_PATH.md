@@ -18,11 +18,11 @@ For every step:
 
 A step is complete only when its proof succeeds. Before SQLAlchemy is introduced, use raw SQL; after it is introduced, translate earlier exercises rather than learning unrelated examples.
 
-Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), and [existence/subqueries](../labs/step-12/notes.md). Add later labs as you reach their steps.
+Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a Python experiment where appropriate, and a test or captured observation. Never store credentials or real student data in the labs or tracked files. Available labs cover [business rules](../labs/step-01/notes.md), [SQL inspection](../labs/step-02/notes.md), [relational design](../labs/step-03/notes.md), [identifiers/types](../labs/step-04/notes.md), [money/time](../labs/step-05/notes.md), [row validity](../labs/step-06/notes.md), [referential integrity](../labs/step-07/notes.md), [SQL CRUD/transactions](../labs/step-08/notes.md), [filtering/ordering](../labs/step-09/notes.md), [joins](../labs/step-10/notes.md), [aggregation](../labs/step-11/notes.md), [existence/subqueries](../labs/step-12/notes.md), and [Python database layers](../labs/step-13/notes.md). Add later labs as you reach their steps.
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-12 without advancing this checklist. It checks 302 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-13 without advancing this checklist. It checks 325 lab assertions and seven runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The detailed design and concurrency guidance remains in [the mastery guide](POSTGRESQL_SQLALCHEMY_MASTERY.md). This checklist supersedes that guide's former calendar-based roadmap.
 
@@ -154,13 +154,15 @@ Reference reading: [PostgreSQL SQL language](https://www.postgresql.org/docs/18/
 
   Evidence: [Existence/subquery guide](SQL_EXISTENCE_AND_SUBQUERIES.md), [Step 12 fixture and predictions](../labs/step-12/notes.md), and [executed PostgreSQL evidence](../labs/step-12/evidence.txt). All 31 checks passed: twenty-five exact projected-row comparisons, three expected scalar/set errors, one fixture assertion, and two cleanup checks. NOT EXISTS, a left anti-join, EXCEPT, and a correlated count agree on the unused asset; current technician assignments are distinguished from retained terminal history. The nullable NOT IN failure and both qualified corrections are verified alongside scalar cardinality, empty-input behavior, and set multiplicity. All objects were rolled back and cleanup was confirmed from a fresh connection. Explaining the predicates and predicting results remains your learning gate.
 
-- [ ] **13. Understand the Python database layers**
+- [x] **13. Understand the Python database layers**
 
   Learn: Distinguish SQLAlchemy Engine, dialect, DBAPI/psycopg driver, pool, connection, Core, and ORM.
 
   Apply: Configure one application Engine and inspect SQL logging in a local learning environment.
 
   Prove: Trace one query from Python expression through driver to PostgreSQL without confusing an Engine with a Session.
+
+  Evidence: [Python database-layer guide](PYTHON_DATABASE_LAYERS.md), [application Engine configuration](../college_maintenance/database.py), [Step 13 predictions and instructions](../labs/step-13/notes.md), and [executed evidence](../labs/step-13/evidence.txt). All 23 checks passed: 21 Python assertions/observations and two independent psql checks. Pinned SQLAlchemy 2.1.6 and psycopg 3.3.6 trace a Core expression through the PostgreSQL dialect, real DBAPI cursor, and server result; Engine, pooled connection, and ORM Session roles remain distinct. Lazy creation, two balanced checkouts sharing one physical connection, SQL logging/password hiding, original SQLSTATE 22012, rollback recovery, and disposal are verified. No application schema or mapped ORM model is created. Explaining the trace remains your learning gate.
 
 - [ ] **14. Control a Core connection and bind values**
 

@@ -1,0 +1,81 @@
+Step 13: Python database-layer verification evidence
+Captured (Asia/Kolkata): 2026-10-24 08:54:52 +05:30
+Command: python -X utf8 -B labs/step-13/python_lab.py
+Python 3.12.14; SQLAlchemy 2.1.6; psycopg 3.3.6; psycopg-binary 3.3.6
+PASS: The SQLAlchemy and psycopg versions match the pinned requirements.
+PASS: The application object is an Engine, not an ORM Session.
+PASS: The PostgreSQL dialect selects the psycopg 3 DBAPI module explicitly.
+PASS: Engine construction is lazy: its one-slot QueuePool contains no physical connection yet.
+URL (password hidden): postgresql+psycopg://college_learner:***@127.0.0.1:55432/college_learning
+TRACE Core expression compiled for PostgreSQL: SELECT /* step13_trace */ %(param_1)s::VARCHAR AS lesson, current_database() AS database_name, CURRENT_USER AS role_name, pg_backend_pid() AS backend_pid, current_setting(%(current_setting_1)s::VARCHAR) AS application_name, current_setting(%(current_setting_2)s::VARCHAR) AS timezone, current_setting(%(current_setting_3)s::VARCHAR) AS server_version_num
+PASS: Compiling the Core expression creates bound SQL without opening a database connection.
+2026-10-24 08:54:51,378 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-10-24 08:54:51,378 INFO sqlalchemy.engine.Engine [raw sql] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 08:54:51,386 INFO sqlalchemy.engine.Engine select current_schema()
+2026-10-24 08:54:51,386 INFO sqlalchemy.engine.Engine [raw sql] [SQL parameters hidden due to hide_parameters=True]
+2026-10-24 08:54:51,389 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-10-24 08:54:51,389 INFO sqlalchemy.engine.Engine [raw sql] [SQL parameters hidden due to hide_parameters=True]
+PASS: Engine.connect borrows a SQLAlchemy Connection from the same Engine.
+PASS: The SQLAlchemy Connection wraps a live psycopg physical connection.
+2026-10-24 08:54:51,401 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+TRACE driver cursor: psycopg.Cursor
+TRACE statement: SELECT /* step13_trace */ %(param_1)s::VARCHAR AS lesson, current_database() AS database_name, CURRENT_USER AS role_name, pg_backend_pid() AS backend_pid, current_setting(%(current_setting_1)s::VARCHAR) AS application_name, current_setting(%(current_setting_2)s::VARCHAR) AS timezone, current_setting(%(current_setting_3)s::VARCHAR) AS server_version_num
+TRACE synthetic probe parameters: {'param_1': 'step-13', 'current_setting_1': 'application_name', 'current_setting_2': 'TimeZone', 'current_setting_3': 'server_version_num'}
+2026-10-24 08:54:51,401 INFO sqlalchemy.engine.Engine SELECT /* step13_trace */ %(param_1)s::VARCHAR AS lesson, current_database() AS database_name, CURRENT_USER AS role_name, pg_backend_pid() AS backend_pid, current_setting(%(current_setting_1)s::VARCHAR) AS application_name, current_setting(%(current_setting_2)s::VARCHAR) AS timezone, current_setting(%(current_setting_3)s::VARCHAR) AS server_version_num
+2026-10-24 08:54:51,402 INFO sqlalchemy.engine.Engine [generated in 0.00029s] [SQL parameters hidden due to hide_parameters=True]
+TRACE PostgreSQL result: {'lesson': 'step-13', 'database_name': 'college_learning', 'role_name': 'college_learner', 'backend_pid': 10474, 'application_name': 'college_step13', 'timezone': 'UTC', 'server_version_num': '180006'}
+engine_backend_pid=10474
+PASS: The server confirms PostgreSQL 18, the learner identity, application name, and UTC configuration.
+PASS: The server-returned probe and backend PID match the actual driver connection.
+PASS: The cursor event observes the compiled SQL and parameters at the psycopg execution boundary.
+PASS: The after-cursor event observes the server result columns before SQLAlchemy exposes the row.
+2026-10-24 08:54:51,406 INFO sqlalchemy.engine.Engine SELECT 1 / 0
+2026-10-24 08:54:51,406 INFO sqlalchemy.engine.Engine [generated in 0.00018s] [SQL parameters hidden due to hide_parameters=True]
+PASS: A server error reaches SQLAlchemy as DataError with the original psycopg SQLSTATE 22012.
+Expected error path: PostgreSQL 22012 -> psycopg DivisionByZero -> SQLAlchemy DataError
+2026-10-24 08:54:51,408 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-24 08:54:51,411 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 08:54:51,411 INFO sqlalchemy.engine.Engine SELECT %(param_1)s::VARCHAR AS anon_1
+2026-10-24 08:54:51,411 INFO sqlalchemy.engine.Engine [generated in 0.00028s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Explicit rollback recovers the connection after the deliberate server error.
+2026-10-24 08:54:51,413 INFO sqlalchemy.engine.Engine ROLLBACK
+PASS: Closing the SQLAlchemy wrapper returns the physical connection to the pool instead of closing it.
+PASS: A second checkout has a new Connection wrapper but still uses the one application Engine.
+2026-10-24 08:54:51,415 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-24 08:54:51,415 INFO sqlalchemy.engine.Engine SELECT pg_backend_pid() AS pg_backend_pid_1
+2026-10-24 08:54:51,415 INFO sqlalchemy.engine.Engine [generated in 0.00018s] [SQL parameters hidden due to hide_parameters=True]
+PASS: Sequential checkouts reuse the same psycopg connection and PostgreSQL backend.
+2026-10-24 08:54:51,416 INFO sqlalchemy.engine.Engine ROLLBACK
+PASS: Pool events record one physical connection and two balanced checkout/checkin pairs.
+PASS: Local Engine logging records real SQL and transaction boundaries.
+PASS: SQL logging is enabled for the lab while automatic parameter-value logging stays hidden.
+PASS: The connection password is absent from the captured SQL log and rendered URL.
+PASS: Engine.dispose closes the returned physical connection after the lab.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=engine_backend_pid=10474 --file /labs/step-13/reconnect.sql
+Pager usage is off.
+=== Step 13: independently inspect the Python connection cleanup ===
+         Connection Information
+      Parameter       |      Value
+----------------------+------------------
+ Database             | college_learning
+ Client User          | college_learner
+ Host                 | 127.0.0.1
+ Server Port          | 5432
+ Options              |
+ Protocol Version     | 3.0
+ Password Used        | true
+ GSSAPI Authenticated | false
+ Backend PID          | 10482
+ SSL Connection       | false
+ Superuser            | off
+ Hot Standby          | off
+(12 rows)
+
+PASS: Independent psql connects as the learner to PostgreSQL 18 using a different backend.
+ disposed_engine_backend | backend_absent | schema_absent
+-------------------------+----------------+---------------
+                   10474 | t              | t
+(1 row)
+
+PASS: The disposed Engine backend is gone and no Step 13 schema exists.

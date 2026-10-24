@@ -3,30 +3,8 @@ param([switch]$WriteEvidence, [string]$PythonExecutable)
 
 . (Join-Path $PSScriptRoot '../shared/verify.ps1')
 
-if ($PythonExecutable) {
-    $candidates = @($PythonExecutable)
-} else {
-    $candidates = @(
-        (Join-Path $projectRoot '.venv/Scripts/python.exe'),
-        (Join-Path $projectRoot '.venv/bin/python')
-    ) + @(Get-Command python3, python -CommandType Application -ErrorAction SilentlyContinue |
-        Where-Object { $_.Source -notmatch '[\\/]WindowsApps[\\/]' } | ForEach-Object { $_.Source }) + @(
-        (Join-Path ([Environment]::GetFolderPath('UserProfile')) '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe')
-    )
-}
-$PythonExecutable = $null
-foreach ($candidate in $candidates | Select-Object -Unique) {
-    try {
-        Invoke-LabProcess $candidate @('-c', "import sys; from importlib.metadata import version; from zoneinfo import ZoneInfo; version('tzdata'); ZoneInfo('Asia/Kolkata'); sys.exit(0 if sys.version_info >= (3, 10) else 1)") | Out-Null
-        $PythonExecutable = $candidate
-        break
-    } catch {
-        # Try the next candidate; an explicit choice remains the only candidate.
-    }
-}
-if (-not $PythonExecutable) {
-    throw 'No usable Python 3.10+ with tzdata was found. Supply -PythonExecutable and install labs/step-05/requirements.txt.'
-}
+$probe = "import sys; from importlib.metadata import version; from zoneinfo import ZoneInfo; version('tzdata'); ZoneInfo('Asia/Kolkata'); sys.exit(0 if sys.version_info >= (3, 10) else 1)"
+$PythonExecutable = Resolve-LabPython -Executable $PythonExecutable -Probe $probe -Requirements 'labs/step-05/requirements.txt'
 
 $sqlOutput = @(Invoke-LabSql '/labs/step-05/query.sql')
 $reconnectOutput = @(Invoke-LabSql '/labs/step-05/reconnect.sql')

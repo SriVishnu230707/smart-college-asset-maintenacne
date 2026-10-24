@@ -1,14 +1,14 @@
 # Run all implemented labs
 
-With Docker Desktop running, execute this from the project root in PowerShell 7 or Windows PowerShell 5.1:
+With Docker Desktop running, install the [root requirements](../requirements.txt) into an ignored Python 3.10+ virtual environment once, then execute the suite from the project root in PowerShell 7 or Windows PowerShell 5.1. See the [Step 13 setup](../labs/step-13/notes.md) for the complete commands:
 
 ```powershell
 .\tests\run.ps1 -WriteEvidence
 ```
 
-The suite starts the existing Compose database, preserves its credentials and volume, and runs Steps 2-12 sequentially. Step 1 contains written business proofs. Run an individual lesson using its own `labs/step-NN/verify.ps1` command. The suite does not advance the learning checklist.
+The suite starts the existing Compose database, preserves its credentials and volume, and runs Steps 2-13 sequentially. Step 1 contains written business proofs. Run an individual lesson using its own `labs/step-NN/verify.ps1` command. The suite does not advance the learning checklist.
 
-Step 5 needs Python 3.10+ and [its requirements](../labs/step-05/requirements.txt). It tries a project virtual environment, normal PATH interpreters, then an existing bundled interpreter. Windows Store aliases are skipped during automatic selection. Every candidate must pass a version, tzdata-package, and Asia/Kolkata availability check before SQL runs. An explicit choice is respected:
+Steps 5 and 13 need Python 3.10+. The root requirements include Step 5 timezone data and Step 13 SQLAlchemy 2.1.6 with psycopg 3.3.6. The shared interpreter resolver tries a project virtual environment, normal PATH interpreters, then an existing bundled interpreter. Windows Store aliases are skipped during automatic selection. Each lab checks its required packages/imports before connecting: Step 5 requires tzdata and Asia/Kolkata, while Step 13 requires its pinned SQLAlchemy/psycopg versions. An explicit interpreter is respected by both labs:
 
 ```powershell
 .\tests\run.ps1 -PythonExecutable C:\path\to\python.exe -WriteEvidence
@@ -18,7 +18,7 @@ No interpreter or package is installed automatically. Python JSON input uses UTF
 
 ## What is verified
 
-The suite requires all **302 checks across eleven labs** to pass. This includes the thirteen Python checks in Step 5. Each lab runs in a child process using the current PowerShell executable, from an unrelated working directory. Absolute Compose paths and argument arrays handle this project's spaces and ampersand.
+The suite requires all **325 checks across twelve labs** to pass. This includes thirteen Python checks in Step 5 and twenty-one in Step 13. Each lab runs in a child process using the current PowerShell executable, from an unrelated working directory. Absolute Compose paths and argument arrays handle this project's spaces and ampersand.
 
 Seven additional regression checks verify:
 
@@ -28,7 +28,7 @@ Seven additional regression checks verify:
 4. The shared runner throws for an unexpected nonzero SQL exit.
 5. Native stderr is captured while a zero-exit process still succeeds.
 6. An unavailable explicit Python fails clearly before the SQL exercise starts.
-7. A fresh connection finds no Step 2-12 study schemas after the suite.
+7. A fresh connection finds no Step 2-13 study schemas after the suite.
 
 Steps deliberately reject invalid values. In particular, Step 8 expects SQL errors 23505 and 25P02 while recovering its transaction, plus a guarded cleanup refusal with exit 3 and SQLSTATE 22023. These remain asserted behavior. Actual unexpected process exits fail the suite. See [psql exit status](https://www.postgresql.org/docs/18/app-psql.html#APP-PSQL-EXIT-STATUS).
 
@@ -42,7 +42,7 @@ The executable lookup selects one resolved application path, and Step 5 validate
 
 ## Evidence and scope
 
-The original per-step evidence remains alongside each lesson. The current suite, including Step 12, has separate summaries:
+The original per-step evidence remains alongside each lesson. The current suite, including Step 13, has separate summaries:
 
 - [PowerShell 7 evidence](evidence-powershell7.txt)
 - [Windows PowerShell 5.1 evidence](evidence-powershell5.txt)
