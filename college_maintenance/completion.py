@@ -19,7 +19,10 @@ def completed_result(session, order):
         completed_at=order.completed_at,currency='INR',labor_cost=format(order.labor_cost,'.2f'),parts=parts,
         parts_cost=format(parts_cost,'.2f'),total_cost=format(order.labor_cost+parts_cost,'.2f'))
 
-def complete_in_session(session,store,actor_id,order_id,request_id=None):
+def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault=None):
+    # Private fault seam for real-transaction tests; never accepted from HTTP.
+    def checkpoint(stage):
+        if _fault is not None:_fault(stage)
     actor=scope_for_actor(session,actor_id)
     ticket,order=order_parent(session,actor,order_id,write=True)
     if order.status!='in_progress' or ticket.status!='in_progress':raise Conflict('Only an in-progress repair can complete')
@@ -40,14 +43,21 @@ def complete_in_session(session,store,actor_id,order_id,request_id=None):
     for line in lines:
         part=parts[line.spare_part_id]
         part.stock_quantity-=line.quantity_used;line.unit_cost_at_use=part.current_unit_cost
+    session.flush()
+    checkpoint('after_balances')
+    for line in lines:
+        part=parts[line.spare_part_id]
         session.add(InventoryMovement(spare_part_id=part.id,actor_id=actor_id,work_order_id=order.id,kind='consume',quantity_delta=-line.quantity_used))
     # Flush child snapshots while their protected parent is still unfinished.
     session.flush()
+    checkpoint('after_ledger')
+    checkpoint('before_completion')
     order.status='completed';order.completed_at=datetime.now(timezone.utc);ticket.status='awaiting_verification'
     session.flush()
     result=completed_result(session,order)
     audit_change(session,actor_id,'work_order_completed',ticket=ticket,target_type='work_order',target_id=order.id,request_id=request_id,
         details={**json.loads(json.dumps(result,default=str)),'proofs':[dict(id=str(p.id),sha256=p.sha256) for p in proofs]})
+    checkpoint('after_audit')
     return result
 
 def complete_work_order(store,actor_id,order_id,*,session_factory=SessionFactory,request_id=None):

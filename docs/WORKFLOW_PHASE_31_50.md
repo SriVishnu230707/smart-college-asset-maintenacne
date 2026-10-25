@@ -81,3 +81,11 @@ Authorized completion verifies proof, locks stock, captures final prices, consum
 The initial protocol locks ticket, order and sorted stock rows. Every part must be available, proof bytes must match metadata, and exact per-repair totals must fit numeric(12,2). Child snapshots flush before the parent becomes immutable. Completion accepts no editable fields; costs in the returned stable-shaped result are decimal strings. A labor-only zero-cost repair remains valid. Later steps inject failures, compare stock protocols, prove contention, and add durable retry semantics; no cross-request snapshot or retry claim is inferred from this single-success proof.
 
 Verification: 22 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-40/notes.md), [executed evidence](../labs/step-40/evidence.txt).
+
+## Step 41: Prove completion rollback at fault boundaries
+
+Four injected failures and a real unique-constraint failure leave all seven participating tables unchanged, as read independently after rollback.
+
+The private test-only checkpoint seam is unavailable through HTTP. Faults fire after balance/price flush, after ledger insertion, before completion, and after audit insertion. PostgreSQL fingerprints retain exact numeric JSON text rather than float conversions. A multi-part shortage consumes nothing; a new authorized correction permits a fresh successful attempt. The transaction context propagates errors, rolls back, closes the Session, and returns its checkout.
+
+Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-41/notes.md), [executed evidence](../labs/step-41/evidence.txt).

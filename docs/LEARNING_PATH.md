@@ -460,13 +460,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
 **Steps 41–48: Prove correctness under failure and concurrency**
 
-- [ ] **41. Inject failures into completion**
+- [x] **41. Inject failures into completion**
 
   Learn: Understand transaction atomicity, error propagation, and Session recovery.
 
   Apply: Raise an error after balance deduction, after a ledger insert, and before completion/audit.
 
   Prove: After each failure, verify all participating tables from a new connection; nothing partial remains.
+
+  Evidence: [Step 41 notes](../labs/step-41/notes.md), [executed proof](../labs/step-41/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Four injected failures and a real unique-constraint failure leave all seven participating tables unchanged, as read independently after rollback.
 
 - [ ] **42. Observe MVCC and READ COMMITTED**
 
