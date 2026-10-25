@@ -358,13 +358,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 31 notes](../labs/step-31/notes.md), [executed proof](../labs/step-31/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. A three-ticket page records its 1+N comment SELECTs and detached serialization failure.
 
-- [ ] **32. Choose loader strategies**
+- [x] **32. Choose loader strategies**
 
   Learn: Compare selectinload, joinedload, unique(), raiseload, load_only, defer, and explicit collection pagination.
 
   Apply: Optimize the fixed ticket page and construct response data while required fields are available.
 
   Prove: Keep queries bounded for the fixture, explain joined row multiplication, and expose accidental unloaded access.
+
+  Evidence: [Step 32 notes](../labs/step-32/notes.md), [executed proof](../labs/step-32/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 21 checks passed in both shells. The fixed ticket page uses two SELECTs, while joined loading, raiseload, deferred columns, and collection paging have explicit proofs.
 
 Checkpoint: The application schema has reviewed migration history and a predictable, correctly paginated ticket query.
 
