@@ -62,7 +62,7 @@ def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault
     checkpoint('after_audit')
     return result
 
-def complete_work_order(store,actor_id,order_id,*,session_factory=SessionFactory,request_id=None):
+def complete_work_order(store,actor_id,order_id,*,session_factory=SessionFactory,request_id=None,stock_strategy='guarded'):
     with session_factory() as session,session.begin():
-        result=complete_in_session(session,store,actor_id,order_id,request_id=request_id)
+        result=complete_in_session(session,store,actor_id,order_id,request_id=request_id,stock_strategy=stock_strategy)
     return result  # Return only after commit succeeds.

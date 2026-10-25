@@ -16,6 +16,11 @@ def independent_factory(lab):
 def wait_blocked(observer,blocked,blocker,timeout=3):
     deadline=time.monotonic()+timeout
     while time.monotonic()<deadline:
-        if observer.execute('SELECT %s=ANY(pg_blocking_pids(%s))',(blocker,blocked)).fetchone()[0]:return True
+        # A later tuple-lock waiter can depend on an earlier waiter. Follow
+        # the observed wait graph rather than assuming every edge is direct.
+        if observer.execute('''WITH RECURSIVE blockers(pid) AS (
+            SELECT unnest(pg_blocking_pids(%s)) UNION
+            SELECT unnest(pg_blocking_pids(pid)) FROM blockers)
+            SELECT EXISTS(SELECT 1 FROM blockers WHERE pid=%s)''',(blocked,blocker)).fetchone()[0]:return True
         time.sleep(0.02)
     return False

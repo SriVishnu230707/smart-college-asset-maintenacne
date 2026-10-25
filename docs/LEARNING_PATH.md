@@ -490,13 +490,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 43 notes](../labs/step-43/notes.md), [executed proof](../labs/step-43/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. Completion uses stock=stock-quantity with stock>=quantity and RETURNING; two technicians on independent backends compete for one unit and only one commits.
 
-- [ ] **44. Implement the row-lock alternative**
+- [x] **44. Implement the row-lock alternative**
 
   Learn: Use SELECT FOR UPDATE and a shared lock protocol around parents and stock rows.
 
   Apply: Lock ticket, work order, and sorted part rows; require line-edit paths to lock/recheck their parent too.
 
   Prove: A concurrent new/edited part line cannot bypass completion's chosen protocol; compare the guarded-update design.
+
+  Evidence: [Step 44 notes](../labs/step-44/notes.md), [executed proof](../labs/step-44/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 16 checks passed in both shells. Completion can lock sorted stock rows explicitly, while concurrent edited and newly inserted part lines wait for parent protection and reject completed work.
 
 - [ ] **45. Handle lock ordering, deadlocks, and retries**
 

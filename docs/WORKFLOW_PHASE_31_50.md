@@ -105,3 +105,11 @@ Completion uses stock=stock-quantity with stock>=quantity and RETURNING; two tec
 A positive-quantity guard is enforced before SQL. RETURNING captures the price while the arithmetic update owns the stock-row lock. PostgreSQL blocking is observed with pg_blocking_pids, then the winner is released; the waiter rechecks the predicate after the commit. The losing complete transaction leaves its order unfinished and creates no consumption or audit. Sorted part IDs, parent locks, exact cost validation and rollback remain part of the overall protocol. The contention harness uses an explicitly separate NullPool test Engine so the one-slot learning pool cannot accidentally serialize the test before PostgreSQL does.
 
 Verification: 18 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-43/notes.md), [executed evidence](../labs/step-43/evidence.txt).
+
+## Step 44: Prove the parent and row-lock protocol
+
+Completion can lock sorted stock rows explicitly, while concurrent edited and newly inserted part lines wait for parent protection and reject completed work.
+
+Every service child edit locks/rechecks ticket then order, including proof changes and draft deletion. Completion holds those parents before selecting line membership and sorted parts. PostgreSQL blocking is observed for both an existing-line edit and a new-line insert; neither bypasses the frozen set. A direct SQL completed-child insert is independently rejected by the reviewed trigger. The application default remains guarded arithmetic; the internal stock_strategy option compares equivalent row-lock behavior and is not client-selectable.
+
+Verification: 16 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-44/notes.md), [executed evidence](../labs/step-44/evidence.txt).
