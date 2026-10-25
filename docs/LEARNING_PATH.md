@@ -384,13 +384,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 33 notes](../labs/step-33/notes.md), [executed proof](../labs/step-33/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. FastAPI reads validate requests, resolve opaque bearer identity, authorize database scope, and serialize values inside one operation transaction.
 
-- [ ] **34. Apply resource-scoped permissions**
+- [x] **34. Apply resource-scoped permissions**
 
   Learn: Distinguish application roles from database roles and authorization from input validation.
 
   Apply: Implement own-ticket access, technician assignment scope, department administration, and Super Admin policy.
 
   Prove: Deny cross-department reads and writes through direct API requests; do not rely on hidden UI controls.
+
+  Evidence: [Step 34 notes](../labs/step-34/notes.md), [executed proof](../labs/step-34/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 25 checks passed in both shells. Direct API requests prove own-ticket, assigned-technician, department-admin, and Super Admin boundaries for reads and mutations.
 
 - [ ] **35. Implement ticket transitions**
 

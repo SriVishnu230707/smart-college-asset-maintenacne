@@ -5,11 +5,30 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.exc import IntegrityError
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket
 from college_maintenance.reads import asset_detail, scope_for_actor, ticket_query
 from college_maintenance.sessions import SessionFactory
+from college_maintenance.workflow import Conflict, NotFound, report_ticket, edit_report, triage_ticket, ticket_result
+
+class ReportInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    asset_id: UUID
+    title: str = Field(min_length=1, max_length=200)
+    description: str = Field(min_length=1, max_length=10000)
+    priority: Literal['low','medium','high','critical'] = 'medium'
+
+class EditInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    title: str = Field(min_length=1, max_length=200)
+    description: str = Field(min_length=1, max_length=10000)
+
+class PriorityInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    priority: Literal['low','medium','high','critical']
 
 def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
     app = FastAPI(title='College maintenance API', version='0.1.0')
@@ -33,6 +52,27 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
 
     @app.exception_handler(IntegrityError)
     def conflict(request, error): return JSONResponse(status_code=409, content={'detail':'Database integrity conflict'})
+
+    @app.exception_handler(Conflict)
+    def state_conflict(request, error): return JSONResponse(status_code=409, content={'detail':str(error)})
+
+    @app.exception_handler(NotFound)
+    def not_found(request, error): return JSONResponse(status_code=404, content={'detail':'Resource not found'})
+
+    @app.post('/tickets', status_code=201)
+    def post_ticket(body: ReportInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            return ticket_result(report_ticket(session, identity, **body.model_dump()))
+
+    @app.patch('/tickets/{ticket_id}/report')
+    def patch_report(ticket_id: UUID, body: EditInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            return ticket_result(edit_report(session, identity, ticket_id, **body.model_dump()))
+
+    @app.patch('/tickets/{ticket_id}/priority')
+    def patch_priority(ticket_id: UUID, body: PriorityInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            return ticket_result(triage_ticket(session, identity, ticket_id, body.priority))
 
     @app.get('/assets/{asset_id}')
     def get_asset(asset_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):

@@ -22,6 +22,14 @@ Verification: 21 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes]
 
 FastAPI reads validate requests, resolve opaque bearer identity, authorize database scope, and serialize values inside one operation transaction.
 
-Request validation returns 422, missing/invalid credentials 401, inactive actors 403, absent scoped rows 404, domain filter errors 400, and integrity conflicts 409. Request Sessions always close and response values need no database work afterward. Opaque token digests and aware expiry live in an ignored file; tokens are provisioned out of band for this local example. No client role or actor ID is trusted. See [API operation](API.md) and [FastAPI security](https://fastapi.tiangolo.com/tutorial/security/first-steps/).
+Request validation returns 422, missing/invalid credentials 401, inactive actors 403, absent scoped rows 404, domain filter errors 400, and integrity conflicts 409. Request Sessions always close and response values need no database work afterward. Opaque token digests and aware expiry live in an ignored file; tokens are provisioned out of band for this local example. No client role or actor ID is trusted. See the API operation guide in docs/API.md and [FastAPI security](https://fastapi.tiangolo.com/tutorial/security/first-steps/).
 
 Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-33/notes.md), [executed evidence](../labs/step-33/evidence.txt).
+
+## Step 34: Enforce resource-scoped permissions
+
+Direct API requests prove own-ticket, assigned-technician, department-admin, and Super Admin boundaries for reads and mutations.
+
+Creation derives reporter and department on the server. Original text requires the current-department reporter and open state; triage requires an in-scope administrator. Historical read access after transfer never grants mutation access. Archived departments and retired assets reject new reports. The read policy reuses server-derived scope; unauthorized details conceal resource existence. Database roles are distinct from these application roles.
+
+Verification: 25 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-34/notes.md), [executed evidence](../labs/step-34/evidence.txt).
