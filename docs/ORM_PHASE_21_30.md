@@ -49,3 +49,11 @@ A frozen initial Alembic revision creates a genuinely empty database, installs n
 The initial revision contains explicit DDL, not a call to mutable application metadata. env.py takes target_metadata and an optional caller-owned connection; the ini stores no URL or password. A narrowly named scratch database is provisioned with the ignored admin credential, migrated as college_learner, closed, and dropped without FORCE. Normal application upgrades run as the learner and preserve public data. Use `.venv/Scripts/alembic.exe -c alembic.ini upgrade head`. See [Alembic tutorial](https://alembic.sqlalchemy.org/en/latest/tutorial.html). Downgrade is destructive and is exercised only in disposable databases in later proofs.
 
 Verification: 25 checks in both PowerShell versions. [Predictions](../labs/step-26/notes.md), [evidence](../labs/step-26/evidence.txt).
+
+## Step 27: Safe evolution of populated data
+
+A reviewed migration backfills a required condition note and truly renames a populated part-name column; original identities and data survive, and downgrade information loss is demonstrated only in a scratch database.
+
+Revision 0002 uses nullable add, deterministic backfill, NOT NULL/default/check, and ALTER COLUMN RENAME. SparePart.name remains the Python attribute while the database column becomes display_name. A five-second lock timeout bounds unexpected blocking; real large deployments still require reviewed lock/backfill scheduling and backups. App migrations only move forward; downgrade is exercised solely on a narrowly named disposable database. See [manual autogenerate review](https://alembic.sqlalchemy.org/en/latest/autogenerate.html).
+
+Verification: 22 checks in both PowerShell versions. [Predictions](../labs/step-27/notes.md), [evidence](../labs/step-27/evidence.txt).

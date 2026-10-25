@@ -76,6 +76,7 @@ class Asset(Base):
         CheckConstraint("asset_code = upper(btrim(asset_code)) AND asset_code !~ '^[[:space:]]*$'", name="asset_code"),
         CheckConstraint("name !~ '^[[:space:]]*$'", name="name"),
         CheckConstraint("status IN ('active', 'under_maintenance', 'retired')", name="status"),
+        CheckConstraint("condition_note !~ '^[[:space:]]*$'", name="condition_note"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
@@ -90,6 +91,7 @@ class Asset(Base):
     )
     status: Mapped[str] = mapped_column(Text, server_default=text("'active'"))
     location: Mapped[str | None] = mapped_column(String(200))
+    condition_note: Mapped[str] = mapped_column(Text, server_default=text("'Not assessed'"))
 
 
 class MaintenanceTicket(Base):
@@ -134,13 +136,13 @@ class SparePart(Base):
     __tablename__ = "spare_parts"
     __table_args__ = (
         CheckConstraint("sku = upper(btrim(sku)) AND sku <> ''", name="sku"),
-        CheckConstraint("name !~ '^[[:space:]]*$'", name="name"),
+        CheckConstraint("display_name !~ '^[[:space:]]*$'", name="name"),
         CheckConstraint("stock_quantity >= 0 AND reorder_level >= 0", name="stock"),
         CheckConstraint("current_unit_cost >= 0", name="cost"),
     )
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
     sku: Mapped[str] = mapped_column(String(50), unique=True)
-    name: Mapped[str] = mapped_column(String(150))
+    name: Mapped[str] = mapped_column("display_name", String(150))
     stock_quantity: Mapped[int] = mapped_column(server_default=text("0"))
     reorder_level: Mapped[int] = mapped_column(server_default=text("0"))
     current_unit_cost: Mapped[Decimal] = mapped_column(Numeric(12,2))

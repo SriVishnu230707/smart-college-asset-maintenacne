@@ -308,13 +308,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 26 predictions](../labs/step-26/notes.md), [executed evidence](../labs/step-26/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 25 checks passed in both PowerShell versions. A frozen initial Alembic revision creates a genuinely empty database, installs named constraints, and owns the application schema; the application database is upgraded to the reviewed head.
 
-- [ ] **27. Evolve populated data safely**
+- [x] **27. Evolve populated data safely**
 
   Learn: Study manual migration review, renames, defaults, backfills, type/status changes, and DDL locking.
 
   Apply: Add a required attribute to an existing populated database using a deliberate backfill sequence.
 
   Prove: Preserve existing data and recognize a generated add/drop pair that should have been a rename; state downgrade limits.
+
+  Evidence: [Step 27 predictions](../labs/step-27/notes.md), [executed evidence](../labs/step-27/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 22 checks passed in both PowerShell versions. A reviewed migration backfills a required condition note and truly renames a populated part-name column; original identities and data survive, and downgrade information loss is demonstrated only in a scratch database.
 
 - [ ] **28. Choose one transaction owner**
 
