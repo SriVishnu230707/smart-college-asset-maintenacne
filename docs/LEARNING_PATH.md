@@ -328,13 +328,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 28 predictions](../labs/step-28/notes.md), [executed evidence](../labs/step-28/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 20 checks passed in both PowerShell versions. One use-case owner commits asset, ticket, and audit together; composable helpers only flush, and existing autobegun reads must be resolved explicitly.
 
-- [ ] **29. Build explicit ORM read queries**
+- [x] **29. Build explicit ORM read queries**
 
   Learn: Use select on entities versus columns, projections, labels, aliases, relationships, and composable authorized filters.
 
   Apply: Create read functions for asset detail, department tickets, and technician assignments.
 
   Prove: Compare SQL and ORM outputs for missing and nullable related rows.
+
+  Evidence: [Step 29 predictions](../labs/step-29/notes.md), [executed evidence](../labs/step-29/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 24 checks passed in both PowerShell versions. Explicit asset/ticket DTO projections compose server-derived actor scope with department, status, priority, and assignment filters; SQL and ORM outputs agree for missing and nullable rows.
 
 - [ ] **30. Paginate the ticket feed**
 

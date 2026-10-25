@@ -1,0 +1,72 @@
+Step 29: Explicit authorized ORM reads verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:32:08 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 07b63c91-ee25-4c8f-8a86-dd0c55a69cb3
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Relationship paths and exact-run cleanup refusal (22023) are asserted.
+Command: python -X utf8 -B labs/step-29/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=7415
+PASS: Asset detail projects required department/category data explicitly.
+PASS: Missing and unauthorized asset details both return None without widening scope.
+PASS: Super Admin can read the other department asset.
+PASS: Student ticket reads expose only the actor's own reports.
+PASS: Technician ticket scope combines assigned and own reports.
+PASS: Department filtering intersects administrator scope and cannot expand it.
+PASS: Nullable assignee projection retains unassigned tickets under status filters.
+PASS: Technician assignment reads return only assigned work, not merely own reports.
+PASS: A technician cannot request another actor's assignment list.
+PASS: Unknown filter values are rejected before statement execution.
+PASS: Response projections contain no password hashes or unrestricted user records.
+PASS: Raw SQL and ORM projections agree for required and nullable paths.
+PASS: DTO values remain available after Session closure without lazy loading.
+PASS: A reporter retains own ticket history after a department change.
+PASS: Inactive actors cannot obtain a read scope.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-29/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step29 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP29_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-29/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step29 | 07b63c91-ee25-4c8f-8a86-dd0c55a69cb3
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-29/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step29 | 07b63c91-ee25-4c8f-8a86-dd0c55a69cb3
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-29/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

@@ -65,3 +65,11 @@ One use-case owner commits asset, ticket, and audit together; composable helpers
 Persistence primitives do not authorize callers; the later API/business layer must validate roles and lifecycle eligibility before invoking them. The owner encloses reads and writes, returns primitive IDs before expiration, and propagates errors. An existing read transaction is never secretly committed. Audit storage has its own reviewed revision and RESTRICT references. See [Session transaction framing](https://docs.sqlalchemy.org/en/21/orm/session_transaction.html).
 
 Verification: 20 checks in both PowerShell versions. [Predictions](../labs/step-28/notes.md), [evidence](../labs/step-28/evidence.txt).
+
+## Step 29: Explicit authorized ORM reads
+
+Explicit asset/ticket DTO projections compose server-derived actor scope with department, status, priority, and assignment filters; SQL and ORM outputs agree for missing and nullable rows.
+
+A trusted server actor ID loads active role/department data; the future authentication boundary must supply it, never a client-provided role. Construct scopes per operation rather than caching them across role changes. Named projections return frozen DTO values before Session close and never expose hashes/emails. Reporter history access follows the project contract even after department transfer. SQL predicates remain applied for every query. Full API authentication is a later step.
+
+Verification: 24 checks in both PowerShell versions. [Predictions](../labs/step-29/notes.md), [evidence](../labs/step-29/evidence.txt).
