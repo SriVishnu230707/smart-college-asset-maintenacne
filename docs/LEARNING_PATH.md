@@ -318,13 +318,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 27 predictions](../labs/step-27/notes.md), [executed evidence](../labs/step-27/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 22 checks passed in both PowerShell versions. A reviewed migration backfills a required condition note and truly renames a populated part-name column; original identities and data survive, and downgrade information loss is demonstrated only in a scratch database.
 
-- [ ] **28. Choose one transaction owner**
+- [x] **28. Choose one transaction owner**
 
   Learn: Understand session scope, transaction scope, autobegin, explicit begin, and composable helper functions.
 
   Apply: Define a use-case transaction boundary; helpers may flush but do not independently commit.
 
   Prove: Compose two writes plus an audit entry and show they cannot commit separately; account for earlier reads in the Session.
+
+  Evidence: [Step 28 predictions](../labs/step-28/notes.md), [executed evidence](../labs/step-28/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 20 checks passed in both PowerShell versions. One use-case owner commits asset, ticket, and audit together; composable helpers only flush, and existing autobegun reads must be resolved explicitly.
 
 - [ ] **29. Build explicit ORM read queries**
 

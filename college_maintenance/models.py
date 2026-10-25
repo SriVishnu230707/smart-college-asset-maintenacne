@@ -5,6 +5,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, MetaData, Numeric, Index, String, Text, Uuid, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 NAMING_CONVENTION = {
@@ -186,3 +187,15 @@ class WorkOrderPart(Base):
     @property
     def line_total(self) -> Decimal:
         return self.quantity_used * self.unit_cost_at_use
+
+
+class AuditEvent(Base):
+    __tablename__ = "audit_events"
+    __table_args__ = (CheckConstraint("action !~ '^[[:space:]]*$'", name="action"),)
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
+    actor_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    asset_id: Mapped[UUID | None] = mapped_column(ForeignKey("assets.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    ticket_id: Mapped[UUID | None] = mapped_column(ForeignKey("maintenance_tickets.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    action: Mapped[str] = mapped_column(Text)
+    payload: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))

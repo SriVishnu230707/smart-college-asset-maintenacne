@@ -57,3 +57,11 @@ A reviewed migration backfills a required condition note and truly renames a pop
 Revision 0002 uses nullable add, deterministic backfill, NOT NULL/default/check, and ALTER COLUMN RENAME. SparePart.name remains the Python attribute while the database column becomes display_name. A five-second lock timeout bounds unexpected blocking; real large deployments still require reviewed lock/backfill scheduling and backups. App migrations only move forward; downgrade is exercised solely on a narrowly named disposable database. See [manual autogenerate review](https://alembic.sqlalchemy.org/en/latest/autogenerate.html).
 
 Verification: 22 checks in both PowerShell versions. [Predictions](../labs/step-27/notes.md), [evidence](../labs/step-27/evidence.txt).
+
+## Step 28: One transaction owner
+
+One use-case owner commits asset, ticket, and audit together; composable helpers only flush, and existing autobegun reads must be resolved explicitly.
+
+Persistence primitives do not authorize callers; the later API/business layer must validate roles and lifecycle eligibility before invoking them. The owner encloses reads and writes, returns primitive IDs before expiration, and propagates errors. An existing read transaction is never secretly committed. Audit storage has its own reviewed revision and RESTRICT references. See [Session transaction framing](https://docs.sqlalchemy.org/en/21/orm/session_transaction.html).
+
+Verification: 20 checks in both PowerShell versions. [Predictions](../labs/step-28/notes.md), [evidence](../labs/step-28/evidence.txt).
