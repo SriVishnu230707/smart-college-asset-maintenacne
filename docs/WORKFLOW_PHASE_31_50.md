@@ -33,3 +33,11 @@ Direct API requests prove own-ticket, assigned-technician, department-admin, and
 Creation derives reporter and department on the server. Original text requires the current-department reporter and open state; triage requires an in-scope administrator. Historical read access after transfer never grants mutation access. Archived departments and retired assets reject new reports. The read policy reuses server-derived scope; unauthorized details conceal resource existence. Database roles are distinct from these application roles.
 
 Verification: 25 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-34/notes.md), [executed evidence](../labs/step-34/evidence.txt).
+
+## Step 35: Enforce explicit ticket transitions
+
+Administrative transitions validate eligible assignees, rejection reasons, rework and verification conditions, and terminal-state conflicts.
+
+Ticket-row locks serialize these administrative commands. Approval and assignment are one operation. Reassignment rejects existing orders; only active same-department technicians qualify. Verification/rework require completed work and no active order. Repair start and completion are intentionally work-order commands, implemented in Steps 39-40; this lesson uses explicit synthetic repair-state fixtures to test the administrator edges. A reviewed revision preserves separate verification and rework notes.
+
+Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-35/notes.md), [executed evidence](../labs/step-35/evidence.txt).

@@ -394,13 +394,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 34 notes](../labs/step-34/notes.md), [executed proof](../labs/step-34/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 25 checks passed in both shells. Direct API requests prove own-ticket, assigned-technician, department-admin, and Super Admin boundaries for reads and mutations.
 
-- [ ] **35. Implement ticket transitions**
+- [x] **35. Implement ticket transitions**
 
   Learn: Represent allowed states, approvals, rejection reasons, and assignment rules explicitly.
 
   Apply: Implement report -> assigned -> in_progress -> awaiting_verification -> closed, plus defined rejection/rework paths.
 
   Prove: Reject invalid transitions and an assignee who exists but is not an authorized technician.
+
+  Evidence: [Step 35 notes](../labs/step-35/notes.md), [executed proof](../labs/step-35/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Administrative transitions validate eligible assignees, rejection reasons, rework and verification conditions, and terminal-state conflicts.
 
 - [ ] **36. Write a transactional audit history**
 

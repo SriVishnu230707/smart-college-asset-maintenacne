@@ -12,7 +12,7 @@ from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket
 from college_maintenance.reads import asset_detail, scope_for_actor, ticket_query
 from college_maintenance.sessions import SessionFactory
-from college_maintenance.workflow import Conflict, NotFound, report_ticket, edit_report, triage_ticket, ticket_result
+from college_maintenance.workflow import Conflict, NotFound, report_ticket, edit_report, triage_ticket, ticket_result, transition_ticket
 
 class ReportInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -29,6 +29,12 @@ class EditInput(BaseModel):
 class PriorityInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     priority: Literal['low','medium','high','critical']
+
+class TransitionInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    action: Literal['assign','reject','verify','rework']
+    technician_id: UUID | None = None
+    reason: str | None = Field(None, max_length=10000)
 
 def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
     app = FastAPI(title='College maintenance API', version='0.1.0')
@@ -73,6 +79,11 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
     def patch_priority(ticket_id: UUID, body: PriorityInput, identity=Depends(actor_id), session=Depends(session_dependency)):
         with session.begin():
             return ticket_result(triage_ticket(session, identity, ticket_id, body.priority))
+
+    @app.post('/tickets/{ticket_id}/transitions')
+    def post_transition(ticket_id: UUID, body: TransitionInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            return ticket_result(transition_ticket(session, identity, ticket_id, **body.model_dump()))
 
     @app.get('/assets/{asset_id}')
     def get_asset(asset_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):

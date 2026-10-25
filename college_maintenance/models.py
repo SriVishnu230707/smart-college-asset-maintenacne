@@ -128,6 +128,8 @@ class MaintenanceTicket(Base):
     rejected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     rejection_reason: Mapped[str | None] = mapped_column(Text)
+    verification_note: Mapped[str | None] = mapped_column(Text)
+    rework_reason: Mapped[str | None] = mapped_column(Text)
 
     reporter: Mapped[User] = relationship(back_populates="reported_tickets", foreign_keys=[reported_by_id])
     assignee: Mapped[User | None] = relationship(back_populates="assigned_tickets", foreign_keys=[assigned_to_id])
