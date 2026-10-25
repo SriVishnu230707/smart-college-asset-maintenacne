@@ -374,13 +374,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
 **Steps 33–40: Build the actual maintenance workflow**
 
-- [ ] **33. Expose a thin API boundary**
+- [x] **33. Expose a thin API boundary**
 
   Learn: Separate request validation, authentication identity, business logic, persistence, and response serialization.
 
   Apply: Add FastAPI routes around already-understood use cases, with a Session lifecycle that matches the chosen transaction owner.
 
   Prove: Trace errors to the right layer and avoid duplicate commits or database I/O after cleanup.
+
+  Evidence: [Step 33 notes](../labs/step-33/notes.md), [executed proof](../labs/step-33/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. FastAPI reads validate requests, resolve opaque bearer identity, authorize database scope, and serialize values inside one operation transaction.
 
 - [ ] **34. Apply resource-scoped permissions**
 

@@ -1,0 +1,73 @@
+Step 33: Expose the thin HTTP boundary verification evidence
+Captured (Asia/Kolkata): 2026-10-25 10:16:29 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): abe5aa2d-0d7d-425d-9303-b72ff93253ad
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-33/python_lab.py --run-id <run-id>
+C:\projects\Smart College Asset & Maintenance Management System\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=19069
+PASS: A missing bearer credential is rejected before database access.
+PASS: Invalid bearer credentials do not select an actor.
+PASS: A verified actor can read an authorized ticket through the real HTTP boundary.
+PASS: The successful read has exactly one explicit transaction owner.
+PASS: Response construction excludes private user attributes.
+PASS: Malformed path input fails at request validation.
+PASS: Invalid page bounds fail at request validation.
+PASS: Unsupported domain filters fail in the read layer.
+PASS: An absent resource returns the documented not-found response.
+PASS: Client role headers do not control the authenticated actor.
+PASS: An authenticated but inactive database actor is denied.
+PASS: Success, validation failures, and domain failures return every request connection.
+PASS: The default verifier resolves opaque token digests and fails closed for unknown credentials.
+PASS: Removing a locally provisioned credential revokes it without accepting an actor ID.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-33/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step33 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP33_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-33/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step33 | abe5aa2d-0d7d-425d-9303-b72ff93253ad
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-33/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step33 | abe5aa2d-0d7d-425d-9303-b72ff93253ad
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-33/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

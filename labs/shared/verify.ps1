@@ -82,6 +82,7 @@ function Invoke-CommittedLab {
     if (-not $SqlOnly) {
         $probe = "import sys, sqlalchemy, psycopg; from importlib.metadata import version; sys.exit(0 if sys.version_info >= (3, 10) and version('SQLAlchemy') == '2.1.6' and version('psycopg') == '3.3.6' and version('psycopg-binary') == '3.3.6' else 1)"
         if ([int]$Step -ge 26) { $probe = "import alembic; from importlib.metadata import version; assert version('alembic') == '1.20.1'; " + $probe }
+        if ([int]$Step -ge 33) { $probe = "import fastapi, httpx, uvicorn; from importlib.metadata import version; assert version('fastapi') == '0.162.0' and version('httpx') == '0.28.1'; " + $probe }
         $PythonExecutable = Resolve-LabPython -Executable $PythonExecutable -Probe $probe -Requirements 'requirements.txt'
     }
     $labDirectory = Join-Path $projectRoot "labs/step-$Step"

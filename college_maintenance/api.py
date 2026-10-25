@@ -1,0 +1,62 @@
+"""Thin synchronous FastAPI boundary. One transaction owner per operation."""
+from dataclasses import asdict
+from uuid import UUID
+from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.exc import IntegrityError
+from college_maintenance.authentication import authenticate_token
+from college_maintenance.pagination import ticket_feed
+from college_maintenance.models import MaintenanceTicket
+from college_maintenance.reads import asset_detail, scope_for_actor, ticket_query
+from college_maintenance.sessions import SessionFactory
+
+def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
+    app = FastAPI(title='College maintenance API', version='0.1.0')
+    bearer = HTTPBearer(auto_error=False)
+
+    def actor_id(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
+        identity = authenticate(credentials.credentials) if credentials else None
+        if identity is None:
+            raise HTTPException(401, 'Valid bearer authentication required', headers={'WWW-Authenticate':'Bearer'})
+        return identity
+
+    def session_dependency():
+        with session_factory() as session:
+            yield session
+
+    @app.exception_handler(PermissionError)
+    def forbidden(request, error): return JSONResponse(status_code=403, content={'detail':'Permission denied'})
+
+    @app.exception_handler(ValueError)
+    def invalid(request, error): return JSONResponse(status_code=400, content={'detail':str(error)})
+
+    @app.exception_handler(IntegrityError)
+    def conflict(request, error): return JSONResponse(status_code=409, content={'detail':'Database integrity conflict'})
+
+    @app.get('/assets/{asset_id}')
+    def get_asset(asset_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            result = asset_detail(session, scope_for_actor(session, identity), asset_id)
+            if result is None: raise HTTPException(404, 'Asset not found')
+            return asdict(result)
+
+    @app.get('/tickets')
+    def list_tickets(limit: int = Query(20, ge=1, le=100), cursor: str | None = None, department_id: UUID | None = None,
+                     status: str | None = None, priority: str | None = None,
+                     identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            return asdict(ticket_feed(session, scope_for_actor(session, identity), limit=limit, cursor=cursor,
+                department_id=department_id, status=status, priority=priority))
+
+    @app.get('/tickets/{ticket_id}')
+    def get_ticket(ticket_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            query = ticket_query(scope_for_actor(session, identity)).where(MaintenanceTicket.id == ticket_id)
+            result = session.execute(query).mappings().one_or_none()
+            if result is None: raise HTTPException(404, 'Ticket not found')
+            return dict(result)
+
+    return app
+
+app = create_app()

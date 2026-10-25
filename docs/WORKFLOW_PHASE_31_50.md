@@ -17,3 +17,11 @@ The fixed ticket page uses two SELECTs, while joined loading, raiseload, deferre
 Select-in loading avoids joined row multiplication. Joined collection results require unique(); this deduplicates ORM parents rather than reducing SQL rows. Response DTOs are constructed before Session close. Parent limits do not bound child collection size, so large comment histories use the separately scoped comment_page query. See [loader options](https://docs.sqlalchemy.org/en/21/orm/queryguide/relationships.html) and [column loading](https://docs.sqlalchemy.org/en/21/orm/queryguide/columns.html).
 
 Verification: 21 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-32/notes.md), [executed evidence](../labs/step-32/evidence.txt).
+
+## Step 33: Expose the thin HTTP boundary
+
+FastAPI reads validate requests, resolve opaque bearer identity, authorize database scope, and serialize values inside one operation transaction.
+
+Request validation returns 422, missing/invalid credentials 401, inactive actors 403, absent scoped rows 404, domain filter errors 400, and integrity conflicts 409. Request Sessions always close and response values need no database work afterward. Opaque token digests and aware expiry live in an ignored file; tokens are provisioned out of band for this local example. No client role or actor ID is trusted. See [API operation](API.md) and [FastAPI security](https://fastapi.tiangolo.com/tutorial/security/first-steps/).
+
+Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-33/notes.md), [executed evidence](../labs/step-33/evidence.txt).
