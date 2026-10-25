@@ -1,0 +1,67 @@
+Step 25: Ownership and deletion policies verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:16:30 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 4e204540-349b-4781-837a-5afd2fc2671e
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Relationship paths and exact-run cleanup refusal (22023) are asserted.
+Command: python -X utf8 -B labs/step-25/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=3620
+PASS: Removing a disposable owned child invokes delete-orphan on flush.
+PASS: Loaded ownership deletion explicitly deletes the remaining child before its parent.
+PASS: The second disposable parent begins with an unloaded collection.
+PASS: Passive deletion of an unloaded parent emits no child SELECT or DELETE; PostgreSQL cascades it.
+PASS: Direct SQL and both ORM loading paths leave no disposable owned children.
+PASS: Department deletion with loaded=False reaches database RESTRICT without nulling history.
+PASS: Department deletion with loaded=True reaches database RESTRICT without nulling history.
+PASS: MaintenanceTicket deletion with loaded=False reaches database RESTRICT without nulling history.
+PASS: MaintenanceTicket deletion with loaded=True reaches database RESTRICT without nulling history.
+PASS: WorkOrder deletion with loaded=False reaches database RESTRICT without nulling history.
+PASS: WorkOrder deletion with loaded=True reaches database RESTRICT without nulling history.
+PASS: Direct SQL cannot delete a part referenced by historical cost lines.
+PASS: Ticket, work order, and cost snapshot remain intact after every failed deletion.
+PASS: Application history uses database restriction, not ORM delete cascade or delete-orphan.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-25/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step25 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP25_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-25/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step25 | 4e204540-349b-4781-837a-5afd2fc2671e
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-25/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step25 | 4e204540-349b-4781-837a-5afd2fc2671e
+(1 row)
+
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-25/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

@@ -31,7 +31,7 @@ class Department(Base):
     code: Mapped[str] = mapped_column(String(20), unique=True)
     name: Mapped[str] = mapped_column(String(150))
     is_archived: Mapped[bool] = mapped_column(server_default=text("false"))
-    assets: Mapped[list["Asset"]] = relationship(back_populates="department")
+    assets: Mapped[list["Asset"]] = relationship(back_populates="department", passive_deletes="all")
 
 
 class AssetCategory(Base):
@@ -66,8 +66,8 @@ class User(Base):
         ForeignKey("departments.id", name="fk_users_department", ondelete="RESTRICT", onupdate="RESTRICT"), index=True
     )
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
-    reported_tickets: Mapped[list["MaintenanceTicket"]] = relationship(back_populates="reporter", foreign_keys="MaintenanceTicket.reported_by_id")
-    assigned_tickets: Mapped[list["MaintenanceTicket"]] = relationship(back_populates="assignee", foreign_keys="MaintenanceTicket.assigned_to_id")
+    reported_tickets: Mapped[list["MaintenanceTicket"]] = relationship(back_populates="reporter", foreign_keys="MaintenanceTicket.reported_by_id", passive_deletes="all")
+    assigned_tickets: Mapped[list["MaintenanceTicket"]] = relationship(back_populates="assignee", foreign_keys="MaintenanceTicket.assigned_to_id", passive_deletes="all")
 
 
 class Asset(Base):
@@ -127,7 +127,7 @@ class MaintenanceTicket(Base):
 
     reporter: Mapped[User] = relationship(back_populates="reported_tickets", foreign_keys=[reported_by_id])
     assignee: Mapped[User | None] = relationship(back_populates="assigned_tickets", foreign_keys=[assigned_to_id])
-    work_orders: Mapped[list["WorkOrder"]] = relationship(back_populates="ticket")
+    work_orders: Mapped[list["WorkOrder"]] = relationship(back_populates="ticket", passive_deletes="all")
 
 
 class SparePart(Base):
@@ -145,7 +145,7 @@ class SparePart(Base):
     reorder_level: Mapped[int] = mapped_column(server_default=text("0"))
     current_unit_cost: Mapped[Decimal] = mapped_column(Numeric(12,2))
     is_archived: Mapped[bool] = mapped_column(server_default=text("false"))
-    usages: Mapped[list["WorkOrderPart"]] = relationship(back_populates="part")
+    usages: Mapped[list["WorkOrderPart"]] = relationship(back_populates="part", passive_deletes="all")
 
 
 class WorkOrder(Base):
@@ -165,7 +165,7 @@ class WorkOrder(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ticket: Mapped[MaintenanceTicket] = relationship(back_populates="work_orders")
     technician: Mapped[User] = relationship()
-    part_usages: Mapped[list["WorkOrderPart"]] = relationship(back_populates="work_order")
+    part_usages: Mapped[list["WorkOrderPart"]] = relationship(back_populates="work_order", passive_deletes="all")
 
 
 class WorkOrderPart(Base):

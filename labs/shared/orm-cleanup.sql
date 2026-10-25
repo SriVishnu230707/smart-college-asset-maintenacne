@@ -20,7 +20,7 @@ SELECT to_regnamespace(:'lab_schema') IS NULL AS absent \gset
     IF NOT matches THEN
       RAISE EXCEPTION USING ERRCODE='22023', MESSAGE='REFUSED: '||upper(replace(schema_name,'college_',''))||'_RUN_ID_MISMATCH';
     END IF;
-    FOREACH name IN ARRAY ARRAY['work_order_parts','work_orders','maintenance_tickets','assets','users','spare_parts','asset_categories','departments','lab_run'] LOOP
+    FOREACH name IN ARRAY ARRAY['owned_children','owned_parents','work_order_parts','work_orders','maintenance_tickets','assets','users','spare_parts','asset_categories','departments','lab_run'] LOOP
       EXECUTE format('DROP TABLE IF EXISTS %I.%I',schema_name,name);
     END LOOP;
     EXECUTE format('DROP SCHEMA %I',schema_name);

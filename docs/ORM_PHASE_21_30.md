@@ -33,3 +33,11 @@ WorkOrderPart explicitly maps consolidated quantities and exact historical unit 
 WorkOrder, SparePart, and WorkOrderPart extend application metadata with named RESTRICT references, numeric money, stock bounds, and a partial unique active-work-order index. Association objects carry their own data and relationships; no competing secondary many-to-many collection is mapped. Completion eligibility, inventory movements, and immutable completed work are later workflows, not implied by this mapping. See [association objects](https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#association-object).
 
 Verification: 20 checks in both PowerShell versions. [Predictions](../labs/step-24/notes.md), [evidence](../labs/step-24/evidence.txt).
+
+## Step 25: Ownership and deletion policies
+
+Application references preserve ticket and work-order history for loaded, unloaded, and direct SQL deletion paths; delete-orphan and CASCADE are demonstrated only on disposable owned children.
+
+History-bearing parent collections use passive_deletes="all" and retain RESTRICT foreign keys; they have no delete/delete-orphan cascade. A separate lab-only Parent/Child model compares all, delete-orphan with passive_deletes=True and ON DELETE CASCADE. These ownership examples never apply destructive cascading to application history. Full immutable-completion workflows remain later work. See [cascade policies](https://docs.sqlalchemy.org/en/21/orm/cascades.html).
+
+Verification: 23 checks in both PowerShell versions. [Predictions](../labs/step-25/notes.md), [evidence](../labs/step-25/evidence.txt).
