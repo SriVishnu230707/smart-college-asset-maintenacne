@@ -470,13 +470,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 41 notes](../labs/step-41/notes.md), [executed proof](../labs/step-41/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Four injected failures and a real unique-constraint failure leave all seven participating tables unchanged, as read independently after rollback.
 
-- [ ] **42. Observe MVCC and READ COMMITTED**
+- [x] **42. Observe MVCC and READ COMMITTED**
 
   Learn: Understand committed visibility, statement snapshots, and long transactions.
 
   Apply: Use two independent connections to read, update, commit, and repeat reads in a controlled order.
 
   Prove: Explain every observation without assuming the ORM identity map is a PostgreSQL snapshot.
+
+  Evidence: [Step 42 notes](../labs/step-42/notes.md), [executed proof](../labs/step-42/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 21 checks passed in both shells. Two real backend connections prove committed statement snapshots, own-write visibility, rollback, and the separate behavior of ORM identity-map caching.
 
 - [ ] **43. Use an atomic guarded stock update**
 

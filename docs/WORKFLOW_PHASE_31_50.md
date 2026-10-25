@@ -89,3 +89,11 @@ Four injected failures and a real unique-constraint failure leave all seven part
 The private test-only checkpoint seam is unavailable through HTTP. Faults fire after balance/price flush, after ledger insertion, before completion, and after audit insertion. PostgreSQL fingerprints retain exact numeric JSON text rather than float conversions. A multi-part shortage consumes nothing; a new authorized correction permits a fresh successful attempt. The transaction context propagates errors, rolls back, closes the Session, and returns its checkout.
 
 Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-41/notes.md), [executed evidence](../labs/step-41/evidence.txt).
+
+## Step 42: Observe READ COMMITTED visibility
+
+Two real backend connections prove committed statement snapshots, own-write visibility, rollback, and the separate behavior of ORM identity-map caching.
+
+An uncommitted write is invisible to the other reader. After its commit, a later statement in an already-open READ COMMITTED transaction sees the new row version. An existing Python entity can remain stale until refresh even though a column projection is fresh. No ORM cache is treated as a PostgreSQL isolation snapshot. Every explicit transaction is ended before independent observation. See [PostgreSQL isolation](https://www.postgresql.org/docs/18/transaction-iso.html).
+
+Verification: 21 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-42/notes.md), [executed evidence](../labs/step-42/evidence.txt).
