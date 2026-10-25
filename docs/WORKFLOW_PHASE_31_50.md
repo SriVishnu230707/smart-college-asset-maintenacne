@@ -145,3 +145,11 @@ Ticket mapper versions and required HTTP expected versions reject stale report/p
 Two independently loaded entities prove ORM StaleDataError and preservation of the winner. Core DML without a version predicate bypasses mapper protection, so that counterexample is rolled back; a qualified predicate matches zero stale rows. The API returns current versions, requires positive expected_version on protected edits, and emits no success audit for rejected changes. Earlier permission/audit HTTP fixtures now supply the new transport field while preserving their original assertions. A reviewed migration backfills version 1 for existing rows. See [SQLAlchemy version counters](https://docs.sqlalchemy.org/en/21/orm/versioning.html).
 
 Verification: 20 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-48/notes.md), [executed evidence](../labs/step-48/evidence.txt).
+
+## Step 49: Aggregate reports before child joins
+
+Hand-counted cost and failure reports avoid parts/comments fan-out, exclude unfinished estimates, and retain recorded department history.
+
+Parts first aggregate to one row per work order, then completed work to one row per department. Comments and proof never join those money aggregates. The naive fixture totals 137.00 incorrectly; raw SQL and SQLAlchemy correctly return 52.00. SUM(DISTINCT amount) is not a repair for fan-out because legitimate equal amounts may belong to different rows. Zero-cost completed repairs count, empty departments retain zero totals, and failures count tickets at department/asset grain. The transfer fixture closes every ticket before moving its asset and proves historical costs remain with ticket.department_id. Report APIs permit only scoped department administrators or Super Admin.
+
+Verification: 19 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-49/notes.md), [executed evidence](../labs/step-49/evidence.txt).

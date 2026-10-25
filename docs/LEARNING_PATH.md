@@ -546,13 +546,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
 **Steps 49–56: Analytics and performance with evidence**
 
-- [ ] **49. Prevent report fan-out errors**
+- [x] **49. Prevent report fan-out errors**
 
   Learn: State input/result grain and pre-aggregate child data before joining cost totals.
 
   Apply: Build cost-by-department and failure-frequency reports in SQL and SQLAlchemy.
 
   Prove: A work order with multiple parts and ticket comments retains its correct labor and part totals.
+
+  Evidence: [Step 49 notes](../labs/step-49/notes.md), [executed proof](../labs/step-49/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 19 checks passed in both shells. Hand-counted cost and failure reports avoid parts/comments fan-out, exclude unfinished estimates, and retain recorded department history.
 
 - [ ] **50. Structure advanced reporting queries**
 
