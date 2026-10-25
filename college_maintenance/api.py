@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from fastapi import Depends, FastAPI, HTTPException, Query, Header
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DBAPIError
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 import base64
@@ -15,7 +15,8 @@ from college_maintenance.inventory import add_supplier, create_part, move_stock,
 from college_maintenance.models import SparePart
 from college_maintenance.repairs import create_order, start_order, edit_order, set_part_line, remove_part_line, discard_order, order_result
 from college_maintenance.attachments import order_parent
-from college_maintenance.completion import complete_in_session
+from college_maintenance.completion import complete_work_order
+from college_maintenance.retries import RETRYABLE
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -115,6 +116,12 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.exception_handler(IntegrityError)
     def conflict(request, error): return JSONResponse(status_code=409, content={'detail':'Database integrity conflict'})
 
+    @app.exception_handler(DBAPIError)
+    def database_error(request,error):
+        if getattr(error.orig,'sqlstate',None) in RETRYABLE:
+            return JSONResponse(status_code=503,content={'detail':'Transaction retry limit reached'},headers={'Retry-After':'1'})
+        return JSONResponse(status_code=500,content={'detail':'Database operation failed'})
+
     @app.exception_handler(Conflict)
     def state_conflict(request, error): return JSONResponse(status_code=409, content={'detail':str(error)})
 
@@ -176,8 +183,8 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
         with session.begin():return order_result(session,start_order(session,identity,order_id,request_id=request_id))
 
     @app.post('/work-orders/{order_id}/complete')
-    def post_complete(order_id: UUID,body: CompletionInput=CompletionInput(),identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
-        with session.begin():return complete_in_session(session,store,identity,order_id,request_id=request_id)
+    def post_complete(order_id: UUID,body: CompletionInput=CompletionInput(),identity=Depends(actor_id),request_id=Depends(request_identifier)):
+        return complete_work_order(store,identity,order_id,session_factory=session_factory,request_id=request_id)
 
     @app.patch('/work-orders/{order_id}')
     def patch_order(order_id: UUID,body: OrderInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):

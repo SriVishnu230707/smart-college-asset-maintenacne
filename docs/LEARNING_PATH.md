@@ -500,13 +500,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 44 notes](../labs/step-44/notes.md), [executed proof](../labs/step-44/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 16 checks passed in both shells. Completion can lock sorted stock rows explicitly, while concurrent edited and newly inserted part lines wait for parent protection and reject completed work.
 
-- [ ] **45. Handle lock ordering, deadlocks, and retries**
+- [x] **45. Handle lock ordering, deadlocks, and retries**
 
   Learn: Understand blocking, deadlock detection, lock/statement timeouts, and retry scope.
 
   Apply: Create a deliberate reversed-order deadlock, then apply consistent ordering and bounded full-transaction retry for retryable errors.
 
   Prove: Explain why retrying only the last SQL statement or all errors indiscriminately is incorrect.
+
+  Evidence: [Step 45 notes](../labs/step-45/notes.md), [executed proof](../labs/step-45/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. A real reversed-order deadlock is observed; consistent ordering succeeds, and only serialization/deadlock errors trigger bounded full-transaction retries.
 
 - [ ] **46. Compare stronger isolation levels**
 

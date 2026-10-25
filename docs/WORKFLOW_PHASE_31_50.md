@@ -113,3 +113,11 @@ Completion can lock sorted stock rows explicitly, while concurrent edited and ne
 Every service child edit locks/rechecks ticket then order, including proof changes and draft deletion. Completion holds those parents before selecting line membership and sorted parts. PostgreSQL blocking is observed for both an existing-line edit and a new-line insert; neither bypasses the frozen set. A direct SQL completed-child insert is independently rejected by the reviewed trigger. The application default remains guarded arithmetic; the internal stock_strategy option compares equivalent row-lock behavior and is not client-selectable.
 
 Verification: 16 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-44/notes.md), [executed evidence](../labs/step-44/evidence.txt).
+
+## Step 45: Order locks and retry whole transactions
+
+A real reversed-order deadlock is observed; consistent ordering succeeds, and only serialization/deadlock errors trigger bounded full-transaction retries.
+
+Retryable SQLSTATEs are 40001 and 40P01. Each attempt reauthorizes and reruns all reads/writes in a fresh Session; rollback/close precede bounded backoff. Business conflicts, integrity failures, arbitrary SQL errors and ambiguous connection failures are not retried indiscriminately. Completion HTTP now delegates transaction ownership to this retry owner rather than opening a second request transaction. Exhausted retryable database errors return a controlled 503 without SQL parameters. See [explicit locking](https://www.postgresql.org/docs/18/explicit-locking.html).
+
+Verification: 18 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-45/notes.md), [executed evidence](../labs/step-45/evidence.txt).

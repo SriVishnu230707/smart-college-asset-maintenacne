@@ -9,6 +9,7 @@ from college_maintenance.workflow import Conflict, nonblank
 from college_maintenance.inventory import money,consume_guarded
 from college_maintenance.auditing import audit_change
 from college_maintenance.sessions import SessionFactory
+from college_maintenance.retries import retry_transaction
 
 def completed_result(session, order):
     lines=session.scalars(select(WorkOrderPart).where(WorkOrderPart.work_order_id==order.id).order_by(WorkOrderPart.spare_part_id)).all()
@@ -63,6 +64,5 @@ def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault
     return result
 
 def complete_work_order(store,actor_id,order_id,*,session_factory=SessionFactory,request_id=None,stock_strategy='guarded'):
-    with session_factory() as session,session.begin():
-        result=complete_in_session(session,store,actor_id,order_id,request_id=request_id,stock_strategy=stock_strategy)
-    return result  # Return only after commit succeeds.
+    return retry_transaction(lambda session:complete_in_session(session,store,actor_id,order_id,
+        request_id=request_id,stock_strategy=stock_strategy),session_factory=session_factory)
