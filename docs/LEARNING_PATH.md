@@ -242,13 +242,15 @@ Reference reading: [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/
 
   Evidence: [Flush/commit guide](ORM_FLUSH_AND_COMMIT.md), [Step 20 predictions](../labs/step-20/notes.md), and [executed evidence](../labs/step-20/evidence.txt). All 35 checks passed: 29 Python assertions and six wrapper/psql assertions. A distinct read-only READ COMMITTED backend cannot see a flushed ticket until commit; rollback removes a successful flush. Observed SQL proves default autoflush, no_autoflush, explicit flush, and commit with autoflush disabled. An invalid-priority CHECK failure undoes preceding writes; PendingRollbackError prevents queries until explicit rollback, after which the same Session commits valid work. Independent psql verifies exact rows and both disposed backends before guarded cleanup. Freshness, relationships, and full workflows remain later lessons. Explaining visibility and recovery remains your learning gate.
 
-- [ ] **21. Understand identity and freshness**
+- [x] **21. Understand identity and freshness**
 
   Learn: Study the identity map, Session.get, expire, refresh, commit expiration, detached objects, and merge semantics.
 
   Apply: Load one asset through repeated gets, change it in another Session, and experiment with reloading.
 
   Prove: Explain Python identity versus database freshness and why merge is not a universal atomic database upsert.
+
+  Evidence: [Step 21 predictions](../labs/step-21/notes.md), [executed evidence](../labs/step-21/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 22 checks passed in both PowerShell versions. Identity-map reuse, expire/refresh, commit expiration, detached access, and merge are verified against independent committed writes. A deterministic merge race proves it is not atomic upsert.
 
 - [ ] **22. Map both ends of a relationship**
 

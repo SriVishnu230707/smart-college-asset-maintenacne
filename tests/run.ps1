@@ -9,7 +9,7 @@ $logDirectory = Join-Path $projectRoot ".local/test-results/powershell-$shellVer
 [IO.Directory]::CreateDirectory($logDirectory) | Out-Null
 $report = @("Regression suite: PowerShell $shellVersion", "Captured (UTC): $([DateTimeOffset]::UtcNow.ToString('u'))")
 $result = 'FAILED'
-$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40; '17'=48; '18'=32; '19'=39; '20'=35 }
+$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40; '17'=48; '18'=32; '19'=39; '20'=35; '21'=22 }
 
 function Assert-Suite([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
@@ -44,7 +44,7 @@ try {
     foreach ($step in $expectedCounts.Keys) {
         $verifier = Join-Path $projectRoot "labs/step-$step/verify.ps1"
         $arguments = @('-NoProfile', '-NonInteractive', '-File', $verifier)
-        if ($step -in @('05', '13', '14', '15', '16', '17', '18', '19', '20') -and $PythonExecutable) { $arguments += @('-PythonExecutable', $PythonExecutable) }
+        if (($step -eq '05' -or [int]$step -ge 13) -and $PythonExecutable) { $arguments += @('-PythonExecutable', $PythonExecutable) }
         $output = @(Invoke-LabProcess $shellExecutable $arguments -LogPath (Join-Path $logDirectory "step-$step.txt"))
         $text = $output -join "`n"
         $passCount = [regex]::Matches($text, '(?m)^PASS:').Count
@@ -76,8 +76,8 @@ try {
 
     $remaining = @(Invoke-LabProcess docker @('compose', '--file', $composeFile, 'exec', '-T', 'postgres', 'sh',
         '/labs/step-02/psql.sh', '--tuples-only', '--no-align', '--command',
-        "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|1[0-9]|20)$'")) -join ''
-    Assert-Suite ($remaining.Trim() -eq '0') 'A fresh connection confirms no Step 2-20 study schema remains.'
+        "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|[12][0-9]|30)$'")) -join ''
+    Assert-Suite ($remaining.Trim() -eq '0') 'A fresh connection confirms no implemented study schema remains.'
     $labCheckCount = ($expectedCounts.Values | Measure-Object -Sum).Sum
     $runnerCheckCount = @($report | Where-Object { $_ -like 'PASS:*' }).Count - $expectedCounts.Count
     $report += "Result: PASSED; $($expectedCounts.Count) lab suites, $labCheckCount lab checks, and $runnerCheckCount runner regression checks."

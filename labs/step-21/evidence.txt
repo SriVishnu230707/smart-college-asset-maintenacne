@@ -1,0 +1,66 @@
+Step 21: Identity and freshness verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:06:33 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 7f698953-8c7c-4103-ac89-cc72fae45d71
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+A merge race deliberately raises 23505; exact-run cleanup refusal raises 22023.
+Command: python -X utf8 -B labs/step-21/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=1019
+PASS: Repeated get returns the same Python object with one SELECT.
+PASS: The identity map retains loaded values after another connection commits.
+PASS: Expire marks the attribute without issuing SQL.
+PASS: Access after expire reloads the independently committed value.
+PASS: Refresh performs an immediate database reload.
+PASS: Default commit expires loaded attributes while retaining the identity marker.
+PASS: An expired detached object cannot load values without a Session.
+PASS: Merge copies state into a managed target rather than attaching the source.
+PASS: Loaded source values are copied to the merge target.
+PASS: A fresh Session confirms the committed merge update.
+PASS: Merge of a missing identity can produce a pending INSERT target.
+PASS: A concurrent insert defeats merge with a primary-key conflict; merge is not atomic upsert.
+PASS: The independent winner and previously committed merge insertion survive the failed merge.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-21/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step21 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP21_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-21/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step21 | 7f698953-8c7c-4103-ac89-cc72fae45d71
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-21/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step21 | 7f698953-8c7c-4103-ac89-cc72fae45d71
+(1 row)
+
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-21/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.
