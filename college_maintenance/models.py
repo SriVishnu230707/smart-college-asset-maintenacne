@@ -201,6 +201,10 @@ class AuditEvent(Base):
     asset_id: Mapped[UUID | None] = mapped_column(ForeignKey("assets.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
     ticket_id: Mapped[UUID | None] = mapped_column(ForeignKey("maintenance_tickets.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
     action: Mapped[str] = mapped_column(Text)
+    department_id: Mapped[UUID | None] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    request_id: Mapped[UUID] = mapped_column(Uuid, server_default=text("gen_random_uuid()"))
+    target_type: Mapped[str] = mapped_column(Text, server_default=text("'legacy'"))
+    target_id: Mapped[UUID | None] = mapped_column(Uuid)
     payload: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
 

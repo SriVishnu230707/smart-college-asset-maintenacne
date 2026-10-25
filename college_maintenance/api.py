@@ -1,7 +1,7 @@
 """Thin synchronous FastAPI boundary. One transaction owner per operation."""
 from dataclasses import asdict
-from uuid import UUID
-from fastapi import Depends, FastAPI, HTTPException, Query
+from uuid import UUID, uuid4
+from fastapi import Depends, FastAPI, HTTPException, Query, Header
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.exc import IntegrityError
@@ -9,10 +9,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
-from college_maintenance.models import MaintenanceTicket
+from college_maintenance.models import MaintenanceTicket, AuditEvent
+from sqlalchemy import select
 from college_maintenance.reads import asset_detail, scope_for_actor, ticket_query
 from college_maintenance.sessions import SessionFactory
-from college_maintenance.workflow import Conflict, NotFound, report_ticket, edit_report, triage_ticket, ticket_result, transition_ticket
+from college_maintenance.workflow import Conflict, NotFound, report_ticket, edit_report, triage_ticket, ticket_result, transition_ticket, locked_ticket, admin_scope
 
 class ReportInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -50,6 +51,9 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
         with session_factory() as session:
             yield session
 
+    def request_identifier(x_request_id: UUID | None = Header(None)):
+        return x_request_id or uuid4()
+
     @app.exception_handler(PermissionError)
     def forbidden(request, error): return JSONResponse(status_code=403, content={'detail':'Permission denied'})
 
@@ -66,24 +70,33 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
     def not_found(request, error): return JSONResponse(status_code=404, content={'detail':'Resource not found'})
 
     @app.post('/tickets', status_code=201)
-    def post_ticket(body: ReportInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+    def post_ticket(body: ReportInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
         with session.begin():
-            return ticket_result(report_ticket(session, identity, **body.model_dump()))
+            return ticket_result(report_ticket(session, identity, request_id=request_id, **body.model_dump()))
 
     @app.patch('/tickets/{ticket_id}/report')
-    def patch_report(ticket_id: UUID, body: EditInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+    def patch_report(ticket_id: UUID, body: EditInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
         with session.begin():
-            return ticket_result(edit_report(session, identity, ticket_id, **body.model_dump()))
+            return ticket_result(edit_report(session, identity, ticket_id, request_id=request_id, **body.model_dump()))
 
     @app.patch('/tickets/{ticket_id}/priority')
-    def patch_priority(ticket_id: UUID, body: PriorityInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+    def patch_priority(ticket_id: UUID, body: PriorityInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
         with session.begin():
-            return ticket_result(triage_ticket(session, identity, ticket_id, body.priority))
+            return ticket_result(triage_ticket(session, identity, ticket_id, body.priority, request_id=request_id))
 
     @app.post('/tickets/{ticket_id}/transitions')
-    def post_transition(ticket_id: UUID, body: TransitionInput, identity=Depends(actor_id), session=Depends(session_dependency)):
+    def post_transition(ticket_id: UUID, body: TransitionInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
         with session.begin():
-            return ticket_result(transition_ticket(session, identity, ticket_id, **body.model_dump()))
+            return ticket_result(transition_ticket(session, identity, ticket_id, request_id=request_id, **body.model_dump()))
+
+    @app.get('/tickets/{ticket_id}/audit')
+    def get_audit(ticket_id: UUID, limit: int = Query(20, ge=1, le=100), identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            actor = scope_for_actor(session, identity); ticket = locked_ticket(session, actor, ticket_id)
+            admin_scope(actor, ticket.department_id)
+            query = select(AuditEvent.id, AuditEvent.actor_id, AuditEvent.action, AuditEvent.department_id, AuditEvent.request_id,
+                AuditEvent.target_type, AuditEvent.target_id, AuditEvent.occurred_at, AuditEvent.payload).where(AuditEvent.ticket_id == ticket.id)
+            return [dict(row) for row in session.execute(query.order_by(AuditEvent.occurred_at, AuditEvent.id).limit(limit)).mappings()]
 
     @app.get('/assets/{asset_id}')
     def get_asset(asset_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):

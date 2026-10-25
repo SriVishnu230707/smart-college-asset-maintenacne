@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from college_maintenance.models import Asset, Department, MaintenanceTicket, User, WorkOrder
 from college_maintenance.reads import PRIORITIES, scope_for_actor
+from college_maintenance.auditing import audit_change
 
 class NotFound(Exception): pass
 class Conflict(Exception): pass
@@ -27,7 +28,7 @@ def locked_ticket(session, actor, ticket_id):
     if ticket is None or not can_read_ticket(actor, ticket): raise NotFound('Ticket not found')
     return ticket
 
-def report_ticket(session, actor_id, *, asset_id, title, description, priority='medium'):
+def report_ticket(session, actor_id, *, asset_id, title, description, priority='medium', request_id=None):
     actor = scope_for_actor(session, actor_id)
     asset = session.scalar(select(Asset).where(Asset.id == asset_id).with_for_update())
     if asset is None or actor.role != 'super_admin' and asset.department_id != actor.department_id:
@@ -38,31 +39,38 @@ def report_ticket(session, actor_id, *, asset_id, title, description, priority='
     ticket = MaintenanceTicket(asset_id=asset.id, department_id=asset.department_id, reported_by_id=actor.user_id,
         title=nonblank(title, 'title', 200), description=nonblank(description, 'description', 10000), priority=priority)
     session.add(ticket); session.flush()
+    audit_change(session, actor_id, 'ticket_reported', ticket=ticket, request_id=request_id, details={'priority':priority})
     return ticket
 
-def edit_report(session, actor_id, ticket_id, *, title, description):
+def edit_report(session, actor_id, ticket_id, *, title, description, request_id=None):
     actor = scope_for_actor(session, actor_id); ticket = locked_ticket(session, actor, ticket_id)
     if ticket.reported_by_id != actor.user_id or actor.role != 'super_admin' and actor.department_id != ticket.department_id:
         raise PermissionError('Current-department reporter required')
     if ticket.status != 'open': raise Conflict('Original report is only editable while open')
     ticket.title = nonblank(title, 'title', 200); ticket.description = nonblank(description, 'description', 10000)
-    session.flush(); return ticket
+    session.flush()
+    audit_change(session, actor_id, 'ticket_report_edited', ticket=ticket, request_id=request_id, details={'title':ticket.title,'description':ticket.description})
+    return ticket
 
-def triage_ticket(session, actor_id, ticket_id, priority):
+def triage_ticket(session, actor_id, ticket_id, priority, request_id=None):
     actor = scope_for_actor(session, actor_id); ticket = locked_ticket(session, actor, ticket_id)
     admin_scope(actor, ticket.department_id)
     if ticket.status not in {'open','assigned'}: raise Conflict('Ticket no longer permits triage')
     if priority not in PRIORITIES: raise ValueError('Invalid priority')
-    ticket.priority = priority; session.flush(); return ticket
+    previous = ticket.priority
+    ticket.priority = priority; session.flush()
+    audit_change(session, actor_id, 'ticket_priority_changed', ticket=ticket, request_id=request_id, details={'before':previous,'after':priority})
+    return ticket
 
 def ticket_result(ticket):
     return dict(id=ticket.id, asset_id=ticket.asset_id, department_id=ticket.department_id,
         reported_by_id=ticket.reported_by_id, assigned_to_id=ticket.assigned_to_id,
         title=ticket.title, description=ticket.description, priority=ticket.priority, status=ticket.status)
 
-def transition_ticket(session, actor_id, ticket_id, *, action, technician_id=None, reason=None):
+def transition_ticket(session, actor_id, ticket_id, *, action, technician_id=None, reason=None, request_id=None):
     actor = scope_for_actor(session, actor_id); ticket = locked_ticket(session, actor, ticket_id)
     admin_scope(actor, ticket.department_id)
+    previous = ticket.status
     now = datetime.now(timezone.utc)
     orders = session.scalars(select(WorkOrder).where(WorkOrder.ticket_id == ticket.id)).all()
     if action == 'assign':
@@ -85,4 +93,7 @@ def transition_ticket(session, actor_id, ticket_id, *, action, technician_id=Non
         else:
             ticket.rework_reason = note; ticket.status = 'in_progress'
     else: raise ValueError('Unsupported transition')
-    session.flush(); return ticket
+    session.flush()
+    audit_change(session, actor_id, 'ticket_'+action, ticket=ticket, request_id=request_id,
+        details={'before':previous,'after':ticket.status,'technician_id':str(ticket.assigned_to_id) if ticket.assigned_to_id else None,'reason':reason})
+    return ticket

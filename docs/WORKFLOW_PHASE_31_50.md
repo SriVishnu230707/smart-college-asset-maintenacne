@@ -41,3 +41,11 @@ Administrative transitions validate eligible assignees, rejection reasons, rewor
 Ticket-row locks serialize these administrative commands. Approval and assignment are one operation. Reassignment rejects existing orders; only active same-department technicians qualify. Verification/rework require completed work and no active order. Repair start and completion are intentionally work-order commands, implemented in Steps 39-40; this lesson uses explicit synthetic repair-state fixtures to test the administrator edges. A reviewed revision preserves separate verification and rework notes.
 
 Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-35/notes.md), [executed evidence](../labs/step-35/evidence.txt).
+
+## Step 36: Commit business audit with changes
+
+Every implemented ticket mutation records actor, target, request, department, time, and change details inside its owning transaction.
+
+A fault injected after the business flush but before audit persistence rolls back both; a fresh independent connection verifies the result. Failed attempts are operational failures, not successful business history. Administrator audit reads enforce ticket/department scope. No history edit/delete endpoint exists; database append-only history protection is added with the completed-work guards in Step 39.
+
+Verification: 18 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-36/notes.md), [executed evidence](../labs/step-36/evidence.txt).

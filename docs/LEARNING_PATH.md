@@ -404,13 +404,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 35 notes](../labs/step-35/notes.md), [executed proof](../labs/step-35/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Administrative transitions validate eligible assignees, rejection reasons, rework and verification conditions, and terminal-state conflicts.
 
-- [ ] **36. Write a transactional audit history**
+- [x] **36. Write a transactional audit history**
 
   Learn: Distinguish business audit rows from request logs and failed-attempt logging.
 
   Apply: Write actor/action/entity/request data in the same transaction as each successful ticket change.
 
   Prove: Force rollback and show neither the business change nor a success audit event survives.
+
+  Evidence: [Step 36 notes](../labs/step-36/notes.md), [executed proof](../labs/step-36/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. Every implemented ticket mutation records actor, target, request, department, time, and change details inside its owning transaction.
 
 - [ ] **37. Add comments and attachments**
 
