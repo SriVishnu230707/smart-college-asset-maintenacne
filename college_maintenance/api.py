@@ -7,6 +7,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
+import base64
+from fastapi.responses import Response
+from college_maintenance.attachments import FileStore, add_comment, attachment_metadata, read_attachment
+from college_maintenance.loading import comment_page
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -37,8 +41,19 @@ class TransitionInput(BaseModel):
     technician_id: UUID | None = None
     reason: str | None = Field(None, max_length=10000)
 
-def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
+class CommentInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    body: str = Field(min_length=1, max_length=10000)
+
+class AttachmentInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    filename: str = Field(min_length=1,max_length=200)
+    content_type: str = Field(min_length=1,max_length=100)
+    data_base64: str = Field(min_length=1,max_length=1398104)
+
+def create_app(session_factory=SessionFactory, authenticate=authenticate_token, storage=None):
     app = FastAPI(title='College maintenance API', version='0.1.0')
+    store = storage or FileStore()
     bearer = HTTPBearer(auto_error=False)
 
     def actor_id(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)):
@@ -104,6 +119,31 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token):
             result = asset_detail(session, scope_for_actor(session, identity), asset_id)
             if result is None: raise HTTPException(404, 'Asset not found')
             return asdict(result)
+
+    @app.post('/tickets/{ticket_id}/comments', status_code=201)
+    def post_comment(ticket_id: UUID, body: CommentInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
+        with session.begin(): return add_comment(session, identity, ticket_id, body.body, request_id=request_id)
+
+    @app.get('/tickets/{ticket_id}/comments')
+    def get_comments(ticket_id: UUID, limit: int = Query(20,ge=1,le=100), offset: int = Query(0,ge=0,le=100000), identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin():
+            actor=scope_for_actor(session,identity); locked_ticket(session,actor,ticket_id)
+            return [dict(row) for row in comment_page(session,actor,ticket_id,limit=limit,offset=offset)]
+
+    @app.post('/{kind}/{owner_id}/attachments', status_code=201)
+    def post_attachment(kind: Literal['ticket','work_order'], owner_id: UUID, body: AttachmentInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
+        data=base64.b64decode(body.data_base64,validate=True); key=store.put(data)
+        try:
+            with session.begin():
+                result=attachment_metadata(session,store,identity,owner_id,kind=kind,storage_key=key,data=data,filename=body.filename,content_type=body.content_type,request_id=request_id)
+        except BaseException:
+            store.remove(key); raise
+        return result
+
+    @app.get('/attachments/{kind}/{attachment_id}')
+    def get_attachment(kind: Literal['ticket','work_order'], attachment_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):
+        with session.begin(): data=read_attachment(session,store,identity,attachment_id,kind)
+        return Response(content=data,media_type='application/octet-stream',headers={'Content-Disposition':'attachment'})
 
     @app.get('/tickets')
     def list_tickets(limit: int = Query(20, ge=1, le=100), cursor: str | None = None, department_id: UUID | None = None,

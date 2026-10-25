@@ -219,3 +219,26 @@ class TicketComment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     ticket: Mapped[MaintenanceTicket] = relationship(back_populates="comments")
     author: Mapped[User] = relationship()
+
+
+class AttachmentFields:
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
+    storage_key: Mapped[str] = mapped_column(String(32), unique=True)
+    filename: Mapped[str] = mapped_column(String(200))
+    content_type: Mapped[str] = mapped_column(String(100))
+    size: Mapped[int] = mapped_column()
+    sha256: Mapped[str] = mapped_column(String(64))
+    uploaded_by_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+
+
+class TicketAttachment(AttachmentFields, Base):
+    __tablename__ = 'ticket_attachments'
+    __table_args__ = (CheckConstraint('size > 0 AND size <= 1048576', name='size'),)
+    ticket_id: Mapped[UUID] = mapped_column(ForeignKey('maintenance_tickets.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+
+
+class WorkOrderAttachment(AttachmentFields, Base):
+    __tablename__ = 'work_order_attachments'
+    __table_args__ = (CheckConstraint('size > 0 AND size <= 1048576', name='size'),)
+    work_order_id: Mapped[UUID] = mapped_column(ForeignKey('work_orders.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)

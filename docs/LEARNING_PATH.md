@@ -414,13 +414,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 36 notes](../labs/step-36/notes.md), [executed proof](../labs/step-36/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. Every implemented ticket mutation records actor, target, request, department, time, and change details inside its owning transaction.
 
-- [ ] **37. Add comments and attachments**
+- [x] **37. Add comments and attachments**
 
   Learn: Model authored child records and distinguish database transactions from external file storage.
 
   Apply: Add comments and separate ticket/work-order attachment metadata; define upload and orphan-cleanup behavior.
 
   Prove: Demonstrate how failed database work avoids leaving a valid-looking attachment record pointing to missing content.
+
+  Evidence: [Step 37 notes](../labs/step-37/notes.md), [executed proof](../labs/step-37/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 22 checks passed in both shells. Authored append-only comments and separate ticket/work-order attachments follow their parent permissions; upload failures compensate staged bytes.
 
 - [ ] **38. Build inventory as balance plus ledger**
 

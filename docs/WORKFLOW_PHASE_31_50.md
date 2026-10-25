@@ -49,3 +49,11 @@ Every implemented ticket mutation records actor, target, request, department, ti
 A fault injected after the business flush but before audit persistence rolls back both; a fresh independent connection verifies the result. Failed attempts are operational failures, not successful business history. Administrator audit reads enforce ticket/department scope. No history edit/delete endpoint exists; database append-only history protection is added with the completed-work guards in Step 39.
 
 Verification: 18 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-36/notes.md), [executed evidence](../labs/step-36/evidence.txt).
+
+## Step 37: Authorize comments and private attachments
+
+Authored append-only comments and separate ticket/work-order attachments follow their parent permissions; upload failures compensate staged bytes.
+
+Bytes are private local objects with random validated keys, size limits and SHA-256 verification; downloads are authenticated and force attachment disposition. The database records ownership, uploader, filename, media type, size and digest. An upload writes bytes first, verifies them, then commits metadata and audit together. A database failure removes its own staged object; a process crash may leave an orphan, handled separately with an age grace period and referenced-key scan. Garbage collection must run in a maintenance window or with uploads paused; it is not a distributed storage transaction. Completed-proof protection is strengthened in Step 39.
+
+Verification: 22 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-37/notes.md), [executed evidence](../labs/step-37/evidence.txt).
