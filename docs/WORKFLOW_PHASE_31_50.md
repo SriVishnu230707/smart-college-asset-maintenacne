@@ -129,3 +129,11 @@ Repeatable Read retains a snapshot and can abort stale row updates, while Serial
 The availability predicate is a clearly isolated teaching fixture encoded in asset location, not a new application requirement. Both disjoint Repeatable Read writes commit; Serializable rejects one with 40001, requiring full transaction retry. SQLAlchemy isolation configuration is set before autobegin and resets on pool return. The project keeps READ COMMITTED with explicit ticket/order/stock protection, guarded arithmetic and bounded deadlock/serialization retries; stronger isolation is not treated as a replacement for state, authorization or idempotency rules. See [PostgreSQL isolation](https://www.postgresql.org/docs/18/transaction-iso.html).
 
 Verification: 19 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-46/notes.md), [executed evidence](../labs/step-46/evidence.txt).
+
+## Step 47: Make completion durably idempotent
+
+Duplicate, simultaneous, discarded-response, and rollback-waiting completion requests resolve one durable work-order operation without duplicate stock or audit.
+
+Authorization precedes result disclosure. Ticket and order locks serialize the operation; completed status resolves the frozen outcome before unfinished-state checks, even after closure or rework. Only the owning currently assigned technician or a scoped administrator with completed-work read permission may retrieve it. Administrators still cannot initiate unfinished completion. Unique consumption identities and immutable child snapshots support the durable result; current ticket state, stock, display names and catalog prices are excluded. Two real-backend races prove commit and rollback behavior.
+
+Verification: 24 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-47/notes.md), [executed evidence](../labs/step-47/evidence.txt).

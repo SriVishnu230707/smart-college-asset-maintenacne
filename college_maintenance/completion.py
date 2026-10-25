@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 import json
 from sqlalchemy import select
-from college_maintenance.models import WorkOrderPart, WorkOrderAttachment, SparePart, InventoryMovement
+from college_maintenance.models import WorkOrder, WorkOrderPart, WorkOrderAttachment, SparePart, InventoryMovement
 from college_maintenance.reads import scope_for_actor
 from college_maintenance.attachments import order_parent
 from college_maintenance.workflow import Conflict, nonblank
@@ -25,7 +25,14 @@ def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault
     def checkpoint(stage):
         if _fault is not None:_fault(stage)
     actor=scope_for_actor(session,actor_id)
-    ticket,order=order_parent(session,actor,order_id,write=True)
+    # Authorize financial read scope before revealing an existing outcome.
+    ticket,order=order_parent(session,actor,order_id)
+    order=session.scalar(select(WorkOrder).where(WorkOrder.id==order.id).with_for_update().execution_options(populate_existing=True))
+    if order.status=='completed':
+        if actor.role=='technician' and order.technician_id!=actor_id:raise PermissionError('Owning assigned technician required')
+        return completed_result(session,order)
+    if actor.role!='technician' or ticket.assigned_to_id!=actor_id or order.technician_id!=actor_id:
+        raise PermissionError('Owning assigned technician required')
     if order.status!='in_progress' or ticket.status!='in_progress':raise Conflict('Only an in-progress repair can complete')
     nonblank(order.completion_note,'completion note',10000);money(order.labor_cost)
     proofs=session.scalars(select(WorkOrderAttachment).where(WorkOrderAttachment.work_order_id==order.id)).all()

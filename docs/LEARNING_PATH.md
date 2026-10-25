@@ -520,13 +520,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 46 notes](../labs/step-46/notes.md), [executed proof](../labs/step-46/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 19 checks passed in both shells. Repeatable Read retains a snapshot and can abort stale row updates, while Serializable rejects a demonstrated two-row write-skew history.
 
-- [ ] **47. Make completion retries idempotent**
+- [x] **47. Make completion retries idempotent**
 
   Learn: Use durable operation state, a unique consumption identity, and transaction-level concurrency control.
 
   Apply: Issue duplicate and simultaneous completion requests, including a retry after the original response is lost.
 
   Prove: The caller receives the existing completed outcome and no additional stock movement or cost is created.
+
+  Evidence: [Step 47 notes](../labs/step-47/notes.md), [executed proof](../labs/step-47/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 24 checks passed in both shells. Duplicate, simultaneous, discarded-response, and rollback-waiting completion requests resolve one durable work-order operation without duplicate stock or audit.
 
 - [ ] **48. Detect stale edits optimistically**
 
