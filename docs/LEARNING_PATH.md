@@ -444,13 +444,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 39 notes](../labs/step-39/notes.md), [executed proof](../labs/step-39/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Assigned technicians manage one active order, consolidated part lines and exact labor estimates; drafts reserve nothing and completed facts reject edits.
 
-- [ ] **40. Complete a work order atomically**
+- [x] **40. Complete a work order atomically**
 
   Learn: Combine authorization, state changes, stock deduction, cost snapshots, ledger movements, and audit history.
 
   Apply: Implement one outer completion transaction with an explicit concurrency protocol to refine in later steps.
 
   Prove: A successful completion produces internally consistent stock, ledger, costs, ticket state, and audit history.
+
+  Evidence: [Step 40 notes](../labs/step-40/notes.md), [executed proof](../labs/step-40/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 22 checks passed in both shells. Authorized completion verifies proof, locks stock, captures final prices, consumes parts, and commits work order, ticket, ledger and audit as one result.
 
 Checkpoint: The project supports authorized reporting, assignment, repair work, inventory movements, and one atomic completion use case.
 

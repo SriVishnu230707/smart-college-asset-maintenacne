@@ -1,0 +1,72 @@
+Step 40: Complete repairs in one transaction verification evidence
+Captured (Asia/Kolkata): 2026-10-25 10:33:13 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): a53c6019-53bd-470f-a17f-0fa5dd3eedf6
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-40/python_lab.py --run-id <run-id>
+C:\projects\Smart College Asset & Maintenance Management System\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=23025
+PASS: Administrators may verify repairs but cannot initiate technician completion.
+PASS: Completion accepts no editable cost or part fields.
+PASS: One authorized completion succeeds through the API boundary.
+PASS: The completion result contains exact frozen INR totals.
+PASS: Part cost is captured at successful completion, replacing the draft estimate.
+PASS: Completed work can be verified through the declared final transition.
+PASS: Completed line edits cannot change frozen consumption.
+PASS: Independent stock and ledger both retain the same remaining balance.
+PASS: Consumption references the completed order and exact frozen quantity.
+PASS: The single success audit event retains frozen costs and verified proof identity.
+PASS: Completion timestamp and verified ticket state persist together.
+PASS: A zero-cost labor-only repair with proof is valid.
+PASS: The workflow migration head matches the complete ORM metadata: [].
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-40/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step40 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP40_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-40/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step40 | a53c6019-53bd-470f-a17f-0fa5dd3eedf6
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-40/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step40 | a53c6019-53bd-470f-a17f-0fa5dd3eedf6
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-40/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

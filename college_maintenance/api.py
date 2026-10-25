@@ -15,6 +15,7 @@ from college_maintenance.inventory import add_supplier, create_part, move_stock,
 from college_maintenance.models import SparePart
 from college_maintenance.repairs import create_order, start_order, edit_order, set_part_line, remove_part_line, discard_order, order_result
 from college_maintenance.attachments import order_parent
+from college_maintenance.completion import complete_in_session
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -83,6 +84,9 @@ class OrderInput(BaseModel):
 class LineInput(BaseModel):
     model_config=ConfigDict(extra='forbid')
     quantity: int = Field(strict=True,ge=1,le=2147483647)
+
+class CompletionInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
 
 def create_app(session_factory=SessionFactory, authenticate=authenticate_token, storage=None):
     app = FastAPI(title='College maintenance API', version='0.1.0')
@@ -170,6 +174,10 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.post('/work-orders/{order_id}/start')
     def post_start(order_id: UUID,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
         with session.begin():return order_result(session,start_order(session,identity,order_id,request_id=request_id))
+
+    @app.post('/work-orders/{order_id}/complete')
+    def post_complete(order_id: UUID,body: CompletionInput=CompletionInput(),identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return complete_in_session(session,store,identity,order_id,request_id=request_id)
 
     @app.patch('/work-orders/{order_id}')
     def patch_order(order_id: UUID,body: OrderInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):

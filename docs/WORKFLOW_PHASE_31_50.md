@@ -73,3 +73,11 @@ Assigned technicians manage one active order, consolidated part lines and exact 
 Ticket/order locks protect create/start/edit/discard and child changes. Discarding a draft removes its metadata and leaves bytes for age-gated orphan collection. Stored estimates become final snapshots at the successful completion introduced in Step 40. This lesson uses a synthetic completed fixture to isolate price-history and immutability proofs. Reviewed database triggers protect completed parents and both old/new parents of child moves; audit, inventory and comment history reject UPDATE/DELETE. Direct SQL proofs bypass the ORM. The study installs the exact frozen revision guard, while Alembic owns the application installation.
 
 Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-39/notes.md), [executed evidence](../labs/step-39/evidence.txt).
+
+## Step 40: Complete repairs in one transaction
+
+Authorized completion verifies proof, locks stock, captures final prices, consumes parts, and commits work order, ticket, ledger and audit as one result.
+
+The initial protocol locks ticket, order and sorted stock rows. Every part must be available, proof bytes must match metadata, and exact per-repair totals must fit numeric(12,2). Child snapshots flush before the parent becomes immutable. Completion accepts no editable fields; costs in the returned stable-shaped result are decimal strings. A labor-only zero-cost repair remains valid. Later steps inject failures, compare stock protocols, prove contention, and add durable retry semantics; no cross-request snapshot or retry claim is inferred from this single-success proof.
+
+Verification: 22 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-40/notes.md), [executed evidence](../labs/step-40/evidence.txt).

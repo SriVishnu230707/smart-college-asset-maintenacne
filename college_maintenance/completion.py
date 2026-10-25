@@ -1,0 +1,56 @@
+"""One atomic repair completion; no editable fields enter this command."""
+from datetime import datetime, timezone
+import json
+from sqlalchemy import select
+from college_maintenance.models import WorkOrderPart, WorkOrderAttachment, SparePart, InventoryMovement
+from college_maintenance.reads import scope_for_actor
+from college_maintenance.attachments import order_parent
+from college_maintenance.workflow import Conflict, nonblank
+from college_maintenance.inventory import money
+from college_maintenance.auditing import audit_change
+from college_maintenance.sessions import SessionFactory
+
+def completed_result(session, order):
+    lines=session.scalars(select(WorkOrderPart).where(WorkOrderPart.work_order_id==order.id).order_by(WorkOrderPart.spare_part_id)).all()
+    parts=[dict(spare_part_id=line.spare_part_id,quantity_used=line.quantity_used,
+        unit_cost_at_use=format(line.unit_cost_at_use,'.2f'),line_total=format(line.line_total,'.2f')) for line in lines]
+    parts_cost=sum((line.line_total for line in lines),money('0.00'))
+    return dict(work_order_id=order.id,ticket_id=order.ticket_id,technician_id=order.technician_id,status=order.status,
+        completed_at=order.completed_at,currency='INR',labor_cost=format(order.labor_cost,'.2f'),parts=parts,
+        parts_cost=format(parts_cost,'.2f'),total_cost=format(order.labor_cost+parts_cost,'.2f'))
+
+def complete_in_session(session,store,actor_id,order_id,request_id=None):
+    actor=scope_for_actor(session,actor_id)
+    ticket,order=order_parent(session,actor,order_id,write=True)
+    if order.status!='in_progress' or ticket.status!='in_progress':raise Conflict('Only an in-progress repair can complete')
+    nonblank(order.completion_note,'completion note',10000);money(order.labor_cost)
+    proofs=session.scalars(select(WorkOrderAttachment).where(WorkOrderAttachment.work_order_id==order.id)).all()
+    if not proofs:raise Conflict('Completion requires work-order proof')
+    for proof in proofs:store.read(proof)
+    lines=session.scalars(select(WorkOrderPart).where(WorkOrderPart.work_order_id==order.id).order_by(WorkOrderPart.spare_part_id)).all()
+    part_ids=[line.spare_part_id for line in lines]
+    parts={p.id:p for p in session.scalars(select(SparePart).where(SparePart.id.in_(part_ids)).order_by(SparePart.id).with_for_update().execution_options(populate_existing=True))}
+    total=order.labor_cost
+    for line in lines:
+        part=parts.get(line.spare_part_id)
+        if part is None or part.is_archived:raise Conflict('A required part is unavailable')
+        if part.stock_quantity<line.quantity_used:raise Conflict('Insufficient stock')
+        total+=money(part.current_unit_cost)*line.quantity_used
+    money(total)  # Reject aggregate overflow before changing any balance.
+    for line in lines:
+        part=parts[line.spare_part_id]
+        part.stock_quantity-=line.quantity_used;line.unit_cost_at_use=part.current_unit_cost
+        session.add(InventoryMovement(spare_part_id=part.id,actor_id=actor_id,work_order_id=order.id,kind='consume',quantity_delta=-line.quantity_used))
+    # Flush child snapshots while their protected parent is still unfinished.
+    session.flush()
+    order.status='completed';order.completed_at=datetime.now(timezone.utc);ticket.status='awaiting_verification'
+    session.flush()
+    result=completed_result(session,order)
+    audit_change(session,actor_id,'work_order_completed',ticket=ticket,target_type='work_order',target_id=order.id,request_id=request_id,
+        details={**json.loads(json.dumps(result,default=str)),'proofs':[dict(id=str(p.id),sha256=p.sha256) for p in proofs]})
+    return result
+
+def complete_work_order(store,actor_id,order_id,*,session_factory=SessionFactory,request_id=None):
+    with session_factory() as session,session.begin():
+        result=complete_in_session(session,store,actor_id,order_id,request_id=request_id)
+    return result  # Return only after commit succeeds.
