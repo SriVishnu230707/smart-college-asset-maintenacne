@@ -1,0 +1,89 @@
+Step 26: Alembic schema ownership verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:22:36 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): db493c36-bc97-4820-b678-d05bbe043401
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Relationship paths and exact-run cleanup refusal (22023) are asserted.
+Command: python -X utf8 -B labs/step-26/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=5111
+PASS: Alembic uses the pinned reviewed version.
+PASS: The migration target begins as a genuinely empty database.
+PASS: The initial revision alone installs all eight application tables and its version marker.
+PASS: The database records the exact initial revision.
+PASS: Every initial primary key has its reviewed stable name.
+PASS: All eleven reference policies are installed as named RESTRICT constraints.
+PASS: The migrated association identity is composite.
+PASS: The partial active-work-order uniqueness index is installed.
+PASS: Migrated historical money uses exact numeric(12,2).
+PASS: A migrated table generates an ID without any create_all call.
+PASS: Migrated constraints reject invalid data with SQLSTATE 23514.
+PASS: Migrated constraints reject invalid data with SQLSTATE 23505.
+PASS: Reapplying the same revision is idempotent and preserves existing data.
+PASS: Unversioned application tables are never silently adopted or stamped.
+PASS: The application database is installed at the reviewed migration head.
+PASS: The independently migrated scratch database was closed and removed without touching application data.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-26/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step26 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP26_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-26/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step26 | db493c36-bc97-4820-b678-d05bbe043401
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-26/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step26 | db493c36-bc97-4820-b678-d05bbe043401
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "work_order_parts" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "work_orders" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "maintenance_tickets" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "assets" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "users" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "spare_parts" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "asset_categories" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "departments" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-26/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

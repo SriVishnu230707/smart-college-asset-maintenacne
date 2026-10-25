@@ -41,3 +41,11 @@ Application references preserve ticket and work-order history for loaded, unload
 History-bearing parent collections use passive_deletes="all" and retain RESTRICT foreign keys; they have no delete/delete-orphan cascade. A separate lab-only Parent/Child model compares all, delete-orphan with passive_deletes=True and ON DELETE CASCADE. These ownership examples never apply destructive cascading to application history. Full immutable-completion workflows remain later work. See [cascade policies](https://docs.sqlalchemy.org/en/21/orm/cascades.html).
 
 Verification: 23 checks in both PowerShell versions. [Predictions](../labs/step-25/notes.md), [evidence](../labs/step-25/evidence.txt).
+
+## Step 26: Alembic application schema ownership
+
+A frozen initial Alembic revision creates a genuinely empty database, installs named constraints, and owns the application schema; the application database is upgraded to the reviewed head.
+
+The initial revision contains explicit DDL, not a call to mutable application metadata. env.py takes target_metadata and an optional caller-owned connection; the ini stores no URL or password. A narrowly named scratch database is provisioned with the ignored admin credential, migrated as college_learner, closed, and dropped without FORCE. Normal application upgrades run as the learner and preserve public data. Use `.venv/Scripts/alembic.exe -c alembic.ini upgrade head`. See [Alembic tutorial](https://alembic.sqlalchemy.org/en/latest/tutorial.html). Downgrade is destructive and is exercised only in disposable databases in later proofs.
+
+Verification: 25 checks in both PowerShell versions. [Predictions](../labs/step-26/notes.md), [evidence](../labs/step-26/evidence.txt).

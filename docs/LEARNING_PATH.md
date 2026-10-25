@@ -298,13 +298,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 25 predictions](../labs/step-25/notes.md), [executed evidence](../labs/step-25/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 23 checks passed in both PowerShell versions. Application references preserve ticket and work-order history for loaded, unloaded, and direct SQL deletion paths; delete-orphan and CASCADE are demonstrated only on disposable owned children.
 
-- [ ] **26. Make Alembic own the application schema**
+- [x] **26. Make Alembic own the application schema**
 
   Learn: Use revision history, target_metadata, upgrade, downgrade, and named constraints.
 
   Apply: Create a clean initial application migration; retain earlier hand-written DDL only in the disposable SQL lab.
 
   Prove: Create a fresh database from migrations alone and inspect the installed constraints.
+
+  Evidence: [Step 26 predictions](../labs/step-26/notes.md), [executed evidence](../labs/step-26/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 25 checks passed in both PowerShell versions. A frozen initial Alembic revision creates a genuinely empty database, installs named constraints, and owns the application schema; the application database is upgraded to the reviewed head.
 
 - [ ] **27. Evolve populated data safely**
 
