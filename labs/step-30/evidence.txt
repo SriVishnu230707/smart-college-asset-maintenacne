@@ -1,12 +1,12 @@
 Step 30: Stable ticket pagination verification evidence
-Captured (Asia/Kolkata): 2026-10-25 09:38:38 +05:30
-Lab run ID (synthetic cleanup marker, not a credential): be51c552-27a5-4ab9-967c-6177e625f506
+Captured (Asia/Kolkata): 2026-10-25 10:11:10 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): ca82536e-bd46-46ff-9c09-668f74714ac3
 Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
 Relationship paths and exact-run cleanup refusal (22023) are asserted.
 Command: python -X utf8 -B labs/step-30/python_lab.py --run-id <run-id>
 PASS: Pinned SQLAlchemy and psycopg versions are used.
 PASS: The learner connects to PostgreSQL 18 with a free study namespace.
-writer_backend_pid=9021
+writer_backend_pid=17693
 PASS: Compound created_at/id cursors page tied timestamps exactly once in the fixed dataset.
 PASS: The final page has no continuation token.
 PASS: A filter with no authorized rows returns an empty page.
@@ -42,7 +42,7 @@ Pager usage is off.
 BEGIN
    set_config   |              set_config
 ----------------+--------------------------------------
- college_step30 | be51c552-27a5-4ab9-967c-6177e625f506
+ college_step30 | ca82536e-bd46-46ff-9c09-668f74714ac3
 (1 row)
 
 DO
@@ -55,7 +55,7 @@ Pager usage is off.
 BEGIN
    set_config   |              set_config
 ----------------+--------------------------------------
- college_step30 | be51c552-27a5-4ab9-967c-6177e625f506
+ college_step30 | ca82536e-bd46-46ff-9c09-668f74714ac3
 (1 row)
 
 psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_children" does not exist, skipping
