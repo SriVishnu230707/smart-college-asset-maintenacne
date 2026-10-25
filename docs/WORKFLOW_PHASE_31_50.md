@@ -121,3 +121,11 @@ A real reversed-order deadlock is observed; consistent ordering succeeds, and on
 Retryable SQLSTATEs are 40001 and 40P01. Each attempt reauthorizes and reruns all reads/writes in a fresh Session; rollback/close precede bounded backoff. Business conflicts, integrity failures, arbitrary SQL errors and ambiguous connection failures are not retried indiscriminately. Completion HTTP now delegates transaction ownership to this retry owner rather than opening a second request transaction. Exhausted retryable database errors return a controlled 503 without SQL parameters. See [explicit locking](https://www.postgresql.org/docs/18/explicit-locking.html).
 
 Verification: 18 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-45/notes.md), [executed evidence](../labs/step-45/evidence.txt).
+
+## Step 46: Compare stronger transaction isolation
+
+Repeatable Read retains a snapshot and can abort stale row updates, while Serializable rejects a demonstrated two-row write-skew history.
+
+The availability predicate is a clearly isolated teaching fixture encoded in asset location, not a new application requirement. Both disjoint Repeatable Read writes commit; Serializable rejects one with 40001, requiring full transaction retry. SQLAlchemy isolation configuration is set before autobegin and resets on pool return. The project keeps READ COMMITTED with explicit ticket/order/stock protection, guarded arithmetic and bounded deadlock/serialization retries; stronger isolation is not treated as a replacement for state, authorization or idempotency rules. See [PostgreSQL isolation](https://www.postgresql.org/docs/18/transaction-iso.html).
+
+Verification: 19 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-46/notes.md), [executed evidence](../labs/step-46/evidence.txt).

@@ -510,13 +510,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 45 notes](../labs/step-45/notes.md), [executed proof](../labs/step-45/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. A real reversed-order deadlock is observed; consistent ordering succeeds, and only serialization/deadlock errors trigger bounded full-transaction retries.
 
-- [ ] **46. Compare stronger isolation levels**
+- [x] **46. Compare stronger isolation levels**
 
   Learn: Contrast REPEATABLE READ and SERIALIZABLE with READ COMMITTED and identify retry requirements.
 
   Apply: Repeat visibility/conflict experiments at each level and reproduce a serialization failure.
 
   Prove: Choose an isolation/locking strategy for the project and justify it with observed behavior.
+
+  Evidence: [Step 46 notes](../labs/step-46/notes.md), [executed proof](../labs/step-46/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 19 checks passed in both shells. Repeatable Read retains a snapshot and can abort stale row updates, while Serializable rejects a demonstrated two-row write-skew history.
 
 - [ ] **47. Make completion retries idempotent**
 
