@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.schema import CreateSchema
 
 from college_maintenance.database import engine
-from college_maintenance.models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
+from labs.shared.column_models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
 from college_maintenance.sessions import SessionFactory
 from labs.shared.observations import statements_by_phase
 from asset_crud import create_asset, delete_fixture_asset, get_asset, list_assets, update_asset_location

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.schema import CreateSchema, CreateTable
 
-from college_maintenance.models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
+from labs.shared.column_models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
 from college_maintenance.database import engine
 
 SCHEMA = "college_step17"

@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from college_maintenance.models import Asset
+from labs.shared.column_models import Asset
 
 
 def create_asset(session: Session, *, asset_code: str, name: str, department_id: UUID,

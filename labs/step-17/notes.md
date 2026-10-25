@@ -1,5 +1,8 @@
 # Step 17 lab: define typed mapped classes
 
+Historical scope: Steps 17-20 use the [frozen column-only model snapshot](../shared/column_models.py) so their original mapping and SQL predictions remain reproducible. Current application mappings evolve from Step 22 onward.
+
+
 Read the [typed-mapping guide](../../docs/TYPED_ORM_MAPPINGS.md), inspect the [application models](../../college_maintenance/models.py), then run [python_lab.py](python_lab.py). This implements Step 17 of the [learning path](../../docs/LEARNING_PATH.md). It introduces mapped column definitions; Session persistence is Step 18.
 
 ## Run the proof

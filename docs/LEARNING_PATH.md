@@ -252,13 +252,15 @@ Reference reading: [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/
 
   Evidence: [Step 21 predictions](../labs/step-21/notes.md), [executed evidence](../labs/step-21/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 22 checks passed in both PowerShell versions. Identity-map reuse, expire/refresh, commit expiration, detached access, and merge are verified against independent committed writes. A deterministic merge race proves it is not atomic upsert.
 
-- [ ] **22. Map both ends of a relationship**
+- [x] **22. Map both ends of a relationship**
 
   Learn: Use relationship, back_populates, scalar/collection annotations, nullability, and foreign-key direction.
 
   Apply: Navigate Department.assets and Asset.department, and persist linked objects.
 
   Prove: Explain which part is enforced by PostgreSQL and which part provides ORM navigation and synchronization.
+
+  Evidence: [Step 22 predictions](../labs/step-22/notes.md), [executed evidence](../labs/step-22/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 19 checks passed in both PowerShell versions. Department.assets and Asset.department synchronize in Python and persist their foreign key, while direct SQL independently enforces parent existence.
 
 - [ ] **23. Map multiple paths to users**
 

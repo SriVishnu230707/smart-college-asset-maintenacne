@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError, PendingRollbackError
 from sqlalchemy.schema import CreateSchema
 
 from college_maintenance.database import engine
-from college_maintenance.models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
+from labs.shared.column_models import Asset, AssetCategory, Base, Department, MaintenanceTicket, User
 from college_maintenance.sessions import SessionFactory
 from labs.shared.observations import statements_by_phase
 

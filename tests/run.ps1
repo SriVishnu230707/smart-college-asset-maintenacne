@@ -9,7 +9,7 @@ $logDirectory = Join-Path $projectRoot ".local/test-results/powershell-$shellVer
 [IO.Directory]::CreateDirectory($logDirectory) | Out-Null
 $report = @("Regression suite: PowerShell $shellVersion", "Captured (UTC): $([DateTimeOffset]::UtcNow.ToString('u'))")
 $result = 'FAILED'
-$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40; '17'=48; '18'=32; '19'=39; '20'=35; '21'=22 }
+$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40; '17'=48; '18'=32; '19'=39; '20'=35; '21'=22; '22'=19 }
 
 function Assert-Suite([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }

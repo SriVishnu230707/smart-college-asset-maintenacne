@@ -1,5 +1,8 @@
 # ORM persistence with short-lived Sessions
 
+Historical scope: Steps 17-20 use the [frozen column-only model snapshot](../labs/shared/column_models.py) so their original mapping and SQL predictions remain reproducible. Current application mappings evolve from Step 22 onward.
+
+
 Step 18 persists the [typed Asset mapping](../college_maintenance/models.py) through the ORM. The [shared Session factory](../college_maintenance/sessions.py) uses the existing Engine; the [small CRUD helpers](../labs/step-18/asset_crud.py) practice on disposable study data. Run the [lab](../labs/step-18/notes.md) and compare its SQL trace with the [Core CRUD lesson](CORE_DML_AND_RESULTS.md).
 
 ## Own the Session at the operation boundary

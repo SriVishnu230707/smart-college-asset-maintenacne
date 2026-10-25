@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, MetaData, String, Text, Uuid, text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
@@ -30,6 +30,7 @@ class Department(Base):
     code: Mapped[str] = mapped_column(String(20), unique=True)
     name: Mapped[str] = mapped_column(String(150))
     is_archived: Mapped[bool] = mapped_column(server_default=text("false"))
+    assets: Mapped[list["Asset"]] = relationship(back_populates="department")
 
 
 class AssetCategory(Base):
@@ -80,6 +81,7 @@ class Asset(Base):
     department_id: Mapped[UUID] = mapped_column(
         ForeignKey("departments.id", name="fk_assets_department", ondelete="RESTRICT", onupdate="RESTRICT"), index=True
     )
+    department: Mapped[Department] = relationship(back_populates="assets")
     category_id: Mapped[UUID] = mapped_column(
         ForeignKey("asset_categories.id", name="fk_assets_category", ondelete="RESTRICT", onupdate="RESTRICT"), index=True
     )

@@ -1,5 +1,8 @@
 # Step 17: define typed mapped classes
 
+Historical scope: Steps 17-20 use the [frozen column-only model snapshot](../labs/shared/column_models.py) so their original mapping and SQL predictions remain reproducible. Current application mappings evolve from Step 22 onward.
+
+
 The [application models](../college_maintenance/models.py) now define Department, AssetCategory, Asset, User, and MaintenanceTicket. One DeclarativeBase owns their shared MetaData and mapper registry. The [Step 17 lab](../labs/step-17/notes.md) verifies all five mappings, creates their tables only in a disposable namespace, and tests PostgreSQL enforcement without a Session.
 
 ## Separate the three layers
