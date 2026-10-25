@@ -1,9 +1,10 @@
 """Typed column mappings; schema installation belongs to reviewed migrations."""
 
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, MetaData, String, Text, Uuid, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, MetaData, Numeric, Index, String, Text, Uuid, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 NAMING_CONVENTION = {
@@ -126,3 +127,60 @@ class MaintenanceTicket(Base):
 
     reporter: Mapped[User] = relationship(back_populates="reported_tickets", foreign_keys=[reported_by_id])
     assignee: Mapped[User | None] = relationship(back_populates="assigned_tickets", foreign_keys=[assigned_to_id])
+    work_orders: Mapped[list["WorkOrder"]] = relationship(back_populates="ticket")
+
+
+class SparePart(Base):
+    __tablename__ = "spare_parts"
+    __table_args__ = (
+        CheckConstraint("sku = upper(btrim(sku)) AND sku <> ''", name="sku"),
+        CheckConstraint("name !~ '^[[:space:]]*$'", name="name"),
+        CheckConstraint("stock_quantity >= 0 AND reorder_level >= 0", name="stock"),
+        CheckConstraint("current_unit_cost >= 0", name="cost"),
+    )
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
+    sku: Mapped[str] = mapped_column(String(50), unique=True)
+    name: Mapped[str] = mapped_column(String(150))
+    stock_quantity: Mapped[int] = mapped_column(server_default=text("0"))
+    reorder_level: Mapped[int] = mapped_column(server_default=text("0"))
+    current_unit_cost: Mapped[Decimal] = mapped_column(Numeric(12,2))
+    is_archived: Mapped[bool] = mapped_column(server_default=text("false"))
+    usages: Mapped[list["WorkOrderPart"]] = relationship(back_populates="part")
+
+
+class WorkOrder(Base):
+    __tablename__ = "work_orders"
+    __table_args__ = (
+        CheckConstraint("status IN ('draft','in_progress','completed')", name="status"),
+        CheckConstraint("labor_cost >= 0", name="labor_cost"),
+        Index("uq_work_orders_active_ticket", "ticket_id", unique=True, postgresql_where=text("status IN ('draft','in_progress')")),
+    )
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
+    ticket_id: Mapped[UUID] = mapped_column(ForeignKey("maintenance_tickets.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    technician_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    status: Mapped[str] = mapped_column(String(20), server_default=text("'draft'"))
+    labor_cost: Mapped[Decimal] = mapped_column(Numeric(12,2), server_default=text("0"))
+    completion_note: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ticket: Mapped[MaintenanceTicket] = relationship(back_populates="work_orders")
+    technician: Mapped[User] = relationship()
+    part_usages: Mapped[list["WorkOrderPart"]] = relationship(back_populates="work_order")
+
+
+class WorkOrderPart(Base):
+    __tablename__ = "work_order_parts"
+    __table_args__ = (
+        CheckConstraint("quantity_used > 0", name="quantity"),
+        CheckConstraint("unit_cost_at_use >= 0", name="unit_cost"),
+    )
+    work_order_id: Mapped[UUID] = mapped_column(ForeignKey("work_orders.id", ondelete="RESTRICT", onupdate="RESTRICT"), primary_key=True)
+    spare_part_id: Mapped[UUID] = mapped_column(ForeignKey("spare_parts.id", ondelete="RESTRICT", onupdate="RESTRICT"), primary_key=True, index=True)
+    quantity_used: Mapped[int] = mapped_column()
+    unit_cost_at_use: Mapped[Decimal] = mapped_column(Numeric(12,2))
+    work_order: Mapped[WorkOrder] = relationship(back_populates="part_usages")
+    part: Mapped[SparePart] = relationship(back_populates="usages")
+
+    @property
+    def line_total(self) -> Decimal:
+        return self.quantity_used * self.unit_cost_at_use

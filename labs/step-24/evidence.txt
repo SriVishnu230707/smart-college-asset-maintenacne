@@ -1,0 +1,64 @@
+Step 24: Part usage association objects verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:13:32 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 98397671-1bc9-4f43-b4a2-ea65f2135973
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Relationship paths and exact-run cleanup refusal (22023) are asserted.
+Command: python -X utf8 -B labs/step-24/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=2906
+PASS: Association flush synchronizes both parent-generated keys.
+PASS: Two units retain an exact 12.50 cost snapshot and a 25.00 line total.
+PASS: Both association navigation paths refer to the same explicit usage object.
+PASS: Draft usage does not reserve or consume inventory.
+PASS: Catalog price edits do not rewrite the historical usage price.
+PASS: Fresh relationship loading preserves the exact historical total.
+PASS: Duplicate consolidated order/part lines are rejected.
+PASS: Zero quantity is rejected by PostgreSQL.
+PASS: Negative historical unit cost is rejected by PostgreSQL.
+PASS: The partial unique index prevents two active work orders for one ticket.
+PASS: The association uses a composite work-order/part identity.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-24/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step24 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP24_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-24/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step24 | 98397671-1bc9-4f43-b4a2-ea65f2135973
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-24/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step24 | 98397671-1bc9-4f43-b4a2-ea65f2135973
+(1 row)
+
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-24/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

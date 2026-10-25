@@ -25,3 +25,11 @@ Explicit foreign_keys map reporter and optional assignee separately; aliased pro
 Reporter and assignee relationships each identify their local FK and inverse collection. The detail projection uses two aliased User entities and an outer join for the nullable assignee. Fixtures use valid assigned/open states; these mappings alone do not authorize assignment. See [multiple join paths](https://docs.sqlalchemy.org/en/21/orm/join_conditions.html#handling-multiple-join-paths).
 
 Verification: 17 checks in both PowerShell versions. [Predictions](../labs/step-23/notes.md), [evidence](../labs/step-23/evidence.txt).
+
+## Step 24: Part usage association objects
+
+WorkOrderPart explicitly maps consolidated quantities and exact historical unit costs between work orders and catalog parts; duplicate lines and invalid values are rejected.
+
+WorkOrder, SparePart, and WorkOrderPart extend application metadata with named RESTRICT references, numeric money, stock bounds, and a partial unique active-work-order index. Association objects carry their own data and relationships; no competing secondary many-to-many collection is mapped. Completion eligibility, inventory movements, and immutable completed work are later workflows, not implied by this mapping. See [association objects](https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#association-object).
+
+Verification: 20 checks in both PowerShell versions. [Predictions](../labs/step-24/notes.md), [evidence](../labs/step-24/evidence.txt).

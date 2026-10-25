@@ -272,13 +272,15 @@ Reference reading: [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/
 
   Evidence: [Step 23 predictions](../labs/step-23/notes.md), [executed evidence](../labs/step-23/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 17 checks passed in both PowerShell versions. Explicit foreign_keys map reporter and optional assignee separately; aliased projections correctly handle different users, the same user, and no assignee.
 
-- [ ] **24. Model part usage as an association object**
+- [x] **24. Model part usage as an association object**
 
   Learn: Distinguish a plain many-to-many link from a link carrying quantity and historical unit cost.
 
   Apply: Add WorkOrderPart with a composite work-order/part key and explicit relationships.
 
   Prove: Record two units of a part with a cost snapshot; prevent duplicate consolidated lines for that order/part.
+
+  Evidence: [Step 24 predictions](../labs/step-24/notes.md), [executed evidence](../labs/step-24/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 20 checks passed in both PowerShell versions. WorkOrderPart explicitly maps consolidated quantities and exact historical unit costs between work orders and catalog parts; duplicate lines and invalid values are rejected.
 
 Checkpoint: You can map and persist the main relationships and explain object state, emitted SQL, and transaction state separately.
 
