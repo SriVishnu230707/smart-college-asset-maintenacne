@@ -1,0 +1,73 @@
+Step 39: Manage drafts and protect repair history verification evidence
+Captured (Asia/Kolkata): 2026-10-25 10:29:35 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): cffa2da4-7383-4e90-a471-b80e5c255da5
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-39/python_lab.py --run-id <run-id>
+C:\projects\Smart College Asset & Maintenance Management System\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=22394
+PASS: Administrators cannot perform assigned technician repairs.
+PASS: The assigned technician may create a draft.
+PASS: Only one draft/in-progress order may exist per ticket.
+PASS: Repeated part edits consolidate one composite-identity line.
+PASS: Draft quantities reserve no stock and create no consumption movement.
+PASS: Starting the draft starts its ticket repair.
+PASS: Started repairs cannot be discarded.
+PASS: Draft monetary edits reject excess precision.
+PASS: A catalog price change does not rewrite the stored historical line cost.
+PASS: Completed orders reject service-layer edits.
+PASS: Direct SQL cannot rewrite completed work_orders facts.
+PASS: Direct SQL cannot rewrite completed work_order_parts facts.
+PASS: Direct SQL cannot delete append-only audit_events.
+PASS: Direct SQL cannot delete append-only inventory_movements.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-39/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step39 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP39_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-39/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step39 | cffa2da4-7383-4e90-a471-b80e5c255da5
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-39/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step39 | cffa2da4-7383-4e90-a471-b80e5c255da5
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-39/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

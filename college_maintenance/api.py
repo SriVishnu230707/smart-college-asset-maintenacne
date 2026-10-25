@@ -13,6 +13,8 @@ from college_maintenance.attachments import FileStore, add_comment, attachment_m
 from college_maintenance.loading import comment_page
 from college_maintenance.inventory import add_supplier, create_part, move_stock, part_result, inventory_admin, reconciliation_query
 from college_maintenance.models import SparePart
+from college_maintenance.repairs import create_order, start_order, edit_order, set_part_line, remove_part_line, discard_order, order_result
+from college_maintenance.attachments import order_parent
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -72,6 +74,15 @@ class MovementInput(BaseModel):
     delta: int = Field(strict=True,ge=-2147483647,le=2147483647)
     supplier_id: UUID | None = None
     reason: str | None = Field(None,max_length=10000)
+
+class OrderInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    labor_cost: str
+    completion_note: str | None = Field(None,max_length=10000)
+
+class LineInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    quantity: int = Field(strict=True,ge=1,le=2147483647)
 
 def create_app(session_factory=SessionFactory, authenticate=authenticate_token, storage=None):
     app = FastAPI(title='College maintenance API', version='0.1.0')
@@ -145,6 +156,36 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.post('/suppliers',status_code=201)
     def post_supplier(body: SupplierInput, identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
         with session.begin():return add_supplier(session,identity,request_id=request_id,**body.model_dump())
+
+    @app.post('/tickets/{ticket_id}/work-orders',status_code=201)
+    def post_order(ticket_id: UUID,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return order_result(session,create_order(session,identity,ticket_id,request_id=request_id))
+
+    @app.get('/work-orders/{order_id}')
+    def get_order(order_id: UUID,identity=Depends(actor_id),session=Depends(session_dependency)):
+        with session.begin():
+            ticket,order=order_parent(session,scope_for_actor(session,identity),order_id)
+            return order_result(session,order)
+
+    @app.post('/work-orders/{order_id}/start')
+    def post_start(order_id: UUID,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return order_result(session,start_order(session,identity,order_id,request_id=request_id))
+
+    @app.patch('/work-orders/{order_id}')
+    def patch_order(order_id: UUID,body: OrderInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return order_result(session,edit_order(session,identity,order_id,request_id=request_id,**body.model_dump()))
+
+    @app.put('/work-orders/{order_id}/parts/{part_id}')
+    def put_line(order_id: UUID,part_id: UUID,body: LineInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return order_result(session,set_part_line(session,identity,order_id,part_id,body.quantity,request_id=request_id))
+
+    @app.delete('/work-orders/{order_id}/parts/{part_id}')
+    def delete_line(order_id: UUID,part_id: UUID,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return order_result(session,remove_part_line(session,identity,order_id,part_id,request_id=request_id))
+
+    @app.delete('/work-orders/{order_id}')
+    def delete_order(order_id: UUID,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return discard_order(session,identity,order_id,request_id=request_id)
 
     @app.post('/parts',status_code=201)
     def post_part(body: PartInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):

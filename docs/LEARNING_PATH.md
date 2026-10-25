@@ -434,13 +434,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 38 notes](../labs/step-38/notes.md), [executed proof](../labs/step-38/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Opening balances, supplier receipts, and reasoned adjustments update stock and append signed movements in one transaction.
 
-- [ ] **39. Build draft work orders and freeze historical facts**
+- [x] **39. Build draft work orders and freeze historical facts**
 
   Learn: Define part quantities, standard-cost snapshots, labor cost, immutability, and active-order policy.
 
   Apply: Allow one active work order per ticket, with consolidated part lines; freeze completed costs and use a new order for later repairs.
 
   Prove: Changing a current price does not alter completed costs; draft quantities do not silently reserve stock.
+
+  Evidence: [Step 39 notes](../labs/step-39/notes.md), [executed proof](../labs/step-39/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Assigned technicians manage one active order, consolidated part lines and exact labor estimates; drafts reserve nothing and completed facts reject edits.
 
 - [ ] **40. Complete a work order atomically**
 

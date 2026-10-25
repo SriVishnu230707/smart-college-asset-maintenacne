@@ -65,3 +65,11 @@ Opening balances, supplier receipts, and reasoned adjustments update stock and a
 Only Super Admin manages central stock. Zero opening stock creates no movement; positive stock creates one opening entry. Row locks serialize balance changes, negative balances are rejected, and failure after the balance flush rolls back the ledger and balance together. A reviewed migration adopts any pre-existing positive balance as a clearly marked legacy opening, without inventing a human actor; all new commands require a real actor. Partial unique indexes protect opening and consumption identities. Movement immutability is added in Step 39.
 
 Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-38/notes.md), [executed evidence](../labs/step-38/evidence.txt).
+
+## Step 39: Manage drafts and protect repair history
+
+Assigned technicians manage one active order, consolidated part lines and exact labor estimates; drafts reserve nothing and completed facts reject edits.
+
+Ticket/order locks protect create/start/edit/discard and child changes. Discarding a draft removes its metadata and leaves bytes for age-gated orphan collection. Stored estimates become final snapshots at the successful completion introduced in Step 40. This lesson uses a synthetic completed fixture to isolate price-history and immutability proofs. Reviewed database triggers protect completed parents and both old/new parents of child moves; audit, inventory and comment history reject UPDATE/DELETE. Direct SQL proofs bypass the ORM. The study installs the exact frozen revision guard, while Alembic owns the application installation.
+
+Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-39/notes.md), [executed evidence](../labs/step-39/evidence.txt).

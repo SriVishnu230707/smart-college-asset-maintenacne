@@ -23,6 +23,7 @@ SELECT to_regnamespace(:'lab_schema') IS NULL AS absent \gset
     FOREACH name IN ARRAY ARRAY['audit_events','owned_children','owned_parents','ticket_comments','ticket_attachments','work_order_attachments','inventory_movements','work_order_parts','work_orders','maintenance_tickets','assets','users','spare_parts','suppliers','asset_categories','departments','lab_run'] LOOP
       EXECUTE format('DROP TABLE IF EXISTS %I.%I',schema_name,name);
     END LOOP;
+    EXECUTE format('DROP FUNCTION IF EXISTS %I.protect_history()',schema_name);
     EXECUTE format('DROP SCHEMA %I',schema_name);
   END $$;
   COMMIT;
