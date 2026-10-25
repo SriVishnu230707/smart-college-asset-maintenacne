@@ -262,13 +262,15 @@ Reference reading: [SQLAlchemy Unified Tutorial](https://docs.sqlalchemy.org/en/
 
   Evidence: [Step 22 predictions](../labs/step-22/notes.md), [executed evidence](../labs/step-22/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 19 checks passed in both PowerShell versions. Department.assets and Asset.department synchronize in Python and persist their foreign key, while direct SQL independently enforces parent existence.
 
-- [ ] **23. Map multiple paths to users**
+- [x] **23. Map multiple paths to users**
 
   Learn: Disambiguate reporter and assignee relationships and query their separate aliases.
 
   Apply: Create reporter/assignee mappings with explicit foreign_keys and a ticket detail query.
 
   Prove: Return both names correctly when they differ, coincide, or the assignee is NULL.
+
+  Evidence: [Step 23 predictions](../labs/step-23/notes.md), [executed evidence](../labs/step-23/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 17 checks passed in both PowerShell versions. Explicit foreign_keys map reporter and optional assignee separately; aliased projections correctly handle different users, the same user, and no assignee.
 
 - [ ] **24. Model part usage as an association object**
 

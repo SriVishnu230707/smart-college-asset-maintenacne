@@ -1,0 +1,61 @@
+Step 23: Reporter and assignee paths verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:11:53 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): c3df050c-0bb8-4181-8548-805539b0f1e0
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Relationship paths and exact-run cleanup refusal (22023) are asserted.
+Command: python -X utf8 -B labs/step-23/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=2507
+PASS: Reporter navigation follows only reported_by_id.
+PASS: Assignee navigation follows only assigned_to_id.
+PASS: Distinct aliases return different names, identical names, and NULL assignee correctly.
+PASS: Both roles may resolve to the same identity-mapped User without mixing their meanings.
+PASS: Optional assignee navigation preserves the unassigned ticket.
+PASS: Raw SQL with two user aliases agrees with the ORM projection.
+PASS: Each mapped relationship declares its own local foreign-key path.
+PASS: Required reporter and optional assignee retain their independent database nullability.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-23/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step23 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP23_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-23/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step23 | c3df050c-0bb8-4181-8548-805539b0f1e0
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-23/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step23 | c3df050c-0bb8-4181-8548-805539b0f1e0
+(1 row)
+
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-23/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

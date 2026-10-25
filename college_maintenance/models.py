@@ -65,6 +65,8 @@ class User(Base):
         ForeignKey("departments.id", name="fk_users_department", ondelete="RESTRICT", onupdate="RESTRICT"), index=True
     )
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
+    reported_tickets: Mapped[list["MaintenanceTicket"]] = relationship(back_populates="reporter", foreign_keys="MaintenanceTicket.reported_by_id")
+    assigned_tickets: Mapped[list["MaintenanceTicket"]] = relationship(back_populates="assignee", foreign_keys="MaintenanceTicket.assigned_to_id")
 
 
 class Asset(Base):
@@ -121,3 +123,6 @@ class MaintenanceTicket(Base):
     rejected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     rejection_reason: Mapped[str | None] = mapped_column(Text)
+
+    reporter: Mapped[User] = relationship(back_populates="reported_tickets", foreign_keys=[reported_by_id])
+    assignee: Mapped[User | None] = relationship(back_populates="assigned_tickets", foreign_keys=[assigned_to_id])

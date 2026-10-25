@@ -17,3 +17,11 @@ Department.assets and Asset.department synchronize in Python and persist their f
 The application uses typed relationship/back_populates declarations. PostgreSQL still owns NOT NULL and foreign-key existence. A transfer here uses only a disposable asset without tickets; full transfer authorization is a later workflow. Historical Steps 17-20 now import a frozen column-only snapshot, preserving their original observations as the application registry evolves. See [relationship patterns](https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html).
 
 Verification: 19 checks in both PowerShell versions. [Predictions](../labs/step-22/notes.md), [evidence](../labs/step-22/evidence.txt).
+
+## Step 23: Separate reporter and assignee paths
+
+Explicit foreign_keys map reporter and optional assignee separately; aliased projections correctly handle different users, the same user, and no assignee.
+
+Reporter and assignee relationships each identify their local FK and inverse collection. The detail projection uses two aliased User entities and an outer join for the nullable assignee. Fixtures use valid assigned/open states; these mappings alone do not authorize assignment. See [multiple join paths](https://docs.sqlalchemy.org/en/21/orm/join_conditions.html#handling-multiple-join-paths).
+
+Verification: 17 checks in both PowerShell versions. [Predictions](../labs/step-23/notes.md), [evidence](../labs/step-23/evidence.txt).
