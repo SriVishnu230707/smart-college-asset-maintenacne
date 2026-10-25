@@ -39,7 +39,7 @@ The guide lists exact measured statement sequences. The observer is simultaneous
 
 ## Evidence and cleanup
 
-The live run on **24 October 2026** passed **35 checks**: 29 Python assertions and six wrapper/psql assertions. [Saved evidence](evidence.txt) records visibility checkpoints, exact expected errors, statement ordering, final ticket IDs/values, and both closed Python backends.
+The live run on **25 October 2026** passed **35 checks**: 29 Python assertions and six wrapper/psql assertions. [Saved evidence](evidence.txt) records visibility checkpoints, exact expected errors, statement ordering, final ticket IDs/values, and both closed Python backends.
 
 The fixture commits one department, category, reporter, and asset for valid ticket references. Only three ticket rows survive. A fresh ORM Session and the driver observer agree; [reconnect.sql](reconnect.sql) independently verifies those rows, original descriptions, defaults, and references after disposal. Aborted, autoflushed-then-rolled-back, and invalid tickets are absent.
 
