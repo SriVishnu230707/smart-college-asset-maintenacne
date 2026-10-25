@@ -1,0 +1,73 @@
+Step 38: Reconcile stock with a movement ledger verification evidence
+Captured (Asia/Kolkata): 2026-10-25 10:26:51 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 620a1ed4-cb12-496a-856e-d7299ad22791
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-38/python_lab.py --run-id <run-id>
+C:\projects\Smart College Asset & Maintenance Management System\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=21705
+PASS: Department administration cannot change central inventory.
+PASS: Initial positive stock creates a part and opening ledger entry together.
+PASS: Excess monetary precision is rejected before scaled database conversion.
+PASS: A positive receipt requires an active supplier and increases balance.
+PASS: A reasoned adjustment appends a signed delta.
+PASS: A correction cannot make stock negative.
+PASS: Corrections require a nonblank reason.
+PASS: Receipts cannot omit supplier provenance.
+PASS: Student ticket access does not grant central catalog access.
+PASS: Department staff cannot read the central movement ledger.
+PASS: A movement persistence failure propagates after the balance flush.
+PASS: Every stored balance reconciles, including zero stock with no ledger rows.
+PASS: An independent connection confirms failed ledger work did not leave a partial balance.
+PASS: Zero opening stock has no fabricated zero movement.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-38/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step38 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP38_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-38/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step38 | 620a1ed4-cb12-496a-856e-d7299ad22791
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-38/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step38 | 620a1ed4-cb12-496a-856e-d7299ad22791
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-38/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

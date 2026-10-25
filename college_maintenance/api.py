@@ -11,6 +11,8 @@ import base64
 from fastapi.responses import Response
 from college_maintenance.attachments import FileStore, add_comment, attachment_metadata, read_attachment
 from college_maintenance.loading import comment_page
+from college_maintenance.inventory import add_supplier, create_part, move_stock, part_result, inventory_admin, reconciliation_query
+from college_maintenance.models import SparePart
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -50,6 +52,26 @@ class AttachmentInput(BaseModel):
     filename: str = Field(min_length=1,max_length=200)
     content_type: str = Field(min_length=1,max_length=100)
     data_base64: str = Field(min_length=1,max_length=1398104)
+
+class SupplierInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    name: str = Field(min_length=1,max_length=150)
+    contact: str = Field(min_length=1,max_length=1000)
+
+class PartInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    sku: str = Field(min_length=1,max_length=50)
+    name: str = Field(min_length=1,max_length=150)
+    unit_cost: str
+    opening: int = Field(0,ge=0,le=2147483647,strict=True)
+    reorder_level: int = Field(0,ge=0,le=2147483647,strict=True)
+
+class MovementInput(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    kind: Literal['receipt','adjustment']
+    delta: int = Field(strict=True,ge=-2147483647,le=2147483647)
+    supplier_id: UUID | None = None
+    reason: str | None = Field(None,max_length=10000)
 
 def create_app(session_factory=SessionFactory, authenticate=authenticate_token, storage=None):
     app = FastAPI(title='College maintenance API', version='0.1.0')
@@ -119,6 +141,30 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
             result = asset_detail(session, scope_for_actor(session, identity), asset_id)
             if result is None: raise HTTPException(404, 'Asset not found')
             return asdict(result)
+
+    @app.post('/suppliers',status_code=201)
+    def post_supplier(body: SupplierInput, identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return add_supplier(session,identity,request_id=request_id,**body.model_dump())
+
+    @app.post('/parts',status_code=201)
+    def post_part(body: PartInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return part_result(create_part(session,identity,request_id=request_id,**body.model_dump()))
+
+    @app.get('/parts')
+    def get_parts(limit: int=Query(20,ge=1,le=100),identity=Depends(actor_id),session=Depends(session_dependency)):
+        with session.begin():
+            if scope_for_actor(session,identity).role=='student':raise PermissionError('Parts catalog requires staff access')
+            return [part_result(part) for part in session.scalars(select(SparePart).order_by(SparePart.id).limit(limit))]
+
+    @app.post('/parts/{part_id}/movements')
+    def post_movement(part_id: UUID,body: MovementInput,identity=Depends(actor_id),session=Depends(session_dependency),request_id=Depends(request_identifier)):
+        with session.begin():return part_result(move_stock(session,identity,part_id,request_id=request_id,**body.model_dump()))
+
+    @app.get('/inventory/reconciliation')
+    def get_reconciliation(identity=Depends(actor_id),session=Depends(session_dependency)):
+        with session.begin():
+            inventory_admin(session,identity)
+            return [dict(row) for row in session.execute(reconciliation_query()).mappings()]
 
     @app.post('/tickets/{ticket_id}/comments', status_code=201)
     def post_comment(ticket_id: UUID, body: CommentInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):

@@ -242,3 +242,32 @@ class WorkOrderAttachment(AttachmentFields, Base):
     __tablename__ = 'work_order_attachments'
     __table_args__ = (CheckConstraint('size > 0 AND size <= 1048576', name='size'),)
     work_order_id: Mapped[UUID] = mapped_column(ForeignKey('work_orders.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+
+
+class Supplier(Base):
+    __tablename__ = 'suppliers'
+    __table_args__ = (CheckConstraint("name !~ '^[[:space:]]*$' AND contact !~ '^[[:space:]]*$'", name='details'),)
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
+    name: Mapped[str] = mapped_column(String(150))
+    contact: Mapped[str] = mapped_column(Text)
+    is_archived: Mapped[bool] = mapped_column(server_default=text('false'))
+
+
+class InventoryMovement(Base):
+    __tablename__ = 'inventory_movements'
+    __table_args__ = (
+        CheckConstraint("(kind='opening' AND quantity_delta>0 AND supplier_id IS NULL AND work_order_id IS NULL) OR (kind='receipt' AND quantity_delta>0 AND supplier_id IS NOT NULL AND work_order_id IS NULL) OR (kind='consume' AND quantity_delta<0 AND work_order_id IS NOT NULL AND supplier_id IS NULL) OR (kind='adjustment' AND quantity_delta<>0 AND reason !~ '^[[:space:]]*$' AND reason IS NOT NULL AND supplier_id IS NULL AND work_order_id IS NULL)", name='context'),
+        CheckConstraint("actor_id IS NOT NULL OR (is_legacy AND kind='opening')", name='actor'),
+        Index('uq_inventory_movements_opening','spare_part_id',unique=True,postgresql_where=text("kind='opening'")),
+        Index('uq_inventory_movements_consume','work_order_id','spare_part_id',unique=True,postgresql_where=text("kind='consume'")),
+    )
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
+    spare_part_id: Mapped[UUID] = mapped_column(ForeignKey('spare_parts.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+    actor_id: Mapped[UUID | None] = mapped_column(ForeignKey('users.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+    supplier_id: Mapped[UUID | None] = mapped_column(ForeignKey('suppliers.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+    work_order_id: Mapped[UUID | None] = mapped_column(ForeignKey('work_orders.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+    kind: Mapped[str] = mapped_column(String(20))
+    quantity_delta: Mapped[int] = mapped_column()
+    reason: Mapped[str | None] = mapped_column(Text)
+    is_legacy: Mapped[bool] = mapped_column(server_default=text('false'))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text('CURRENT_TIMESTAMP'))

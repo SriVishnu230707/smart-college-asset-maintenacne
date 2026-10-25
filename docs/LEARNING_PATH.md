@@ -424,13 +424,15 @@ Reference reading: [Cascades](https://docs.sqlalchemy.org/en/21/orm/cascades.htm
 
   Evidence: [Step 37 notes](../labs/step-37/notes.md), [executed proof](../labs/step-37/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 22 checks passed in both shells. Authored append-only comments and separate ticket/work-order attachments follow their parent permissions; upload failures compensate staged bytes.
 
-- [ ] **38. Build inventory as balance plus ledger**
+- [x] **38. Build inventory as balance plus ledger**
 
   Learn: Understand stock movements, signed deltas, receipts, adjustments, and reconciliation.
 
   Apply: Add opening balances and receipts with a ledger row for every balance change.
 
   Prove: Reconcile each stored stock balance with the sum of movements, including initial quantities.
+
+  Evidence: [Step 38 notes](../labs/step-38/notes.md), [executed proof](../labs/step-38/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 23 checks passed in both shells. Opening balances, supplier receipts, and reasoned adjustments update stock and append signed movements in one transaction.
 
 - [ ] **39. Build draft work orders and freeze historical facts**
 

@@ -57,3 +57,11 @@ Authored append-only comments and separate ticket/work-order attachments follow 
 Bytes are private local objects with random validated keys, size limits and SHA-256 verification; downloads are authenticated and force attachment disposition. The database records ownership, uploader, filename, media type, size and digest. An upload writes bytes first, verifies them, then commits metadata and audit together. A database failure removes its own staged object; a process crash may leave an orphan, handled separately with an age grace period and referenced-key scan. Garbage collection must run in a maintenance window or with uploads paused; it is not a distributed storage transaction. Completed-proof protection is strengthened in Step 39.
 
 Verification: 22 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-37/notes.md), [executed evidence](../labs/step-37/evidence.txt).
+
+## Step 38: Reconcile stock with a movement ledger
+
+Opening balances, supplier receipts, and reasoned adjustments update stock and append signed movements in one transaction.
+
+Only Super Admin manages central stock. Zero opening stock creates no movement; positive stock creates one opening entry. Row locks serialize balance changes, negative balances are rejected, and failure after the balance flush rolls back the ledger and balance together. A reviewed migration adopts any pre-existing positive balance as a clearly marked legacy opening, without inventing a human actor; all new commands require a real actor. Partial unique indexes protect opening and consumption identities. Movement immutability is added in Step 39.
+
+Verification: 23 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-38/notes.md), [executed evidence](../labs/step-38/evidence.txt).
