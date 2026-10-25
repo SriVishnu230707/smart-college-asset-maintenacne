@@ -132,6 +132,7 @@ class MaintenanceTicket(Base):
     reporter: Mapped[User] = relationship(back_populates="reported_tickets", foreign_keys=[reported_by_id])
     assignee: Mapped[User | None] = relationship(back_populates="assigned_tickets", foreign_keys=[assigned_to_id])
     work_orders: Mapped[list["WorkOrder"]] = relationship(back_populates="ticket", passive_deletes="all")
+    comments: Mapped[list["TicketComment"]] = relationship(back_populates="ticket", passive_deletes="all", order_by="(TicketComment.created_at, TicketComment.id)")
 
 
 class SparePart(Base):
@@ -200,3 +201,15 @@ class AuditEvent(Base):
     action: Mapped[str] = mapped_column(Text)
     payload: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+
+
+class TicketComment(Base):
+    __tablename__ = "ticket_comments"
+    __table_args__ = (CheckConstraint("body !~ '^[[:space:]]*$'", name="body"),)
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
+    ticket_id: Mapped[UUID] = mapped_column(ForeignKey("maintenance_tickets.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    author_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT", onupdate="RESTRICT"), index=True)
+    body: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    ticket: Mapped[MaintenanceTicket] = relationship(back_populates="comments")
+    author: Mapped[User] = relationship()

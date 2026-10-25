@@ -348,13 +348,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 30 predictions](../labs/step-30/notes.md), [executed evidence](../labs/step-30/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 23 checks passed in both PowerShell versions. Bounded offset and created_at/id keyset feeds preserve actor/filter scope, page tied timestamps without duplicates in a fixed dataset, and demonstrate concurrent-insert/update limitations.
 
-- [ ] **31. Observe the N+1 problem**
+- [x] **31. Observe the N+1 problem**
 
   Learn: Connect relationship access to query round trips and serialization behavior.
 
   Apply: Build a ticket page with comments and measure SELECT counts before optimizing.
 
   Prove: Identify the exact accesses that trigger extra SQL; retain a regression query-count test.
+
+  Evidence: [Step 31 notes](../labs/step-31/notes.md), [executed proof](../labs/step-31/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. A three-ticket page records its 1+N comment SELECTs and detached serialization failure.
 
 - [ ] **32. Choose loader strategies**
 
