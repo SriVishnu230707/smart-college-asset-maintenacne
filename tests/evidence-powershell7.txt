@@ -1,5 +1,5 @@
 Regression suite: PowerShell 7.6.5
-Captured (UTC): 2026-10-25 04:08:38Z
+Captured (UTC): 2026-10-25 08:15:05Z
 PASS: Database startup and Compose readiness succeed.
 PASS: PowerShell syntax, SQL include paths, and assertion-exit guards are valid.
 PASS: Step 02: 5 checks pass from an unrelated working directory.
@@ -31,6 +31,26 @@ PASS: Step 27: 22 checks pass from an unrelated working directory.
 PASS: Step 28: 20 checks pass from an unrelated working directory.
 PASS: Step 29: 24 checks pass from an unrelated working directory.
 PASS: Step 30: 23 checks pass from an unrelated working directory.
+PASS: Step 31: 18 checks pass from an unrelated working directory.
+PASS: Step 32: 21 checks pass from an unrelated working directory.
+PASS: Step 33: 23 checks pass from an unrelated working directory.
+PASS: Step 34: 25 checks pass from an unrelated working directory.
+PASS: Step 35: 23 checks pass from an unrelated working directory.
+PASS: Step 36: 18 checks pass from an unrelated working directory.
+PASS: Step 37: 22 checks pass from an unrelated working directory.
+PASS: Step 38: 23 checks pass from an unrelated working directory.
+PASS: Step 39: 23 checks pass from an unrelated working directory.
+PASS: Step 40: 22 checks pass from an unrelated working directory.
+PASS: Step 41: 23 checks pass from an unrelated working directory.
+PASS: Step 42: 21 checks pass from an unrelated working directory.
+PASS: Step 43: 18 checks pass from an unrelated working directory.
+PASS: Step 44: 16 checks pass from an unrelated working directory.
+PASS: Step 45: 18 checks pass from an unrelated working directory.
+PASS: Step 46: 19 checks pass from an unrelated working directory.
+PASS: Step 47: 24 checks pass from an unrelated working directory.
+PASS: Step 48: 20 checks pass from an unrelated working directory.
+PASS: Step 49: 19 checks pass from an unrelated working directory.
+PASS: Step 50: 31 checks pass from an unrelated working directory.
 PASS: Missing required UUID fails with psql exit 3 and SQLSTATE P0001.
 PASS: The shared runner propagates an unexpected nonzero SQL exit.
 PASS: Native stderr is captured without mistaking a successful process for a failure.
@@ -43,5 +63,5 @@ PASS: Cleanup failure after successful proofs still fails the run, attempts the 
 PASS: The shared success path preserves the mismatched guard, exact-run observer/cleanup, and complete evidence transcript.
 PASS: The SQL-only lab keeps its guarded flow and evidence without resolving or launching Python.
 PASS: A fresh connection confirms no implemented study schema remains.
-Result: PASSED; 29 lab suites, 797 lab checks, and 14 runner regression checks.
+Result: PASSED; 49 lab suites, 1224 lab checks, and 14 runner regression checks.
 Command: C:\Users\DELL\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe -NoProfile -File tests/run.ps1 -WriteEvidence

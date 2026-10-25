@@ -22,7 +22,7 @@ Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-30 without advancing this checklist. It checks 797 lab assertions and fourteen runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-50 without advancing this checklist. It checks 1224 lab assertions and fourteen runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The [maintenance review](MAINTENANCE_REVIEW.md) records runner bug fixes and loop simplification without advancing this checklist.
 
@@ -556,13 +556,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 49 notes](../labs/step-49/notes.md), [executed proof](../labs/step-49/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 19 checks passed in both shells. Hand-counted cost and failure reports avoid parts/comments fan-out, exclude unfinished estimates, and retain recorded department history.
 
-- [ ] **50. Structure advanced reporting queries**
+- [x] **50. Structure advanced reporting queries**
 
   Learn: Use CTEs, correlated subqueries, LATERAL, DISTINCT ON, and set operations when appropriate.
 
   Apply: Implement latest comment per ticket and a reusable report expression, comparing alternatives.
 
   Prove: Explain row cardinality, tie handling, NULL behavior, and why the selected query fits the question.
+
+  Evidence: [Step 50 notes](../labs/step-50/notes.md), [executed proof](../labs/step-50/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 31 checks passed in both shells. Equivalent LATERAL, correlated scalar and DISTINCT ON CTE reports preserve ticket grain, deterministic ties, absent-child NULLs and scoped access.
 
 - [ ] **51. Use window functions**
 

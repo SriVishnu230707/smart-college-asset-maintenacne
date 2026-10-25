@@ -1,13 +1,13 @@
 # Local maintenance API
 
-Install the root requirements into the ignored `.venv`, start the PostgreSQL lab, and run migrations before starting the API:
+Use Python 3.11+ for the pinned Starlette and HTTPX 2 dependencies; the full suite was verified with Python 3.12.14. Install the root requirements into the ignored `.venv`, start the PostgreSQL lab, and run migrations before starting the API:
 
 ```powershell
 .\.venv\Scripts\python.exe -m alembic upgrade head
 .\.venv\Scripts\python.exe -m uvicorn college_maintenance.api:app --host 127.0.0.1 --port 8000
 ```
 
-The OpenAPI page is at http://127.0.0.1:8000/docs. Each database operation owns one explicit transaction; its request Session closes on every outcome. Routes return primitive values, never lazy ORM objects or password hashes. Validated HTTP input and authenticated actor identity are separate inputs to the service layer.
+The [OpenAPI page](http://127.0.0.1:8000/docs) describes the HTTP routes. Each database operation owns one explicit transaction; its request Session closes on every outcome. Routes return primitive values, never lazy ORM objects or password hashes. Validated HTTP input and authenticated actor identity are separate inputs to the service layer.
 
 Authentication uses opaque bearer credentials provisioned out of band. `.local/api-tokens.json` (or `COLLEGE_API_TOKENS_FILE`) maps SHA-256 token digests to records with `actor_id` and an aware ISO `expires_at`. Use a randomly generated secret of at least 32 bytes, store only its digest in this file, and provide the secret to the intended local caller. The actor must exist and remain active in PostgreSQL. Missing, expired, removed, or malformed credentials fail closed. File contents and bearer secrets stay outside Git. A caller supplies `Authorization: Bearer <secret>`; request roles or actor IDs have no authority. This local example has no public login or token issuance endpoint; external identity-provider integration remains a separate deployment choice.
 
@@ -24,3 +24,5 @@ Central inventory creation, supplier creation, receipts and reasoned adjustments
 Completion uses its work-order UUID as the durable operation identity. Authorized duplicate or simultaneous requests return the existing frozen result, including after later verification or rework. The current ticket status and catalog prices are excluded from that stable result. Authorization runs before result disclosure. A scoped administrator may retrieve completed work but cannot initiate an unfinished completion. Unique consumption identity and protected immutable work prevent duplicate business effects. Deadlock/serialization retries run the entire transaction up to three times; exhaustion returns 503.
 
 Original-report and priority PATCH requests require a positive `expected_version` from ticket detail or the latest mutation result. A stale version returns 409 and records no success audit event; omitting it returns 422. ORM flushes automatically check and advance the ticket version. Bulk/Core writers must deliberately include an expected-version predicate and increment, because mapper versioning does not cover those paths.
+
+Administrative reports use `/reports/costs`, `/reports/failures`, and `/reports/latest-comments`; all enforce recorded department scope. Costs pre-aggregate parts per completed order and exclude unfinished estimates. Latest comments use timestamp/UUID ties and retain tickets with no comments. The alternative reviewed SQL strategies produce the same response grain. Report list limits are bounded at 100; larger exports and performance tuning belong to later lessons.

@@ -19,6 +19,7 @@ from college_maintenance.completion import complete_work_order
 from college_maintenance.retries import RETRYABLE
 from sqlalchemy.orm.exc import StaleDataError
 from college_maintenance.reports import cost_rows,failure_frequency_query
+from college_maintenance.advanced_reports import latest_comments_query
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -237,6 +238,11 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     def get_failures(limit: int=Query(100,ge=1,le=100),identity=Depends(actor_id),session=Depends(session_dependency)):
         with session.begin():
             return [dict(row) for row in session.execute(failure_frequency_query(scope_for_actor(session,identity)).limit(limit)).mappings()]
+
+    @app.get('/reports/latest-comments')
+    def get_latest_comments(strategy: Literal['lateral','distinct_on','scalar']='lateral',limit: int=Query(20,ge=1,le=100),identity=Depends(actor_id),session=Depends(session_dependency)):
+        with session.begin():
+            return [dict(row) for row in session.execute(latest_comments_query(scope_for_actor(session,identity),strategy).limit(limit)).mappings()]
 
     @app.post('/tickets/{ticket_id}/comments', status_code=201)
     def post_comment(ticket_id: UUID, body: CommentInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):

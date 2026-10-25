@@ -61,6 +61,15 @@ def experiment(step, run_id, create_tables=True):
     check(version('SQLAlchemy') == '2.1.6' and version('psycopg') == '3.3.6', 'Pinned SQLAlchemy and psycopg versions are used.')
     def before_cursor(connection, cursor, statement, parameters, context, executemany):
         kind = statement.lstrip().split(None, 1)[0].upper()
+        if kind == 'WITH':
+            # A compiled CTE starts with WITH but is still one SELECT/DML
+            # round trip. Use SQLAlchemy's statement type, not a SQL parser.
+            compiled = getattr(context, 'compiled', None)
+            expression = getattr(compiled, 'statement', None)
+            for flag, operation in [('is_select','SELECT'),('is_insert','INSERT'),('is_update','UPDATE'),('is_delete','DELETE')]:
+                if getattr(expression, flag, False):
+                    kind = operation
+                    break
         if kind in {'SELECT','INSERT','UPDATE','DELETE'}:
             lab.statements.append((kind, statement))
     event.listen(engine, 'before_cursor_execute', before_cursor)
