@@ -480,13 +480,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 42 notes](../labs/step-42/notes.md), [executed proof](../labs/step-42/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 21 checks passed in both shells. Two real backend connections prove committed statement snapshots, own-write visibility, rollback, and the separate behavior of ORM identity-map caching.
 
-- [ ] **43. Use an atomic guarded stock update**
+- [x] **43. Use an atomic guarded stock update**
 
   Learn: Understand arithmetic UPDATE, a stock predicate, RETURNING, and the database's concurrent row-update behavior.
 
   Apply: Try UPDATE ... SET stock=stock-qty WHERE stock>=qty RETURNING ... with positive quantities in both connections.
 
   Prove: Only one competing last-unit consumption succeeds; all other writes are rolled back when completion cannot proceed.
+
+  Evidence: [Step 43 notes](../labs/step-43/notes.md), [executed proof](../labs/step-43/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 18 checks passed in both shells. Completion uses stock=stock-quantity with stock>=quantity and RETURNING; two technicians on independent backends compete for one unit and only one commits.
 
 - [ ] **44. Implement the row-lock alternative**
 

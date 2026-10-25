@@ -1,6 +1,6 @@
 """Balance-plus-ledger operations; all helpers participate in an outer transaction."""
 from decimal import Decimal, InvalidOperation
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from college_maintenance.models import SparePart, Supplier, InventoryMovement
 from college_maintenance.reads import scope_for_actor
 from college_maintenance.workflow import Conflict, NotFound, nonblank
@@ -70,3 +70,15 @@ def part_result(part):
 def reconciliation_query():
     totals=select(InventoryMovement.spare_part_id,func.sum(InventoryMovement.quantity_delta).label('ledger_balance')).group_by(InventoryMovement.spare_part_id).subquery()
     return select(SparePart.id,SparePart.stock_quantity,func.coalesce(totals.c.ledger_balance,0).label('ledger_balance')).outerjoin(totals,totals.c.spare_part_id==SparePart.id).order_by(SparePart.id)
+
+def guarded_stock_statement(part_id,amount):
+    quantity(amount)
+    return (update(SparePart).where(SparePart.id==part_id,SparePart.stock_quantity>=amount,SparePart.is_archived.is_(False))
+        .values(stock_quantity=SparePart.stock_quantity-amount)
+        .returning(SparePart.current_unit_cost,SparePart.stock_quantity))
+
+def consume_guarded(session,part_id,amount):
+    """Persistence primitive; caller owns authorization, parent locks and ledger."""
+    row=session.execute(guarded_stock_statement(part_id,amount).execution_options(synchronize_session=False)).one_or_none()
+    if row is None:raise Conflict('Insufficient stock or unavailable part')
+    return row.current_unit_cost

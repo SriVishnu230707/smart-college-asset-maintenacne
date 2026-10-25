@@ -97,3 +97,11 @@ Two real backend connections prove committed statement snapshots, own-write visi
 An uncommitted write is invisible to the other reader. After its commit, a later statement in an already-open READ COMMITTED transaction sees the new row version. An existing Python entity can remain stale until refresh even though a column projection is fresh. No ORM cache is treated as a PostgreSQL isolation snapshot. Every explicit transaction is ended before independent observation. See [PostgreSQL isolation](https://www.postgresql.org/docs/18/transaction-iso.html).
 
 Verification: 21 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-42/notes.md), [executed evidence](../labs/step-42/evidence.txt).
+
+## Step 43: Use guarded arithmetic stock updates
+
+Completion uses stock=stock-quantity with stock>=quantity and RETURNING; two technicians on independent backends compete for one unit and only one commits.
+
+A positive-quantity guard is enforced before SQL. RETURNING captures the price while the arithmetic update owns the stock-row lock. PostgreSQL blocking is observed with pg_blocking_pids, then the winner is released; the waiter rechecks the predicate after the commit. The losing complete transaction leaves its order unfinished and creates no consumption or audit. Sorted part IDs, parent locks, exact cost validation and rollback remain part of the overall protocol. The contention harness uses an explicitly separate NullPool test Engine so the one-slot learning pool cannot accidentally serialize the test before PostgreSQL does.
+
+Verification: 18 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-43/notes.md), [executed evidence](../labs/step-43/evidence.txt).

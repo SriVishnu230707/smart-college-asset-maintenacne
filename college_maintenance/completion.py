@@ -6,7 +6,7 @@ from college_maintenance.models import WorkOrderPart, WorkOrderAttachment, Spare
 from college_maintenance.reads import scope_for_actor
 from college_maintenance.attachments import order_parent
 from college_maintenance.workflow import Conflict, nonblank
-from college_maintenance.inventory import money
+from college_maintenance.inventory import money,consume_guarded
 from college_maintenance.auditing import audit_change
 from college_maintenance.sessions import SessionFactory
 
@@ -19,7 +19,7 @@ def completed_result(session, order):
         completed_at=order.completed_at,currency='INR',labor_cost=format(order.labor_cost,'.2f'),parts=parts,
         parts_cost=format(parts_cost,'.2f'),total_cost=format(order.labor_cost+parts_cost,'.2f'))
 
-def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault=None):
+def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault=None,stock_strategy='guarded'):
     # Private fault seam for real-transaction tests; never accepted from HTTP.
     def checkpoint(stage):
         if _fault is not None:_fault(stage)
@@ -31,23 +31,25 @@ def complete_in_session(session,store,actor_id,order_id,request_id=None,*,_fault
     if not proofs:raise Conflict('Completion requires work-order proof')
     for proof in proofs:store.read(proof)
     lines=session.scalars(select(WorkOrderPart).where(WorkOrderPart.work_order_id==order.id).order_by(WorkOrderPart.spare_part_id)).all()
-    part_ids=[line.spare_part_id for line in lines]
-    parts={p.id:p for p in session.scalars(select(SparePart).where(SparePart.id.in_(part_ids)).order_by(SparePart.id).with_for_update().execution_options(populate_existing=True))}
+    if stock_strategy not in {'guarded','locked'}:raise ValueError('Unknown stock strategy')
+    parts={}
+    if stock_strategy=='locked':
+        part_ids=[line.spare_part_id for line in lines]
+        parts={p.id:p for p in session.scalars(select(SparePart).where(SparePart.id.in_(part_ids)).order_by(SparePart.id).with_for_update().execution_options(populate_existing=True))}
     total=order.labor_cost
     for line in lines:
-        part=parts.get(line.spare_part_id)
-        if part is None or part.is_archived:raise Conflict('A required part is unavailable')
-        if part.stock_quantity<line.quantity_used:raise Conflict('Insufficient stock')
-        total+=money(part.current_unit_cost)*line.quantity_used
-    money(total)  # Reject aggregate overflow before changing any balance.
-    for line in lines:
-        part=parts[line.spare_part_id]
-        part.stock_quantity-=line.quantity_used;line.unit_cost_at_use=part.current_unit_cost
+        if stock_strategy=='guarded':cost=consume_guarded(session,line.spare_part_id,line.quantity_used)
+        else:
+            part=parts.get(line.spare_part_id)
+            if part is None or part.is_archived:raise Conflict('A required part is unavailable')
+            if part.stock_quantity<line.quantity_used:raise Conflict('Insufficient stock')
+            part.stock_quantity-=line.quantity_used;cost=part.current_unit_cost
+        line.unit_cost_at_use=money(cost);total+=line.unit_cost_at_use*line.quantity_used
+    money(total)  # Guarded updates also roll back if final totals cannot fit.
     session.flush()
     checkpoint('after_balances')
     for line in lines:
-        part=parts[line.spare_part_id]
-        session.add(InventoryMovement(spare_part_id=part.id,actor_id=actor_id,work_order_id=order.id,kind='consume',quantity_delta=-line.quantity_used))
+        session.add(InventoryMovement(spare_part_id=line.spare_part_id,actor_id=actor_id,work_order_id=order.id,kind='consume',quantity_delta=-line.quantity_used))
     # Flush child snapshots while their protected parent is still unfinished.
     session.flush()
     checkpoint('after_ledger')
