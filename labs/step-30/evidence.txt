@@ -1,0 +1,71 @@
+Step 30: Stable ticket pagination verification evidence
+Captured (Asia/Kolkata): 2026-10-25 09:38:38 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): be51c552-27a5-4ab9-967c-6177e625f506
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Relationship paths and exact-run cleanup refusal (22023) are asserted.
+Command: python -X utf8 -B labs/step-30/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=9021
+PASS: Compound created_at/id cursors page tied timestamps exactly once in the fixed dataset.
+PASS: The final page has no continuation token.
+PASS: A filter with no authorized rows returns an empty page.
+PASS: Priority-filtered keyset traversal preserves ordering and completeness.
+PASS: Limits, sort names, malformed tokens, and changed cursor filters are rejected.
+PASS: A cursor from another actor scope cannot be reused.
+PASS: Negative offsets are rejected before executing SQL.
+PASS: An insert ahead of the offset causes a repeated row on the next offset page.
+PASS: The same newer insert does not repeat boundary rows in keyset continuation.
+PASS: Newer rows above the cursor require a feed restart to appear.
+PASS: A backdated insert below the cursor can enter later pages; separate requests are not one snapshot.
+PASS: Changing an ordering timestamp can repeat a previously seen row, documenting the immutable-order-key requirement.
+PASS: The migration head and complete application metadata have no autogenerate drift.
+PASS: The compound feed index is installed by the reviewed migration.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-30/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step30 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: ERROR:  22023: REFUSED: STEP30_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-30/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step30 | be51c552-27a5-4ab9-967c-6177e625f506
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-30/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step30 | be51c552-27a5-4ab9-967c-6177e625f506
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:27: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-30/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

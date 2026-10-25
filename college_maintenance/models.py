@@ -98,6 +98,7 @@ class Asset(Base):
 class MaintenanceTicket(Base):
     __tablename__ = "maintenance_tickets"
     __table_args__ = (
+        Index("ix_maintenance_tickets_created_at_id", "created_at", "id"),
         CheckConstraint("title !~ '^[[:space:]]*$'", name="title"),
         CheckConstraint("description !~ '^[[:space:]]*$'", name="description"),
         CheckConstraint("priority IN ('low', 'medium', 'high', 'critical')", name="priority"),

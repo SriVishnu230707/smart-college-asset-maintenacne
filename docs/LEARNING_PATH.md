@@ -22,7 +22,7 @@ Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-20 without advancing this checklist. It checks 582 lab assertions and fourteen runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-30 without advancing this checklist. It checks 797 lab assertions and fourteen runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The [maintenance review](MAINTENANCE_REVIEW.md) records runner bug fixes and loop simplification without advancing this checklist.
 
@@ -338,13 +338,15 @@ Reference reading: [ORM documentation](https://docs.sqlalchemy.org/en/21/orm/ind
 
   Evidence: [Step 29 predictions](../labs/step-29/notes.md), [executed evidence](../labs/step-29/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 24 checks passed in both PowerShell versions. Explicit asset/ticket DTO projections compose server-derived actor scope with department, status, priority, and assignment filters; SQL and ORM outputs agree for missing and nullable rows.
 
-- [ ] **30. Paginate the ticket feed**
+- [x] **30. Paginate the ticket feed**
 
   Learn: Study offset and keyset pagination, stable compound ordering, and changes between requests.
 
   Apply: Implement created_at/id cursors and documented filter/sort combinations.
 
   Prove: Page through equal timestamps without duplicates in a fixed dataset and describe limitations under concurrent inserts/updates.
+
+  Evidence: [Step 30 predictions](../labs/step-30/notes.md), [executed evidence](../labs/step-30/evidence.txt), and [phase guide](ORM_PHASE_21_30.md). All 23 checks passed in both PowerShell versions. Bounded offset and created_at/id keyset feeds preserve actor/filter scope, page tied timestamps without duplicates in a fixed dataset, and demonstrate concurrent-insert/update limitations.
 
 - [ ] **31. Observe the N+1 problem**
 

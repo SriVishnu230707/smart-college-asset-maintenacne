@@ -73,3 +73,11 @@ Explicit asset/ticket DTO projections compose server-derived actor scope with de
 A trusted server actor ID loads active role/department data; the future authentication boundary must supply it, never a client-provided role. Construct scopes per operation rather than caching them across role changes. Named projections return frozen DTO values before Session close and never expose hashes/emails. Reporter history access follows the project contract even after department transfer. SQL predicates remain applied for every query. Full API authentication is a later step.
 
 Verification: 24 checks in both PowerShell versions. [Predictions](../labs/step-29/notes.md), [evidence](../labs/step-29/evidence.txt).
+
+## Step 30: Stable ticket feed pagination
+
+Bounded offset and created_at/id keyset feeds preserve actor/filter scope, page tied timestamps without duplicates in a fixed dataset, and demonstrate concurrent-insert/update limitations.
+
+Supported filters are department, status, and priority in any combination; sorting is fixed to newest created_at DESC, id DESC. Limits are 1-100 and offsets 0-100000. Versioned URL-safe cursors carry an aware UTC timestamp, UUID, and actor/filter fingerprint. Tokens are unsigned positions, not authorization credentials: every query reapplies server-derived scope. Keep ordering keys immutable for stable continuation. Newer rows require a restart; backdated inserts, deletes, membership changes, or key updates can affect later pages. A compound index supports the ordering; no performance guarantee is claimed for every filter combination. The final proof also checks migration/metadata drift. See [LIMIT/OFFSET](https://www.postgresql.org/docs/18/queries-limit.html) and [statement snapshots](https://www.postgresql.org/docs/18/transaction-iso.html#XACT-READ-COMMITTED).
+
+Verification: 23 checks in both PowerShell versions. [Predictions](../labs/step-30/notes.md), [evidence](../labs/step-30/evidence.txt).
