@@ -42,21 +42,23 @@ def report_ticket(session, actor_id, *, asset_id, title, description, priority='
     audit_change(session, actor_id, 'ticket_reported', ticket=ticket, request_id=request_id, details={'priority':priority})
     return ticket
 
-def edit_report(session, actor_id, ticket_id, *, title, description, request_id=None):
+def edit_report(session, actor_id, ticket_id, *, title, description, expected_version, request_id=None):
     actor = scope_for_actor(session, actor_id); ticket = locked_ticket(session, actor, ticket_id)
     if ticket.reported_by_id != actor.user_id or actor.role != 'super_admin' and actor.department_id != ticket.department_id:
         raise PermissionError('Current-department reporter required')
     if ticket.status != 'open': raise Conflict('Original report is only editable while open')
+    check_version(ticket,expected_version)
     ticket.title = nonblank(title, 'title', 200); ticket.description = nonblank(description, 'description', 10000)
     session.flush()
     audit_change(session, actor_id, 'ticket_report_edited', ticket=ticket, request_id=request_id, details={'title':ticket.title,'description':ticket.description})
     return ticket
 
-def triage_ticket(session, actor_id, ticket_id, priority, request_id=None):
+def triage_ticket(session, actor_id, ticket_id, priority, *, expected_version, request_id=None):
     actor = scope_for_actor(session, actor_id); ticket = locked_ticket(session, actor, ticket_id)
     admin_scope(actor, ticket.department_id)
     if ticket.status not in {'open','assigned'}: raise Conflict('Ticket no longer permits triage')
     if priority not in PRIORITIES: raise ValueError('Invalid priority')
+    check_version(ticket,expected_version)
     previous = ticket.priority
     ticket.priority = priority; session.flush()
     audit_change(session, actor_id, 'ticket_priority_changed', ticket=ticket, request_id=request_id, details={'before':previous,'after':priority})
@@ -65,7 +67,11 @@ def triage_ticket(session, actor_id, ticket_id, priority, request_id=None):
 def ticket_result(ticket):
     return dict(id=ticket.id, asset_id=ticket.asset_id, department_id=ticket.department_id,
         reported_by_id=ticket.reported_by_id, assigned_to_id=ticket.assigned_to_id,
-        title=ticket.title, description=ticket.description, priority=ticket.priority, status=ticket.status)
+        title=ticket.title, description=ticket.description, priority=ticket.priority, status=ticket.status,version=ticket.version)
+
+def check_version(ticket,expected_version):
+    if type(expected_version) is not int or expected_version<1:raise ValueError('A positive expected version is required')
+    if ticket.version!=expected_version:raise Conflict('Stale ticket version; reload before editing')
 
 def transition_ticket(session, actor_id, ticket_id, *, action, technician_id=None, reason=None, request_id=None):
     actor = scope_for_actor(session, actor_id); ticket = locked_ticket(session, actor, ticket_id)

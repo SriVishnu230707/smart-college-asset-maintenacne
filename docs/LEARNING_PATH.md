@@ -530,13 +530,15 @@ Reference reading: [Session transactions](https://docs.sqlalchemy.org/en/21/orm/
 
   Evidence: [Step 47 notes](../labs/step-47/notes.md), [executed proof](../labs/step-47/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 24 checks passed in both shells. Duplicate, simultaneous, discarded-response, and rollback-waiting completion requests resolve one durable work-order operation without duplicate stock or audit.
 
-- [ ] **48. Detect stale edits optimistically**
+- [x] **48. Detect stale edits optimistically**
 
   Learn: Use version_id_col or explicit expected-version predicates and inspect affected results.
 
   Apply: Load a ticket in two Sessions and attempt conflicting administrator edits.
 
   Prove: One stale edit is rejected; demonstrate that bulk/Core writes need deliberate version checks too.
+
+  Evidence: [Step 48 notes](../labs/step-48/notes.md), [executed proof](../labs/step-48/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 20 checks passed in both shells. Ticket mapper versions and required HTTP expected versions reject stale report/priority edits; explicit Core predicates demonstrate the bulk-write boundary.
 
 Checkpoint: Failures and competing requests cannot corrupt stock, duplicate consumption, or silently overwrite protected edits.
 

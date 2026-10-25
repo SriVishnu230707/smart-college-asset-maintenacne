@@ -103,9 +103,12 @@ class MaintenanceTicket(Base):
         CheckConstraint("description !~ '^[[:space:]]*$'", name="description"),
         CheckConstraint("priority IN ('low', 'medium', 'high', 'critical')", name="priority"),
         CheckConstraint("status IN ('open', 'assigned', 'in_progress', 'awaiting_verification', 'closed', 'rejected')", name="status"),
+        CheckConstraint("version > 0", name="version"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, server_default=text("gen_random_uuid()"))
+    version: Mapped[int] = mapped_column(server_default=text('1'))
+    __mapper_args__ = {'version_id_col': version}
     asset_id: Mapped[UUID] = mapped_column(
         ForeignKey("assets.id", name="fk_tickets_asset", ondelete="RESTRICT", onupdate="RESTRICT"), index=True
     )

@@ -1,0 +1,72 @@
+Step 48: Reject stale edits optimistically verification evidence
+Captured (Asia/Kolkata): 2026-10-25 10:53:01 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 9bb42b63-52e1-4d01-ad14-a9d72b396aee
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-48/python_lab.py --run-id <run-id>
+C:\projects\Smart College Asset & Maintenance Management System\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=28074
+PASS: Two independent Sessions begin with the same ticket revision.
+PASS: A normal ORM flush advances the version counter.
+PASS: A stale ORM edit matches zero versioned rows and raises StaleDataError.
+PASS: The winning administrator-style edit remains intact after stale rollback.
+PASS: Unqualified Core/bulk DML bypasses automatic mapper version increment.
+PASS: A deliberate expected-version predicate rejects stale Core DML too.
+PASS: The detail response supplies the version needed for a protected client edit.
+PASS: An authorized edit with the current expected version succeeds and returns the next version.
+PASS: A stale direct API request receives a conflict instead of overwriting the winning edit.
+PASS: Protected edits require a caller-provided expected version.
+PASS: Rejected stale edits create neither a changed value nor a success audit event.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-48/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step48 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP48_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-48/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step48 | 9bb42b63-52e1-4d01-ad14-a9d72b396aee
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-48/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step48 | 9bb42b63-52e1-4d01-ad14-a9d72b396aee
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step48.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-48/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

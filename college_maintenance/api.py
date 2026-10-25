@@ -17,6 +17,7 @@ from college_maintenance.repairs import create_order, start_order, edit_order, s
 from college_maintenance.attachments import order_parent
 from college_maintenance.completion import complete_work_order
 from college_maintenance.retries import RETRYABLE
+from sqlalchemy.orm.exc import StaleDataError
 from college_maintenance.authentication import authenticate_token
 from college_maintenance.pagination import ticket_feed
 from college_maintenance.models import MaintenanceTicket, AuditEvent
@@ -36,10 +37,12 @@ class EditInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=10000)
+    expected_version: int = Field(ge=1,strict=True)
 
 class PriorityInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
     priority: Literal['low','medium','high','critical']
+    expected_version: int = Field(ge=1,strict=True)
 
 class TransitionInput(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -125,6 +128,9 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.exception_handler(Conflict)
     def state_conflict(request, error): return JSONResponse(status_code=409, content={'detail':str(error)})
 
+    @app.exception_handler(StaleDataError)
+    def stale_edit(request,error):return JSONResponse(status_code=409,content={'detail':'Stale ticket version; reload before editing'})
+
     @app.exception_handler(NotFound)
     def not_found(request, error): return JSONResponse(status_code=404, content={'detail':'Resource not found'})
 
@@ -141,7 +147,7 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.patch('/tickets/{ticket_id}/priority')
     def patch_priority(ticket_id: UUID, body: PriorityInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
         with session.begin():
-            return ticket_result(triage_ticket(session, identity, ticket_id, body.priority, request_id=request_id))
+            return ticket_result(triage_ticket(session, identity, ticket_id, body.priority, expected_version=body.expected_version, request_id=request_id))
 
     @app.post('/tickets/{ticket_id}/transitions')
     def post_transition(ticket_id: UUID, body: TransitionInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
@@ -258,7 +264,7 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.get('/tickets/{ticket_id}')
     def get_ticket(ticket_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):
         with session.begin():
-            query = ticket_query(scope_for_actor(session, identity)).where(MaintenanceTicket.id == ticket_id)
+            query = ticket_query(scope_for_actor(session, identity)).add_columns(MaintenanceTicket.version).where(MaintenanceTicket.id == ticket_id)
             result = session.execute(query).mappings().one_or_none()
             if result is None: raise HTTPException(404, 'Ticket not found')
             return dict(result)

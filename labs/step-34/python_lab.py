@@ -16,15 +16,15 @@ def scenario(lab):
         check(report(api,ids,reported_by_id=str(ids['other']),department_id=str(ids['other_dept'])).status_code==422,'Caller overrides for reporter or department are rejected by the transport schema.')
         for actor in ('other','other_admin','tech'):
             check(api.get(f'/tickets/{key}',headers=headers(actor)).status_code==404,f'{actor} cannot read a ticket outside their own/assigned/department scope.')
-        check(api.patch(f'/tickets/{key}/priority',headers=headers('reporter'),json={'priority':'critical'}).status_code==403,'Reporter status does not grant administrator triage permission.')
-        check(api.patch(f'/tickets/{key}/priority',headers=headers('other_admin'),json={'priority':'critical'}).status_code==404,'Cross-department administrators cannot mutate the target ticket.')
-        check(api.patch(f'/tickets/{key}/priority',headers=headers('admin'),json={'priority':'critical'}).status_code==200,'An in-scope administrator may triage priority.')
+        check(api.patch(f'/tickets/{key}/priority',headers=headers('reporter'),json={'priority':'critical','expected_version':1}).status_code==403,'Reporter status does not grant administrator triage permission.')
+        check(api.patch(f'/tickets/{key}/priority',headers=headers('other_admin'),json={'priority':'critical','expected_version':1}).status_code==404,'Cross-department administrators cannot mutate the target ticket.')
+        check(api.patch(f'/tickets/{key}/priority',headers=headers('admin'),json={'priority':'critical','expected_version':1}).status_code==200,'An in-scope administrator may triage priority.')
         check(api.get(f'/tickets/{key}',headers=headers('super')).status_code==200,'Super Admin can read across department scope.')
         check(report(api,ids,actor='other').status_code==404,'Cross-department reporting is denied independently of UI controls.')
-        check(api.patch(f'/tickets/{key}/report',headers=headers('admin'),json={'title':'Changed','description':'No'}).status_code==403,'Administrative scope does not grant ownership of original report text.')
+        check(api.patch(f'/tickets/{key}/report',headers=headers('admin'),json={'title':'Changed','description':'No','expected_version':1}).status_code==403,'Administrative scope does not grant ownership of original report text.')
         with lab.session() as session, session.begin(): session.get(User,ids['reporter']).department_id=ids['other_dept']
         check(api.get(f'/tickets/{key}',headers=headers('reporter')).status_code==200,'A transferred reporter retains read access to their own history.')
-        check(api.patch(f'/tickets/{key}/report',headers=headers('reporter'),json={'title':'Changed','description':'No'}).status_code==403,'Transferred reporter history access does not grant mutation permission.')
+        check(api.patch(f'/tickets/{key}/report',headers=headers('reporter'),json={'title':'Changed','description':'No','expected_version':1}).status_code==403,'Transferred reporter history access does not grant mutation permission.')
         with lab.session() as session,session.begin(): session.get(Asset,ids['asset']).status='retired'
         check(report(api,ids,actor='super').status_code==409,'Even Super Admin cannot report a retired asset.')
     with lab.session() as session:

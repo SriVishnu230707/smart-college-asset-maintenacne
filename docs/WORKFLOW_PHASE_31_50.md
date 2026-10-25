@@ -137,3 +137,11 @@ Duplicate, simultaneous, discarded-response, and rollback-waiting completion req
 Authorization precedes result disclosure. Ticket and order locks serialize the operation; completed status resolves the frozen outcome before unfinished-state checks, even after closure or rework. Only the owning currently assigned technician or a scoped administrator with completed-work read permission may retrieve it. Administrators still cannot initiate unfinished completion. Unique consumption identities and immutable child snapshots support the durable result; current ticket state, stock, display names and catalog prices are excluded. Two real-backend races prove commit and rollback behavior.
 
 Verification: 24 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-47/notes.md), [executed evidence](../labs/step-47/evidence.txt).
+
+## Step 48: Reject stale edits optimistically
+
+Ticket mapper versions and required HTTP expected versions reject stale report/priority edits; explicit Core predicates demonstrate the bulk-write boundary.
+
+Two independently loaded entities prove ORM StaleDataError and preservation of the winner. Core DML without a version predicate bypasses mapper protection, so that counterexample is rolled back; a qualified predicate matches zero stale rows. The API returns current versions, requires positive expected_version on protected edits, and emits no success audit for rejected changes. Earlier permission/audit HTTP fixtures now supply the new transport field while preserving their original assertions. A reviewed migration backfills version 1 for existing rows. See [SQLAlchemy version counters](https://docs.sqlalchemy.org/en/21/orm/versioning.html).
+
+Verification: 20 checks in both PowerShell 7 and Windows PowerShell 5.1. [Notes](../labs/step-48/notes.md), [executed evidence](../labs/step-48/evidence.txt).

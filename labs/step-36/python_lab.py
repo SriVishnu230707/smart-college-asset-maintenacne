@@ -15,7 +15,7 @@ def scenario(lab):
     ids=seed(lab); request_id=uuid4()
     with client(lab,ids) as api:
         key=report(api,ids).json()['id']
-        response=api.patch(f'/tickets/{key}/priority',headers={**headers('admin'),'X-Request-ID':str(request_id)},json={'priority':'critical'})
+        response=api.patch(f'/tickets/{key}/priority',headers={**headers('admin'),'X-Request-ID':str(request_id)},json={'priority':'critical','expected_version':1})
         check(response.status_code==200,'A successful priority change commits through the API.')
         history=api.get(f'/tickets/{key}/audit',headers=headers('admin')).json()
         check(len(history)==2,'Report creation and priority mutation each create one business success event.')
@@ -30,7 +30,7 @@ def scenario(lab):
                 raise RuntimeError('synthetic audit failure')
         event.listen(Session,'before_flush',fail_before_audit)
         try:
-            try: api.patch(f'/tickets/{key}/priority',headers=headers('admin'),json={'priority':'low'})
+            try: api.patch(f'/tickets/{key}/priority',headers=headers('admin'),json={'priority':'low','expected_version':2})
             except RuntimeError as error: check('synthetic audit failure' in str(error),'An audit persistence failure propagates through the transaction owner.')
             else: raise AssertionError('Audit failure swallowed')
         finally: event.remove(Session,'before_flush',fail_before_audit)
