@@ -858,13 +858,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 78 notes](../labs/step-78/notes.md) and [executed proof](../labs/step-78/evidence.txt). 20 checks passed in PowerShell 7 and Windows PowerShell 5.1. Real physical backup, WAL archiving and named-point recovery, physical standby and logical subscription execute in four private scratch clusters with exact-marker cleanup.
 
-- [ ] **79. Reliable external side effects**
+- [x] **79. Reliable external side effects**
 
   Learn: Study outbox transactions, retries, duplicate delivery, consumer idempotency, and file/object compensation. Prerequisites: 37, 47, 59.
 
   Apply: Record a repair-completed outbox event in the repair transaction and deliver it separately.
 
   Prove: A crash between database commit and delivery does not lose the event; duplicate delivery has a defined outcome.
+
+  Evidence: [Step 79 notes](../labs/step-79/notes.md) and [executed proof](../labs/step-79/evidence.txt). 20 checks passed in PowerShell 7 and Windows PowerShell 5.1. Atomic envelope production, SKIP LOCKED publishers, independent consumer commit, crash-before-ack redelivery and idempotent local effects are verified without external messages.
 
 - [ ] **80. Independent feature and reference audit**
 

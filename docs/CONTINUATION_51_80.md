@@ -32,3 +32,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 76 | Advanced query and index laboratories | 18 | [Lab](../labs/step-76/notes.md), [executed proof](../labs/step-76/evidence.txt) |
 | 77 | Partitioning and retention | 18 | [Lab](../labs/step-77/notes.md), [executed proof](../labs/step-77/evidence.txt) |
 | 78 | WAL, PITR, and replication | 20 | [Lab](../labs/step-78/notes.md), [executed proof](../labs/step-78/evidence.txt) |
+| 79 | Reliable external side effects | 20 | [Lab](../labs/step-79/notes.md), [executed proof](../labs/step-79/evidence.txt) |
