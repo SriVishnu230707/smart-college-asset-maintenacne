@@ -738,13 +738,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 66 notes](../labs/step-66/notes.md) and [executed proof](../labs/step-66/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Ranked English full-text search preserves ticket visibility, tests actual dictionary stems versus substrings and stopwords, and measures matching GIN expression indexing.
 
-- [ ] **67. Self-reference and recursive traversal**
+- [x] **67. Self-reference and recursive traversal**
 
   Learn: Explore self-FKs, remote_side, recursive CTEs, aliases, and cycle policy. Prerequisites: 23, 50.
 
   Apply: Add optional equipment containment inside lab/classroom assets in a lab branch.
 
   Prove: Traverse descendants and define protection against cycles and invalid reparenting.
+
+  Evidence: [Step 67 notes](../labs/step-67/notes.md) and [executed proof](../labs/step-67/evidence.txt). 15 checks passed in PowerShell 7 and Windows PowerShell 5.1. Self-reference mapping, recursive traversal, valid moves, cycle rejection and real advisory-lock serialization are verified in an isolated hierarchy.
 
 - [ ] **68. PostgreSQL-specific type and constraint laboratories**
 
