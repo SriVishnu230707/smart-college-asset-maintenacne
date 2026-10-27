@@ -848,13 +848,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 77 notes](../labs/step-77/notes.md) and [executed proof](../labs/step-77/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Partition pruning, composite uniqueness limits, reversible retention and real hierarchical dump/restore are verified on 20002 events.
 
-- [ ] **78. WAL, PITR, and replication**
+- [x] **78. WAL, PITR, and replication**
 
   Learn: Study WAL durability, base backups, continuous archiving/recovery targets, physical versus logical replication, and lag in separate operations labs. Prerequisite: 63.
 
   Apply: Demonstrate a verified point-in-time recovery first, then inspect a replica experiment.
 
   Prove: Explain RPO/RTO and distinguish backups from replicas; do not claim an untested archive is recoverable.
+
+  Evidence: [Step 78 notes](../labs/step-78/notes.md) and [executed proof](../labs/step-78/evidence.txt). 20 checks passed in PowerShell 7 and Windows PowerShell 5.1. Real physical backup, WAL archiving and named-point recovery, physical standby and logical subscription execute in four private scratch clusters with exact-marker cleanup.
 
 - [ ] **79. Reliable external side effects**
 

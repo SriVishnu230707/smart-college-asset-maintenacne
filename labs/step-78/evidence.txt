@@ -1,0 +1,72 @@
+Step 78: WAL, PITR, and replication verification evidence
+Captured (Asia/Kolkata): 2026-10-27 23:39:24 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): b03b607b-8e09-475c-a4ca-c0712862023f
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-78/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=16970
+PASS: A real physical base backup and manifest are created from the isolated primary.
+PASS: A named restore point separates wanted data from a later committed change.
+PASS: A real physical standby is in recovery and receives all three primary rows.
+PASS: The primary observes an actual physical WAL-sender connection.
+PASS: An independent logical subscriber receives table data without being a physical recovery standby.
+PASS: Completed WAL segments are actually archived before the recovery test.
+PASS: Actual archived-WAL recovery promotes at the named point, retaining wanted rows and excluding the later commit.
+PASS: Point-in-time restoration leaves the original primary and its later data untouched.
+PASS: Exact-marker cleanup stops all four scratch clusters and removes only their generated temporary directory.
+
+PASS: Physical backup, archived-WAL PITR, physical replication and logical replication all execute rather than being configuration-only examples.
+PASS: The existing learning cluster remains available and unmodified by separate Unix-socket-only operations labs.
+Recovery policy: observed RPO is the selected restore point; RTO is measured operational work, not a promised SLA. Replicas also receive unwanted changes and do not replace independently recoverable backups. Scratch trust authentication is restricted to a private container-local socket directory; no recovery port is published.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-78/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step78 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP78_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-78/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step78 | b03b607b-8e09-475c-a4ca-c0712862023f
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-78/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step78 | b03b607b-8e09-475c-a4ca-c0712862023f
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step78.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-78/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.
