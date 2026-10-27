@@ -4,10 +4,10 @@ mode=$1
 schema=$2
 database=$3
 marker=$4
-case "$schema" in college_step63|college_step64|college_step80) ;; *) exit 64;; esac
+case "$schema" in college_step63|college_step64|college_step77|college_step80) ;; *) exit 64;; esac
 case "$marker" in ''|*[!0-9a-f]*) exit 64;; esac
 [ "${#marker}" = 32 ] || exit 64
-case "$database" in college_ops63_*|college_ops64_*|college_ops80_*) ;; *) exit 64;; esac
+case "$database" in college_ops63_*|college_ops64_*|college_ops77_*|college_ops80_*) ;; *) exit 64;; esac
 case "$database" in *[!a-z0-9_]*) exit 64;; esac
 archive="/tmp/college_backup_${marker}.dump"
 export PGHOST=127.0.0.1 PGUSER=college_learner

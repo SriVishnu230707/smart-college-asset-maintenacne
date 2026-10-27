@@ -838,13 +838,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 76 notes](../labs/step-76/notes.md) and [executed proof](../labs/step-76/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. BRIN, hash, spatial SP-GiST/GiST, explicitly scoped multicolumn statistics, bound compilation caching and server custom/generic plans are measured.
 
-- [ ] **77. Partitioning and retention**
+- [x] **77. Partitioning and retention**
 
   Learn: Explore partition pruning, partition keys, partitioned uniqueness limits, retention, and index management. Prerequisites: 55, 60, 63.
 
   Apply: Partition a generated audit-history lab by time and compare relevant plans and maintenance operations.
 
   Prove: Explain why a smaller base deployment might remain unpartitioned and verify retention/recovery behavior.
+
+  Evidence: [Step 77 notes](../labs/step-77/notes.md) and [executed proof](../labs/step-77/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Partition pruning, composite uniqueness limits, reversible retention and real hierarchical dump/restore are verified on 20002 events.
 
 - [ ] **78. WAL, PITR, and replication**
 

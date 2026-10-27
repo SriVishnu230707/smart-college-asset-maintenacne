@@ -30,3 +30,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 74 | Row-level security | 18 | [Lab](../labs/step-74/notes.md), [executed proof](../labs/step-74/evidence.txt) |
 | 75 | Async execution and large-result streaming | 17 | [Lab](../labs/step-75/notes.md), [executed proof](../labs/step-75/evidence.txt) |
 | 76 | Advanced query and index laboratories | 18 | [Lab](../labs/step-76/notes.md), [executed proof](../labs/step-76/evidence.txt) |
+| 77 | Partitioning and retention | 18 | [Lab](../labs/step-77/notes.md), [executed proof](../labs/step-77/evidence.txt) |

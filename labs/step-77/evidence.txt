@@ -1,0 +1,69 @@
+Step 77: Partitioning and retention verification evidence
+Captured (Asia/Kolkata): 2026-10-27 23:37:16 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 2203e5ac-bda7-4053-8fe1-dbd4bbe8b99c
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-77/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=16433
+PASS: The October predicate prunes the November partition in an actual execution plan.
+PASS: A query without a partition-key restriction must visit both child relations.
+PASS: Global uniqueness cannot omit the partition key from this partitioned-table unique index.
+PASS: The composite key permits the same event UUID on different dates; uniqueness policy is explicit.
+PASS: Detaching a partition removes its rows from parent queries without deleting the archive table.
+PASS: The detached relation retains every archived row for the explicit retention/recovery policy.
+PASS: Real dump/restore preserves all rows after reattachment.
+PASS: Restoration recreates the partition hierarchy, not just flattened data.
+PASS: Independent source observation confirms recovery did not mutate the original partitioned data.
+Decision: keep the ordinary base audit table until retention/volume evidence justifies partitioning. Partition removal is a retention decision, not an automatic backup.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-77/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step77 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP77_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-77/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step77 | 2203e5ac-bda7-4053-8fe1-dbd4bbe8b99c
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-77/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step77 | 2203e5ac-bda7-4053-8fe1-dbd4bbe8b99c
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step77.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-77/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.
