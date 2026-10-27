@@ -1,0 +1,81 @@
+Step 80: Independent feature and reference audit verification evidence
+Captured (Asia/Kolkata): 2026-10-27 23:45:38 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 505cf540-a1c3-4e55-bb09-6588f9343c72
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-80/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=19015
+PASS: An explicit feature migration creates a recorded schema version before ORM use.
+PASS: The independently written migration and typed feature model agree on all stored/generated columns.
+PASS: The optional feature requires authentication.
+PASS: Students cannot schedule administrative preventive slots.
+PASS: Another department cannot schedule the asset or reveal its details.
+PASS: Authorized scheduling commits a typed half-open interval and its audit event.
+PASS: An identical request key resolves the original durable booking rather than duplicating it.
+PASS: Reusing an idempotency key for different content is rejected.
+PASS: Database range exclusion rejects overlapping active bookings.
+PASS: Half-open adjacent intervals are allowed without overlap.
+PASS: A stale cancellation version does not change the booking.
+PASS: Cancellation changes state/version atomically and releases the active exclusion slot.
+PASS: A cancelled slot can be booked by a new durable request.
+PASS: The original idempotency key retains its original cancelled resource rather than creating a replacement.
+PASS: Booking list projections respect the recorded department scope.
+PASS: Two independent scheduling transactions actually contend under the shared asset-lock protocol.
+PASS: Only one concurrent overlapping booking commits; the exclusion constraint rejects the loser.
+PASS: Rejected and duplicate requests leave exactly four durable booking resources.
+PASS: Four creations and one cancellation produce five successful audit events; conflicts leave none.
+PASS: Direct SQL cannot bypass the nonempty interval constraint.
+PASS: A real fresh-database restore preserves exact booking identities, versions, states and timezone instants.
+PASS: The restored feature retains its database exclusion constraint, not just application checks.
+PASS: Independent SQL verifies one stable asset key across all scheduling requests.
+PASS: Feature teardown reverses only its optional migrated tables, preserving the core application schema.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-80/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step80 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP80_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-80/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step80 | 505cf540-a1c3-4e55-bb09-6588f9343c72
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-80/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step80 | 505cf540-a1c3-4e55-bb09-6588f9343c72
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-80/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

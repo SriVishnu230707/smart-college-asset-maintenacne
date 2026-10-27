@@ -868,13 +868,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 79 notes](../labs/step-79/notes.md) and [executed proof](../labs/step-79/evidence.txt). 20 checks passed in PowerShell 7 and Windows PowerShell 5.1. Atomic envelope production, SKIP LOCKED publishers, independent consumer commit, crash-before-ack redelivery and idempotent local effects are verified without external messages.
 
-- [ ] **80. Independent feature and reference audit**
+- [x] **80. Independent feature and reference audit**
 
   Learn: Practice choosing a design, finding exact API options, identifying unsupported assumptions, and updating dependencies. Prerequisite: 64 and relevant extension gates.
 
   Apply: Design a stock-reservation or preventive-maintenance feature from a blank page; maintain a reference coverage ledger.
 
   Prove: Produce requirements, schema/migration, SQL, ORM, failure tests, concurrency evidence, plans, and recovery considerations without copying the original implementation.
+
+  Evidence: [Step 80 notes](../labs/step-80/notes.md) and [executed proof](../labs/step-80/evidence.txt). 33 checks passed in PowerShell 7 and Windows PowerShell 5.1. Independent preventive scheduling includes explicit migration, scoped API, durable request keys, versioned cancellation, actual overlap contention, audit, query plan and real restore.
 
 Checkpoint: Keep extensions only when their value and correctness are demonstrated. Use an isolated lab for alternatives that do not improve the base application.
 
