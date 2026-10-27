@@ -710,7 +710,7 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Prove: Rebuild one important use case without copying and explain its SQL, transaction boundary, constraints, loaders, and plan choices.
 
-  Evidence: [Step 64 notes](../labs/step-64/notes.md) and [executed proof](../labs/step-64/evidence.txt). 29 checks passed in PowerShell 7 and Windows PowerShell 5.1. Core acceptance combines observed last-unit contention, HTTP closure and retries, scoped exact-money analytics, independent SQL and fresh-database recovery.
+  Evidence: [Step 64 notes](../labs/step-64/notes.md) and [executed proof](../labs/step-64/evidence.txt). 30 checks passed in PowerShell 7 and Windows PowerShell 5.1. Core acceptance combines observed last-unit contention, HTTP closure and retries, scoped exact-money analytics, independent SQL and fresh-database recovery.
 
 Checkpoint: Another developer can create, operate, recover, and verify the complete system using the documented process.
 

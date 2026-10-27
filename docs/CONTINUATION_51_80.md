@@ -17,7 +17,7 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 61 | Budget and clean up connections | 19 | [Lab](../labs/step-61/notes.md), [executed proof](../labs/step-61/evidence.txt) |
 | 62 | Make deployment reproducible | 24 | [Lab](../labs/step-62/notes.md), [executed proof](../labs/step-62/evidence.txt) |
 | 63 | Practice backup and restoration | 16 | [Lab](../labs/step-63/notes.md), [executed proof](../labs/step-63/evidence.txt) |
-| 64 | Complete the project acceptance demonstration | 29 | [Lab](../labs/step-64/notes.md), [executed proof](../labs/step-64/evidence.txt) |
+| 64 | Complete the project acceptance demonstration | 30 | [Lab](../labs/step-64/notes.md), [executed proof](../labs/step-64/evidence.txt) |
 | 65 | JSONB and mutation tracking | 17 | [Lab](../labs/step-65/notes.md), [executed proof](../labs/step-65/evidence.txt) |
 | 66 | Full-text ticket search | 17 | [Lab](../labs/step-66/notes.md), [executed proof](../labs/step-66/evidence.txt) |
 | 67 | Self-reference and recursive traversal | 15 | [Lab](../labs/step-67/notes.md), [executed proof](../labs/step-67/evidence.txt) |
