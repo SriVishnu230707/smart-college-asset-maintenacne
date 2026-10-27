@@ -672,13 +672,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 60 notes](../labs/step-60/notes.md) and [executed proof](../labs/step-60/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Actual blocking and idle transactions are diagnosed through backend IDs, pg_locks and activity views; VACUUM ANALYZE and workload counters are observed.
 
-- [ ] **61. Budget and clean up connections**
+- [x] **61. Budget and clean up connections**
 
   Learn: Use pool_size, max_overflow, checkout timeout, worker counts, connection failure handling, and transaction cleanup.
 
   Apply: Set a deliberate connection budget and force success/error paths through the API.
 
   Prove: Connections return to the pool, requests do not leave idle transactions, and exhaustion produces a controlled diagnosis.
+
+  Evidence: [Step 61 notes](../labs/step-61/notes.md) and [executed proof](../labs/step-61/evidence.txt). 19 checks passed in PowerShell 7 and Windows PowerShell 5.1. Finite pool exhaustion, HTTP success/error cleanup, stale-backend pre-ping and independent disposal checks pass.
 
 - [ ] **62. Make deployment reproducible**
 

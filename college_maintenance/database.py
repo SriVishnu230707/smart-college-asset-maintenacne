@@ -29,15 +29,21 @@ def connection_url() -> URL:
                       host="127.0.0.1", port=port, database="college_learning")
 
 
+def pool_settings():
+    values={key:int(os.environ.get(env,default)) for key,env,default in [
+        ('pool_size','COLLEGE_POOL_SIZE','1'),('max_overflow','COLLEGE_MAX_OVERFLOW','0'),
+        ('pool_timeout','COLLEGE_POOL_TIMEOUT','5')]}
+    if not 1<=values['pool_size']<=100 or not 0<=values['max_overflow']<=100 or not 1<=values['pool_timeout']<=60:
+        raise ValueError('Pool configuration must be finite and within documented bounds')
+    return values
+
 # A single slot makes sequential pool reuse easy to observe in this lesson.
 # This is a learning configuration, not production pool sizing.
 engine = create_engine(
     connection_url(),
     echo=os.environ.get("COLLEGE_SQL_ECHO", "0") == "1",
     hide_parameters=True,
-    pool_size=1,
-    max_overflow=0,
-    pool_timeout=5,
+    **pool_settings(),
     pool_pre_ping=True,
     connect_args={"connect_timeout": 5, "application_name": "college_step13", "options": "-c timezone=UTC"},
 )
