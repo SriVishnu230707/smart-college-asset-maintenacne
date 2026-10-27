@@ -642,13 +642,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 57 notes](../labs/step-57/notes.md) and [executed proof](../labs/step-57/evidence.txt). 15 checks passed in PowerShell 7 and Windows PowerShell 5.1. Atomic and per-row imports, duplicate handling, real COPY staging and independent committed-row checks pass.
 
-- [ ] **58. Separate database ownership and runtime privileges**
+- [x] **58. Separate database ownership and runtime privileges**
 
   Learn: Study database roles, ownership, GRANT/REVOKE, schema access, and trusted connection configuration.
 
   Apply: Use a limited application role and a separate migration owner; protect credentials and exclude them from logs.
 
   Prove: The runtime can perform required operations but cannot make unauthorized schema changes.
+
+  Evidence: [Step 58 notes](../labs/step-58/notes.md) and [executed proof](../labs/step-58/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. A real non-owner runtime login can write application rows but cannot CREATE, ALTER, TRUNCATE or create schemas; URL secrets remain outside Git.
 
 - [ ] **59. Build PostgreSQL integration tests**
 

@@ -11,3 +11,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 55 | Design workload-specific indexes | 18 | [Lab](../labs/step-55/notes.md), [executed proof](../labs/step-55/evidence.txt) |
 | 56 | Measure realistic workloads | 16 | [Lab](../labs/step-56/notes.md), [executed proof](../labs/step-56/evidence.txt) |
 | 57 | Import data with explicit failure policy | 15 | [Lab](../labs/step-57/notes.md), [executed proof](../labs/step-57/evidence.txt) |
+| 58 | Separate database ownership and runtime privileges | 16 | [Lab](../labs/step-58/notes.md), [executed proof](../labs/step-58/evidence.txt) |

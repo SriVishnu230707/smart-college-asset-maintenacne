@@ -4,12 +4,18 @@ import os
 from pathlib import Path
 
 from sqlalchemy import URL, create_engine
+from sqlalchemy.engine import make_url
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def connection_url() -> URL:
     """Use the existing learner secret and Compose's configurable host port."""
+    configured=os.environ.get('COLLEGE_DATABASE_URL_FILE')
+    if configured:
+        url=make_url(Path(configured).read_text(encoding='utf-8').strip())
+        if url.drivername!='postgresql+psycopg':raise ValueError('A psycopg PostgreSQL URL is required')
+        return url
     secret_file = PROJECT_ROOT / ".local" / "college-learner-password"
     if not secret_file.is_file():
         raise RuntimeError("Start labs/step-02/start.ps1 to create the local learner credential")
