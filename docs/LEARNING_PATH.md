@@ -692,13 +692,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 62 notes](../labs/step-62/notes.md) and [executed proof](../labs/step-62/evidence.txt). 24 checks passed in PowerShell 7 and Windows PowerShell 5.1. Fresh Compose deployment runs owner migrations, non-owner runtime HTTP repair/proof/verification and independent SQL acceptance, then removes only its generated project.
 
-- [ ] **63. Practice backup and restoration**
+- [x] **63. Practice backup and restoration**
 
   Learn: Understand logical dump formats, restoration targets, schema/data/roles coverage, and verification.
 
   Apply: Restore a backup into a separate fresh database and run integrity and cost-report checks.
 
   Prove: Historical costs, inventory reconciliation, and ticket relationships survive restoration.
+
+  Evidence: [Step 63 notes](../labs/step-63/notes.md) and [executed proof](../labs/step-63/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Real pg_dump/pg_restore into a fresh database preserves stock reconciliation, frozen costs, audit, history triggers and separately copied proof bytes.
 
 - [ ] **64. Complete the project acceptance demonstration**
 
