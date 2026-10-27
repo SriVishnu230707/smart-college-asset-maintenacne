@@ -96,8 +96,15 @@ function Invoke-CommittedLab {
         if ($SqlOnly) {
             $outputs.exercise = @(Invoke-LabSql "$sqlRoot/query.sql" -PsqlArguments @("--set=lab_run_id=$labRunId"))
         } else {
-            $outputs.exercise = @(Invoke-LabProcess $PythonExecutable @('-X', 'utf8', '-B',
-                (Join-Path $labDirectory 'python_lab.py'), '--run-id', $labRunId))
+            $previousCapturePlans = $env:COLLEGE_CAPTURE_PLANS
+            try {
+                $env:COLLEGE_CAPTURE_PLANS = if ($WriteEvidence) { '1' } else { '0' }
+                $outputs.exercise = @(Invoke-LabProcess $PythonExecutable @('-X', 'utf8', '-B',
+                    (Join-Path $labDirectory 'python_lab.py'), '--run-id', $labRunId))
+            } finally {
+                if ($null -eq $previousCapturePlans) { Remove-Item Env:COLLEGE_CAPTURE_PLANS -ErrorAction SilentlyContinue }
+                else { $env:COLLEGE_CAPTURE_PLANS = $previousCapturePlans }
+            }
         }
         $outputs.guard = @(Invoke-LabSql "$sqlRoot/cleanup.sql" -PsqlArguments @("--set=lab_run_id=$differentRunId") -ExpectedExitCode 3)
         $guardTranscript = $outputs.guard -join "`n"

@@ -1,6 +1,6 @@
 """Disposable realistic workload; plans are evidence, timings are not thresholds."""
 from contextlib import contextmanager
-import json
+import json,os
 from pathlib import Path
 
 @contextmanager
@@ -21,6 +21,7 @@ def nodes(plan):
 
 def save_plans(step, **plans):
     path=Path(__file__).resolve().parents[1]/f'step-{step}'/'plans.json'
+    if path.exists() and os.environ.get('COLLEGE_CAPTURE_PLANS')!='1':return
     path.write_text(json.dumps(plans,indent=2,default=str)+'\n',encoding='utf-8')
 
 QUEUE="SELECT id,title FROM bench_tickets WHERE department=7 AND status='open' ORDER BY created_at DESC,id DESC LIMIT 20"
