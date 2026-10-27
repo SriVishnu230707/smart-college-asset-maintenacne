@@ -702,13 +702,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 63 notes](../labs/step-63/notes.md) and [executed proof](../labs/step-63/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Real pg_dump/pg_restore into a fresh database preserves stock reconciliation, frozen costs, audit, history triggers and separately copied proof bytes.
 
-- [ ] **64. Complete the project acceptance demonstration**
+- [x] **64. Complete the project acceptance demonstration**
 
   Learn: Combine the full workflow, concurrency, reporting, migration, and recovery evidence.
 
   Apply: Demonstrate reporting, approval, assignment, repair, verification, last-unit contention, duplicate completion, audit review, and restored reporting.
 
   Prove: Rebuild one important use case without copying and explain its SQL, transaction boundary, constraints, loaders, and plan choices.
+
+  Evidence: [Step 64 notes](../labs/step-64/notes.md) and [executed proof](../labs/step-64/evidence.txt). 29 checks passed in PowerShell 7 and Windows PowerShell 5.1. Core acceptance combines observed last-unit contention, HTTP closure and retries, scoped exact-money analytics, independent SQL and fresh-database recovery.
 
 Checkpoint: Another developer can create, operate, recover, and verify the complete system using the documented process.
 

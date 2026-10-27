@@ -8,6 +8,8 @@ from sqlalchemy.exc import IntegrityError, DBAPIError
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 import base64
+from datetime import date
+from college_maintenance.analytics import ranked_failures_query,monthly_costs_query
 from fastapi.responses import Response
 from college_maintenance.attachments import FileStore, add_comment, attachment_metadata, read_attachment
 from college_maintenance.loading import comment_page
@@ -248,6 +250,17 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     def get_latest_comments(strategy: Literal['lateral','distinct_on','scalar']='lateral',limit: int=Query(20,ge=1,le=100),identity=Depends(actor_id),session=Depends(session_dependency)):
         with session.begin():
             return [dict(row) for row in session.execute(latest_comments_query(scope_for_actor(session,identity),strategy).limit(limit)).mappings()]
+
+    @app.get('/reports/ranked-failures')
+    def ranked_failures(top: int=Query(3,ge=1,le=100),include_ties: bool=True,identity=Depends(actor_id),session=Depends(session_dependency)):
+        with session.begin():
+            return [dict(row) for row in session.execute(ranked_failures_query(scope_for_actor(session,identity),top=top,include_ties=include_ties)).mappings()]
+
+    @app.get('/reports/monthly-costs')
+    def monthly_costs(start:date,end:date,zone:Literal['UTC','Asia/Kolkata']='Asia/Kolkata',identity=Depends(actor_id),session=Depends(session_dependency)):
+        with session.begin():
+            rows=session.execute(monthly_costs_query(scope_for_actor(session,identity),start,end,zone)).mappings()
+            return [{**row,'cost':format(row['cost'],'.2f'),'change':None if row['change'] is None else format(row['change'],'.2f')} for row in rows]
 
     @app.post('/tickets/{ticket_id}/comments', status_code=201)
     def post_comment(ticket_id: UUID, body: CommentInput, identity=Depends(actor_id), session=Depends(session_dependency), request_id=Depends(request_identifier)):
