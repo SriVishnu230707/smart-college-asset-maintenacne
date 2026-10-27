@@ -778,13 +778,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 70 notes](../labs/step-70/notes.md) and [executed proof](../labs/step-70/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Timestamp mixins, immutable composites, mapped dataclasses, association proxies and viewonly reload behavior preserve one authoritative writable link.
 
-- [ ] **71. Inheritance and polymorphic mapping**
+- [x] **71. Inheritance and polymorphic mapping**
 
   Learn: Compare single-table, joined-table, and concrete inheritance with category-plus-specifications modeling. Prerequisites: 27, 32, 65.
 
   Apply: Model computer/projector subtypes in an isolated lab and inspect polymorphic queries.
 
   Prove: Explain extra joins, constraints, migration cost, and whether inheritance improves the base design.
+
+  Evidence: [Step 71 notes](../labs/step-71/notes.md) and [executed proof](../labs/step-71/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Single-table, joined-table and concrete polymorphic mappings are exercised against PostgreSQL with observed query and row shapes.
 
 - [ ] **72. Custom types and attribute validation**
 
