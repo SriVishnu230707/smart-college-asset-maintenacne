@@ -652,13 +652,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 58 notes](../labs/step-58/notes.md) and [executed proof](../labs/step-58/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. A real non-owner runtime login can write application rows but cannot CREATE, ALTER, TRUNCATE or create schemas; URL secrets remain outside Git.
 
-- [ ] **59. Build PostgreSQL integration tests**
+- [x] **59. Build PostgreSQL integration tests**
 
   Learn: Choose fixtures, real commits, separate connections, synchronization barriers, and rollback/savepoint test scope.
 
   Apply: Automate integrity, authorization, report, migration, and contention cases against PostgreSQL.
 
   Prove: State which tests require independent committed transactions; do not substitute SQLite for PostgreSQL-specific evidence.
+
+  Evidence: [Step 59 notes](../labs/step-59/notes.md) and [executed proof](../labs/step-59/evidence.txt). 12 checks passed in PowerShell 7 and Windows PowerShell 5.1. Eight unittest cases exercise actual PostgreSQL constraints, rollback, commits, distinct-backend locks, authentication, authorization and report scope without skips.
 
 - [ ] **60. Diagnose database maintenance and blocking**
 
