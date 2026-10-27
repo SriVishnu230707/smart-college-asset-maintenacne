@@ -5,3 +5,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | Step | Topic | Checks | Evidence |
 |---|---|---|---|
 | 51 | Use window functions | 16 | [Lab](../labs/step-51/notes.md), [executed proof](../labs/step-51/evidence.txt) |
+| 52 | Build time-based reports | 17 | [Lab](../labs/step-52/notes.md), [executed proof](../labs/step-52/evidence.txt) |

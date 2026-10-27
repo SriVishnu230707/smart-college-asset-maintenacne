@@ -576,13 +576,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 51 notes](../labs/step-51/notes.md) and [executed proof](../labs/step-51/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Dense-rank ties, deterministic row numbering, explicit window frames and lag agree with hand-counted PostgreSQL results.
 
-- [ ] **52. Build time-based reports**
+- [x] **52. Build time-based reports**
 
   Learn: Use date_trunc, explicit reporting zones, intervals, conditional aggregates, and missing-period handling.
 
   Apply: Produce department-month costs and repair durations, with a complete month series where required.
 
   Prove: Test local-midnight boundaries, open tickets, missing months, and the chosen rework-duration definition.
+
+  Evidence: [Step 52 notes](../labs/step-52/notes.md) and [executed proof](../labs/step-52/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Month grids, Kolkata-midnight boundaries, empty departments, lag and unfinished-duration NULLs match exact fixtures.
 
 - [ ] **53. Choose views and materialized views**
 
