@@ -828,13 +828,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 75 notes](../labs/step-75/notes.md) and [executed proof](../labs/step-75/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Windows selector-loop async commit and rollback, schema-consistent run_sync/streaming, distinct concurrent Sessions, explicit loading and backend disposal pass.
 
-- [ ] **76. Advanced query and index laboratories**
+- [x] **76. Advanced query and index laboratories**
 
   Learn: Compare GIN, GiST, SP-GiST, BRIN, hash, planner statistics, prepared statements, compiled SQL caches, and plan changes as separate sub-exercises. Prerequisites: 54–56.
 
   Apply: Use targeted JSON/search/range/time-ordered workloads rather than installing indexes indiscriminately.
 
   Prove: Distinguish SQL compilation caching from cached data and demonstrate one justified choice plus rejected alternatives.
+
+  Evidence: [Step 76 notes](../labs/step-76/notes.md) and [executed proof](../labs/step-76/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. BRIN, hash, spatial SP-GiST/GiST, explicitly scoped multicolumn statistics, bound compilation caching and server custom/generic plans are measured.
 
 - [ ] **77. Partitioning and retention**
 
