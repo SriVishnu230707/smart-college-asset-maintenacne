@@ -596,13 +596,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 53 notes](../labs/step-53/notes.md) and [executed proof](../labs/step-53/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Live and persisted report projections demonstrate staleness, exact grain, concurrent refresh and explicit scope boundaries.
 
-- [ ] **54. Read execution plans**
+- [x] **54. Read execution plans**
 
   Learn: Use EXPLAIN (ANALYZE, BUFFERS), estimates versus actuals, loops, scans, joins, sorts, and result width.
 
   Apply: Capture a representative slow ticket/report SELECT on a larger, unevenly distributed fixture.
 
   Prove: Explain where time/work is spent and identify evidence rather than assuming every sequential scan is bad.
+
+  Evidence: [Step 54 notes](../labs/step-54/notes.md) and [executed proof](../labs/step-54/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Captured JSON plans demonstrate actual cardinality, scans, sorts, loops, buffer observations and explicit workload assumptions.
 
 - [ ] **55. Design workload-specific indexes**
 

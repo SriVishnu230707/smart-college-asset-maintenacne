@@ -1,0 +1,68 @@
+Step 54: Read execution plans verification evidence
+Captured (Asia/Kolkata): 2026-10-27 22:47:14 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): f4d1095a-2137-48bb-a695-04c354cabb17
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-54/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=1138
+PASS: The representative department queue returns its bounded expected page.
+PASS: EXPLAIN ANALYZE executes the SELECT and reports actual output cardinality.
+PASS: The no-feed-index baseline scans the synthetic relation.
+PASS: The baseline pays for deterministic ordering separately.
+PASS: Each visited plan node exposes estimates, actual rows and loops.
+PASS: Buffer observations distinguish server I/O/cache work from elapsed time.
+Plan nodes: ['Limit', 'Sort', 'Seq Scan']
+Execution milliseconds (observation only): 1.644
+PASS: Workload is connection-local and absent from the independent observer.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-54/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step54 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP54_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-54/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step54 | f4d1095a-2137-48bb-a695-04c354cabb17
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-54/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step54 | f4d1095a-2137-48bb-a695-04c354cabb17
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step54.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-54/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.
