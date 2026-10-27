@@ -22,3 +22,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 66 | Full-text ticket search | 17 | [Lab](../labs/step-66/notes.md), [executed proof](../labs/step-66/evidence.txt) |
 | 67 | Self-reference and recursive traversal | 15 | [Lab](../labs/step-67/notes.md), [executed proof](../labs/step-67/evidence.txt) |
 | 68 | PostgreSQL-specific type and constraint laboratories | 19 | [Lab](../labs/step-68/notes.md), [executed proof](../labs/step-68/evidence.txt) |
+| 69 | Derived ORM attributes | 17 | [Lab](../labs/step-69/notes.md), [executed proof](../labs/step-69/evidence.txt) |

@@ -7,6 +7,7 @@ from uuid import UUID
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, MetaData, Numeric, Index, String, Text, Uuid, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 
 NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
@@ -191,7 +192,7 @@ class WorkOrderPart(Base):
     work_order: Mapped[WorkOrder] = relationship(back_populates="part_usages")
     part: Mapped[SparePart] = relationship(back_populates="usages")
 
-    @property
+    @hybrid_property
     def line_total(self) -> Decimal:
         return self.quantity_used * self.unit_cost_at_use
 

@@ -10,7 +10,7 @@ def report_scope(scope,department_column):
 
 def completed_order_costs():
     """One row per completed order; parts are first reduced to that grain."""
-    parts=select(WorkOrderPart.work_order_id,func.sum(WorkOrderPart.quantity_used*WorkOrderPart.unit_cost_at_use).label('parts_cost')).group_by(WorkOrderPart.work_order_id).subquery('parts_per_order')
+    parts=select(WorkOrderPart.work_order_id,func.sum(WorkOrderPart.line_total).label('parts_cost')).group_by(WorkOrderPart.work_order_id).subquery('parts_per_order')
     return (select(WorkOrder.id.label('work_order_id'),MaintenanceTicket.department_id,
         (WorkOrder.labor_cost+func.coalesce(parts.c.parts_cost,Decimal('0.00'))).label('total_cost'))
         .select_from(WorkOrder).join(MaintenanceTicket,MaintenanceTicket.id==WorkOrder.ticket_id)

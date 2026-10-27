@@ -758,13 +758,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 68 notes](../labs/step-68/notes.md) and [executed proof](../labs/step-68/evidence.txt). 19 checks passed in PowerShell 7 and Windows PowerShell 5.1. ARRAY, enum transaction lifecycle, numeric domains, generated values, multiranges and real exclusion-constraint contention are verified.
 
-- [ ] **69. Derived ORM attributes**
+- [x] **69. Derived ORM attributes**
 
   Learn: Explore hybrid properties, column_property, SQL-expression attributes, and deferred projections. Prerequisites: 32, 49.
 
   Apply: Express a repair-derived value in Python and in a query, checking the SQL shape.
 
   Prove: Show equivalent values and reject a formulation that hides N+1 queries or incorrect aggregation.
+
+  Evidence: [Step 69 notes](../labs/step-69/notes.md) and [executed proof](../labs/step-69/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Exact hybrid costs work in Python and SQL; deferred-column I/O and column_property projection behavior are measured without schema drift.
 
 - [ ] **70. Reusable mapping and relationship conveniences**
 
