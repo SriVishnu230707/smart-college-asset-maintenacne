@@ -15,3 +15,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 59 | Build PostgreSQL integration tests | 12 | [Lab](../labs/step-59/notes.md), [executed proof](../labs/step-59/evidence.txt) |
 | 60 | Diagnose database maintenance and blocking | 16 | [Lab](../labs/step-60/notes.md), [executed proof](../labs/step-60/evidence.txt) |
 | 61 | Budget and clean up connections | 19 | [Lab](../labs/step-61/notes.md), [executed proof](../labs/step-61/evidence.txt) |
+| 62 | Make deployment reproducible | 24 | [Lab](../labs/step-62/notes.md), [executed proof](../labs/step-62/evidence.txt) |

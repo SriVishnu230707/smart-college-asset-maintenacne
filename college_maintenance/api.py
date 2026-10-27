@@ -109,6 +109,11 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
         with session_factory() as session:
             yield session
 
+    @app.get('/health/ready')
+    def ready(session=Depends(session_dependency)):
+        with session.begin():session.execute(select(1)).scalar_one()
+        return {'database':'ready'}
+
     def request_identifier(x_request_id: UUID | None = Header(None)):
         return x_request_id or uuid4()
 

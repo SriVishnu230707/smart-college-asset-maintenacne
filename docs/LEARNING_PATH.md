@@ -682,13 +682,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 61 notes](../labs/step-61/notes.md) and [executed proof](../labs/step-61/evidence.txt). 19 checks passed in PowerShell 7 and Windows PowerShell 5.1. Finite pool exhaustion, HTTP success/error cleanup, stale-backend pre-ping and independent disposal checks pass.
 
-- [ ] **62. Make deployment reproducible**
+- [x] **62. Make deployment reproducible**
 
   Learn: Separate database readiness, migrations, application startup, settings, and persistent storage.
 
   Apply: Provide a Docker Compose setup and commands that create the database and run reviewed migrations before use.
 
   Prove: Start from fresh local volumes in a disposable environment and complete a repair without manual schema edits.
+
+  Evidence: [Step 62 notes](../labs/step-62/notes.md) and [executed proof](../labs/step-62/evidence.txt). 24 checks passed in PowerShell 7 and Windows PowerShell 5.1. Fresh Compose deployment runs owner migrations, non-owner runtime HTTP repair/proof/verification and independent SQL acceptance, then removes only its generated project.
 
 - [ ] **63. Practice backup and restoration**
 
