@@ -15,7 +15,7 @@ from labs.shared.recovery_lab import restored_database
 
 def scenario(lab):
     ids=seed(lab);install_guards(lab)
-    with TemporaryDirectory(dir=Path('.local')) as directory:
+    with TemporaryDirectory(dir=Path(__file__).resolve().parents[2]/'.local') as directory:
         store=FileStore(Path(directory)/'original')
         with lab.session() as s,s.begin():part=create_part(s,ids['super'],sku='BACKUP',name='Recovery part',unit_cost='7.50',opening=3).id
         ticket,order=prepare(lab,ids,store,[(part,2)],labor='5.00')

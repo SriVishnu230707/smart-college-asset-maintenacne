@@ -1,6 +1,8 @@
 #Requires -Version 5.1
 [CmdletBinding()]
-param([switch]$WriteEvidence, [string]$PythonExecutable)
+param([switch]$WriteEvidence, [string]$PythonExecutable,
+      [ValidateRange(2,80)][int]$FromStep=2,
+      [ValidateRange(2,80)][int]$ThroughStep=80)
 
 . (Join-Path $PSScriptRoot '../labs/shared/verify.ps1')
 $shellExecutable = (Get-Process -Id $PID).Path
@@ -16,6 +18,13 @@ function Assert-Suite([bool]$Condition, [string]$Message) {
     $script:report += "PASS: $Message"
     Write-Output "PASS: $Message"
 }
+
+if ($FromStep -gt $ThroughStep) { throw 'FromStep must not exceed ThroughStep.' }
+foreach ($key in @($expectedCounts.Keys)) {
+    if ([int]$key -lt $FromStep -or [int]$key -gt $ThroughStep) { $expectedCounts.Remove($key) }
+}
+if (-not $expectedCounts.Count) { throw 'The selected range has no implemented labs.' }
+$report += "Selected steps: $FromStep through $ThroughStep; $($expectedCounts.Count) implemented labs."
 
 # Verify that entry points resolve files using their own location, including
 # the project path containing spaces and '&', rather than the caller's cwd.
@@ -86,6 +95,9 @@ try {
     Pop-Location
     if ($result -ne 'PASSED') { $report += 'Result: FAILED; see the process error and local logs.' }
     $report += "Command: $shellExecutable -NoProfile -File tests/run.ps1 -WriteEvidence"
-    $evidencePath = Join-Path $PSScriptRoot "evidence-powershell$($PSVersionTable.PSVersion.Major).txt"
+    $evidenceName = if ($PSBoundParameters.ContainsKey('FromStep') -or $PSBoundParameters.ContainsKey('ThroughStep')) {
+        "evidence-steps$FromStep-$ThroughStep-powershell$($PSVersionTable.PSVersion.Major).txt"
+    } else { "evidence-powershell$($PSVersionTable.PSVersion.Major).txt" }
+    $evidencePath = Join-Path $PSScriptRoot $evidenceName
     Write-LabEvidence -Transcript ($report -join "`n") -Path $evidencePath -Save:$WriteEvidence
 }

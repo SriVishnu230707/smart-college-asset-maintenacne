@@ -23,7 +23,7 @@ def scenario(lab):
                     with runtime.begin() as c:c.exec_driver_sql(statement)
                 except DBAPIError as exc:check(exc.orig.sqlstate=='42501','Runtime DML grants do not permit schema ownership, CREATE, ALTER or TRUNCATE.')
                 else:raise AssertionError('Runtime DDL permitted')
-            with tempfile.TemporaryDirectory(dir=Path('.local')) as directory:
+            with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[2]/'.local') as directory:
                 secret=Path(directory)/'database-url';secret.write_text(url.render_as_string(hide_password=False))
                 previous=os.environ.get('COLLEGE_DATABASE_URL_FILE');os.environ['COLLEGE_DATABASE_URL_FILE']=str(secret)
                 try:check(connection_url()==url,'Application connection configuration can read an ignored/mounted URL secret instead of owner credentials.')
