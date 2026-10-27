@@ -25,3 +25,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 69 | Derived ORM attributes | 17 | [Lab](../labs/step-69/notes.md), [executed proof](../labs/step-69/evidence.txt) |
 | 70 | Reusable mapping and relationship conveniences | 18 | [Lab](../labs/step-70/notes.md), [executed proof](../labs/step-70/evidence.txt) |
 | 71 | Inheritance and polymorphic mapping | 17 | [Lab](../labs/step-71/notes.md), [executed proof](../labs/step-71/evidence.txt) |
+| 72 | Custom types and attribute validation | 17 | [Lab](../labs/step-72/notes.md), [executed proof](../labs/step-72/evidence.txt) |

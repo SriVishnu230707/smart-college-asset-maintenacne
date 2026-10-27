@@ -788,13 +788,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 71 notes](../labs/step-71/notes.md) and [executed proof](../labs/step-71/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Single-table, joined-table and concrete polymorphic mappings are exercised against PostgreSQL with observed query and row shapes.
 
-- [ ] **72. Custom types and attribute validation**
+- [x] **72. Custom types and attribute validation**
 
   Learn: Explore TypeDecorator, value conversion, cache_ok decisions, validators, and custom comparators. Prerequisites: 16, 27, 54.
 
   Apply: Build a small domain conversion type and compare validation via Python, Core, and direct SQL.
 
   Prove: Round-trip values and prove that Python validators alone do not establish database integrity.
+
+  Evidence: [Step 72 notes](../labs/step-72/notes.md) and [executed proof](../labs/step-72/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Custom bind/result conversion, cache configuration, escaped comparators and validator-versus-database enforcement boundaries are exercised.
 
 - [ ] **73. Events, triggers, and database functions**
 
