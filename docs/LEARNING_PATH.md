@@ -662,13 +662,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
   Evidence: [Step 59 notes](../labs/step-59/notes.md) and [executed proof](../labs/step-59/evidence.txt). 12 checks passed in PowerShell 7 and Windows PowerShell 5.1. Eight unittest cases exercise actual PostgreSQL constraints, rollback, commits, distinct-backend locks, authentication, authorization and report scope without skips.
 
-- [ ] **60. Diagnose database maintenance and blocking**
+- [x] **60. Diagnose database maintenance and blocking**
 
   Learn: Distinguish VACUUM, ANALYZE, dead tuples, idle transactions, activity views, locks, and query workload statistics.
 
   Apply: Observe update traffic and a blocked repair; identify the blocking connection and relevant query.
 
   Prove: Explain the cause from PostgreSQL observations and the effect of long-lived transactions.
+
+  Evidence: [Step 60 notes](../labs/step-60/notes.md) and [executed proof](../labs/step-60/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Actual blocking and idle transactions are diagnosed through backend IDs, pg_locks and activity views; VACUUM ANALYZE and workload counters are observed.
 
 - [ ] **61. Budget and clean up connections**
 
