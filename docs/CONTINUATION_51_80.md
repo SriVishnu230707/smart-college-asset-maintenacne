@@ -19,3 +19,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 63 | Practice backup and restoration | 16 | [Lab](../labs/step-63/notes.md), [executed proof](../labs/step-63/evidence.txt) |
 | 64 | Complete the project acceptance demonstration | 29 | [Lab](../labs/step-64/notes.md), [executed proof](../labs/step-64/evidence.txt) |
 | 65 | JSONB and mutation tracking | 17 | [Lab](../labs/step-65/notes.md), [executed proof](../labs/step-65/evidence.txt) |
+| 66 | Full-text ticket search | 17 | [Lab](../labs/step-66/notes.md), [executed proof](../labs/step-66/evidence.txt) |

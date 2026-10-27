@@ -728,13 +728,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 65 notes](../labs/step-65/notes.md) and [executed proof](../labs/step-65/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Fresh Sessions expose shallow versus nested JSON mutation, SQL/JSON null differences and measured selective GIN containment; mutable parents retain an explicit object reference.
 
-- [ ] **66. Full-text ticket search**
+- [x] **66. Full-text ticket search**
 
   Learn: Explore tsvector/tsquery, language configuration, ranking, and GIN. Prerequisites: 54–56.
 
   Apply: Build ranked ticket search and compare it with substring search on representative text.
 
   Prove: State language/tokenization behavior and measure the indexed search.
+
+  Evidence: [Step 66 notes](../labs/step-66/notes.md) and [executed proof](../labs/step-66/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Ranked English full-text search preserves ticket visibility, tests actual dictionary stems versus substrings and stopwords, and measures matching GIN expression indexing.
 
 - [ ] **67. Self-reference and recursive traversal**
 

@@ -295,6 +295,12 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
             return asdict(ticket_feed(session, scope_for_actor(session, identity), limit=limit, cursor=cursor,
                 department_id=department_id, status=status, priority=priority))
 
+    @app.get('/tickets/search')
+    def search_tickets(q:str=Query(min_length=1,max_length=200),limit:int=Query(20,ge=1,le=100),identity=Depends(actor_id),session=Depends(session_dependency)):
+        from college_maintenance.search import search_tickets_query
+        with session.begin():
+            return [dict(row) for row in session.execute(search_tickets_query(scope_for_actor(session,identity),q,limit)).mappings()]
+
     @app.get('/tickets/{ticket_id}')
     def get_ticket(ticket_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):
         with session.begin():
