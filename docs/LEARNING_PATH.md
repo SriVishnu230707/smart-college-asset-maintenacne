@@ -718,13 +718,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
 **Steps 65–80: Specialist extensions: independent laboratories after the relevant core prerequisites**
 
-- [ ] **65. JSONB and mutation tracking**
+- [x] **65. JSONB and mutation tracking**
 
   Learn: Explore JSONB operators, containment/path queries, expression/GIN indexes, JSON null versus SQL NULL, and ORM mutation tracking. Prerequisites: 32, 54–56.
 
   Apply: Add varying asset specifications while preserving typed relational columns; compare replacement and nested in-place edits.
 
   Prove: Reload through a new Session and verify persistence; justify any JSON index with its query.
+
+  Evidence: [Step 65 notes](../labs/step-65/notes.md) and [executed proof](../labs/step-65/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Fresh Sessions expose shallow versus nested JSON mutation, SQL/JSON null differences and measured selective GIN containment; mutable parents retain an explicit object reference.
 
 - [ ] **66. Full-text ticket search**
 

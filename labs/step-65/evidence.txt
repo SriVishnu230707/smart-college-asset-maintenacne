@@ -1,0 +1,67 @@
+Step 65: JSONB and mutation tracking verification evidence
+Captured (Asia/Kolkata): 2026-10-27 23:11:32 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): e3cb0c31-2fe2-4383-a29a-72841de8582e
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-65/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=8809
+PASS: MutableDict persists top-level in-place changes through a fresh Session.
+PASS: Nested dictionaries are not recursively tracked by plain MutableDict.
+PASS: Explicit replacement persists a deliberate nested change.
+PASS: Measured selective containment uses a justified jsonb_path_ops GIN index.
+PASS: Typed SQLAlchemy containment agrees with the generated selective fixture.
+PASS: SQL NULL is identified by IS NULL independently of JSON null.
+PASS: JSON null remains a JSON value distinguishable using jsonb_typeof.
+PASS: Specialist mapping and index are removed without altering application migrations.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-65/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step65 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP65_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-65/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step65 | e3cb0c31-2fe2-4383-a29a-72841de8582e
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-65/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step65 | e3cb0c31-2fe2-4383-a29a-72841de8582e
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step65.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-65/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.
