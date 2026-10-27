@@ -1,0 +1,69 @@
+Step 55: Design workload-specific indexes verification evidence
+Captured (Asia/Kolkata): 2026-10-27 22:47:56 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): a16d14f3-c141-4a9f-9d33-389cb5aef9dd
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-55/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=1369
+PASS: Index alternatives preserve the exact ordered ticket page.
+PASS: The measured sparse active-queue predicate uses its partial covering index.
+PASS: Index order satisfies the bounded queue ordering without a separate sort.
+PASS: The full composite alternative is also measured rather than assumed.
+PASS: The sparse index has a measured storage footprint smaller than the heap.
+PASS: The primary key already supplies its unique index; another ID index would be redundant.
+PASS: A partial open-only index cannot answer a closed-row predicate.
+PASS: Expression indexing is explicit; it is rejected for this feed because title is not a filter.
+Decision: sparse feed partial index is useful for this workload; reject duplicate ID and unqueried title indexes. Production migration requires production-shaped evidence.
+PASS: Independent PostgreSQL remains usable after temporary index disposal.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-55/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step55 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP55_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-55/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step55 | a16d14f3-c141-4a9f-9d33-389cb5aef9dd
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-55/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step55 | a16d14f3-c141-4a9f-9d33-389cb5aef9dd
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step55.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+DO
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-55/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

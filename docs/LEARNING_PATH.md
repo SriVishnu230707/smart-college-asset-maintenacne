@@ -606,13 +606,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 54 notes](../labs/step-54/notes.md) and [executed proof](../labs/step-54/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Captured JSON plans demonstrate actual cardinality, scans, sorts, loops, buffer observations and explicit workload assumptions.
 
-- [ ] **55. Design workload-specific indexes**
+- [x] **55. Design workload-specific indexes**
 
   Learn: Compare B-tree, composite column order, partial predicates, expression indexes, and covering indexes.
 
   Apply: Evaluate indexes for the department's recent active-ticket queue and common FK lookups.
 
   Prove: Show useful before/after plans, account for write/storage cost, and reject a redundant candidate.
+
+  Evidence: [Step 55 notes](../labs/step-55/notes.md) and [executed proof](../labs/step-55/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Measured composite, partial covering and expression indexes preserve results and expose storage, ordering, predicate and redundancy tradeoffs.
 
 - [ ] **56. Measure realistic workloads**
 
