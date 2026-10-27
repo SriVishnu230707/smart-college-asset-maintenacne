@@ -8,9 +8,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 from college_maintenance.database import engine
 
-def admin_connection():
+def admin_connection(database='postgres'):
     args=engine.url.translate_connect_args(username='user',database='dbname')
-    args.update(user='postgres',dbname='postgres',password=(Path(__file__).resolve().parents[2]/'.local/postgres-admin-password').read_text().strip())
+    args.update(user='postgres',dbname=database,password=(Path(__file__).resolve().parents[2]/'.local/postgres-admin-password').read_text().strip())
     return psycopg.connect(**args,autocommit=True,connect_timeout=5)
 
 @contextmanager

@@ -1,0 +1,69 @@
+Step 74: Row-level security verification evidence
+Captured (Asia/Kolkata): 2026-10-27 23:32:04 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 7dfc3c54-04ac-4cd9-9130-03fa942e8d31
+Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
+Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
+Command: python -X utf8 -B labs/step-74/python_lab.py --run-id <run-id>
+PASS: Pinned SQLAlchemy and psycopg versions are used.
+PASS: The learner connects to PostgreSQL 18 with a free study namespace.
+writer_backend_pid=14996
+PASS: An actual non-owner login without request context receives no RLS rows.
+PASS: USING restricts reads to the server-supplied transaction-local department.
+PASS: Rows outside scope cannot be selected for UPDATE.
+PASS: WITH CHECK rejects inserts or updates that move a row outside authorized context.
+PASS: WITH CHECK rejects inserts or updates that move a row outside authorized context.
+PASS: Transaction-local context does not leak through the reused one-slot connection pool.
+PASS: The limited runtime login cannot disable the owner-installed policy.
+PASS: FORCE RLS also constrains the ordinary table owner when no context is set.
+PASS: A superuser still bypasses FORCE RLS; the proof deliberately tests the non-owner runtime instead.
+Trust boundary: the application derives context from authenticated identity. Anyone holding the shared runtime SQL credential can set a different context; GUC-based RLS is not protection against arbitrary SQL access by that account.
+PASS: Every scenario Session has closed its transaction and returned its checkout.
+PASS: The writer and all independent driver connections are disposed.
+
+Command (expected exit 3, SQLSTATE 22023): docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<different-run-id> --file /labs/step-74/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step74 | 00000000-0000-0000-0000-000000000000
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: ERROR:  22023: REFUSED: STEP74_RUN_ID_MISMATCH
+CONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3909
+PASS: Cleanup refuses a different run ID before removing any study object.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-74/reconnect.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step74 | 7dfc3c54-04ac-4cd9-9130-03fa942e8d31
+(1 row)
+
+DO
+PASS: Independent psql verifies the exact run and disposed writer.
+PASS: Independent SQL agrees with every recorded committed table value.
+COMMIT
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-74/cleanup.sql
+Pager usage is off.
+BEGIN
+   set_config   |              set_config
+----------------+--------------------------------------
+ college_step74 | 7dfc3c54-04ac-4cd9-9130-03fa942e8d31
+(1 row)
+
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_parents" does not exist, skipping
+LOCATION:  DropErrorMsgNonExistent, tablecmds.c:1506
+DO
+psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: function college_step74.protect_history() does not exist, skipping
+LOCATION:  does_not_exist_skipping, dropcmds.c:523
+COMMIT
+PASS: Guarded cleanup removed only the exact run schema and known tables.
+
+Command: docker compose exec -T postgres sh /labs/step-02/psql.sh --set=lab_run_id=<run-id> --file /labs/step-74/cleanup-check.sql
+Pager usage is off.
+PASS: A fresh connection confirms committed study-schema removal.

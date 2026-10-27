@@ -808,13 +808,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 73 notes](../labs/step-73/notes.md) and [executed proof](../labs/step-73/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. ORM hooks and database triggers are compared against direct SQL, trusted actor context, rollback and one-authority audit policy; stored functions are called through func.
 
-- [ ] **74. Row-level security**
+- [x] **74. Row-level security**
 
   Learn: Explore RLS USING/WITH CHECK, policy combinations, ownership/BYPASSRLS, and transaction-local request context. Prerequisites: 34, 58, 61.
 
   Apply: Add department isolation for a selected resource and test with the real limited runtime role.
 
   Prove: Prove another department cannot read/write and that pooled connection context does not leak between requests.
+
+  Evidence: [Step 74 notes](../labs/step-74/notes.md) and [executed proof](../labs/step-74/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Real non-owner RLS reads and writes, WITH CHECK, owner/superuser behavior and pooled transaction-context cleanup are verified.
 
 - [ ] **75. Async execution and large-result streaming**
 

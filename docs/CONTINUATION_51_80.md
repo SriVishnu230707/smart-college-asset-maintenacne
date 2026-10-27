@@ -27,3 +27,4 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 71 | Inheritance and polymorphic mapping | 17 | [Lab](../labs/step-71/notes.md), [executed proof](../labs/step-71/evidence.txt) |
 | 72 | Custom types and attribute validation | 17 | [Lab](../labs/step-72/notes.md), [executed proof](../labs/step-72/evidence.txt) |
 | 73 | Events, triggers, and database functions | 17 | [Lab](../labs/step-73/notes.md), [executed proof](../labs/step-73/evidence.txt) |
+| 74 | Row-level security | 18 | [Lab](../labs/step-74/notes.md), [executed proof](../labs/step-74/evidence.txt) |
