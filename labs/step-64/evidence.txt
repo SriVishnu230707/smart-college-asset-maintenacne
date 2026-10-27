@@ -1,12 +1,12 @@
 Step 64: Complete the project acceptance demonstration verification evidence
-Captured (Asia/Kolkata): 2026-10-27 23:10:12 +05:30
-Lab run ID (synthetic cleanup marker, not a credential): c6566f4e-3fa9-4df5-8bc6-75fa54d1b00d
+Captured (Asia/Kolkata): 2026-10-27 23:49:17 +05:30
+Lab run ID (synthetic cleanup marker, not a credential): 7856ca7d-1e0b-48b8-be73-148ecbfba3ca
 Different run ID used for the cleanup refusal proof: 00000000-0000-0000-0000-000000000000
 Real PostgreSQL assertions, independent observation, and exact-run cleanup are required.
 Command: python -X utf8 -B labs/step-64/python_lab.py --run-id <run-id>
 PASS: Pinned SQLAlchemy and psycopg versions are used.
 PASS: The learner connects to PostgreSQL 18 with a free study namespace.
-writer_backend_pid=8329
+writer_backend_pid=20503
 Guarded SQL: UPDATE spare_parts SET stock_quantity=(spare_parts.stock_quantity - :stock_quantity_1) WHERE spare_parts.id = :id_1 AND spare_parts.stock_quantity >= :stock_quantity_2 AND spare_parts.is_archived IS false RETURNING spare_parts.current_unit_cost, spare_parts.stock_quantity
 PASS: The guarded persistence expression rejects nonpositive quantities before SQL.
 PASS: Competing completions use distinct physical backends, not the one-slot learning pool.
@@ -22,6 +22,7 @@ PASS: The scoped administrator verifies and closes the winning ticket.
 PASS: Closed-ticket completion retries return the original immutable outcome.
 PASS: The authorized department cost report includes exactly one winning repair.
 PASS: The window report is integrated through an authorized HTTP projection.
+PASS: Ranked HTTP reporting enforces its row budget independently of rank/tie selection.
 PASS: Monthly HTTP reporting preserves exact decimal strings and complete month grain.
 PASS: New analytical routes retain report-role restrictions.
 PASS: The audit journey explains one durable completion despite retries.
@@ -50,7 +51,7 @@ Pager usage is off.
 BEGIN
    set_config   |              set_config
 ----------------+--------------------------------------
- college_step64 | c6566f4e-3fa9-4df5-8bc6-75fa54d1b00d
+ college_step64 | 7856ca7d-1e0b-48b8-be73-148ecbfba3ca
 (1 row)
 
 DO
@@ -63,7 +64,7 @@ Pager usage is off.
 BEGIN
    set_config   |              set_config
 ----------------+--------------------------------------
- college_step64 | c6566f4e-3fa9-4df5-8bc6-75fa54d1b00d
+ college_step64 | 7856ca7d-1e0b-48b8-be73-148ecbfba3ca
 (1 row)
 
 psql:/labs/shared/orm-cleanup.sql:28: NOTICE:  00000: table "owned_children" does not exist, skipping

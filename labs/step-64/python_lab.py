@@ -1,6 +1,6 @@
 """Capstone composes an actual contention proof, HTTP closure, and recovery."""
 from pathlib import Path
-from datetime import datetime,date,timezone
+from datetime import datetime,date,timezone,timedelta
 import importlib.util,sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from sqlalchemy import text
@@ -32,7 +32,8 @@ def scenario(lab):
         check(api.post(f'/work-orders/{order}/complete',headers=headers('tech')).json()==before.json(),'Closed-ticket completion retries return the original immutable outcome.')
         check(api.get('/reports/costs',headers=headers('admin')).json()[0]['total_cost']=='15.00','The authorized department cost report includes exactly one winning repair.')
         check(len(api.get('/reports/ranked-failures',headers=headers('admin')).json())==1,'The window report is integrated through an authorized HTTP projection.')
-        now=datetime.now(timezone.utc);start=date(now.year,now.month,1);end=date(now.year+(now.month==12),now.month%12+1,1)
+        check(api.get('/reports/ranked-failures',params={'limit':0},headers=headers('admin')).status_code==422,'Ranked HTTP reporting enforces its row budget independently of rank/tie selection.')
+        now=datetime.now(timezone(timedelta(hours=5,minutes=30)));start=date(now.year,now.month,1);end=date(now.year+(now.month==12),now.month%12+1,1)
         report=api.get('/reports/monthly-costs',params={'start':start.isoformat(),'end':end.isoformat()},headers=headers('admin'))
         check(report.status_code==200 and report.json()[0]['cost']=='15.00','Monthly HTTP reporting preserves exact decimal strings and complete month grain.')
         check(api.get('/reports/monthly-costs',params={'start':start.isoformat(),'end':end.isoformat()},headers=headers('reporter')).status_code==403,'New analytical routes retain report-role restrictions.')

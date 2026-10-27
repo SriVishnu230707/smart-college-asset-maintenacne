@@ -252,9 +252,9 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
             return [dict(row) for row in session.execute(latest_comments_query(scope_for_actor(session,identity),strategy).limit(limit)).mappings()]
 
     @app.get('/reports/ranked-failures')
-    def ranked_failures(top: int=Query(3,ge=1,le=100),include_ties: bool=True,identity=Depends(actor_id),session=Depends(session_dependency)):
+    def ranked_failures(top: int=Query(3,ge=1,le=100),include_ties: bool=True,limit:int=Query(100,ge=1,le=100),identity=Depends(actor_id),session=Depends(session_dependency)):
         with session.begin():
-            return [dict(row) for row in session.execute(ranked_failures_query(scope_for_actor(session,identity),top=top,include_ties=include_ties)).mappings()]
+            return [dict(row) for row in session.execute(ranked_failures_query(scope_for_actor(session,identity),top=top,include_ties=include_ties).limit(limit)).mappings()]
 
     @app.get('/reports/monthly-costs')
     def monthly_costs(start:date,end:date,zone:Literal['UTC','Asia/Kolkata']='Asia/Kolkata',identity=Depends(actor_id),session=Depends(session_dependency)):
