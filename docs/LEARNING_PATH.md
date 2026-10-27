@@ -632,13 +632,15 @@ Reference reading: [SQLAlchemy query expressions](https://docs.sqlalchemy.org/en
 
 **Steps 57–64: Imports, security, operation, and final acceptance**
 
-- [ ] **57. Import data with explicit failure policy**
+- [x] **57. Import data with explicit failure policy**
 
   Learn: Compare batch ORM work, Core bulk INSERT, COPY/staging, ON CONFLICT, and savepoints.
 
   Apply: Import an asset file with duplicates and invalid records; document all-or-nothing versus per-row rejection.
 
   Prove: Rejected rows and accepted rows match policy; demonstrate begin_nested flushing behavior rather than assuming isolation from earlier pending changes.
+
+  Evidence: [Step 57 notes](../labs/step-57/notes.md) and [executed proof](../labs/step-57/evidence.txt). 15 checks passed in PowerShell 7 and Windows PowerShell 5.1. Atomic and per-row imports, duplicate handling, real COPY staging and independent committed-row checks pass.
 
 - [ ] **58. Separate database ownership and runtime privileges**
 
