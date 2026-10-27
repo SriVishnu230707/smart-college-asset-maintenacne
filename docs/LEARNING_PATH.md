@@ -566,13 +566,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 50 notes](../labs/step-50/notes.md), [executed proof](../labs/step-50/evidence.txt), and [phase guide](WORKFLOW_PHASE_31_50.md). All 31 checks passed in both shells. Equivalent LATERAL, correlated scalar and DISTINCT ON CTE reports preserve ticket grain, deterministic ties, absent-child NULLs and scoped access.
 
-- [ ] **51. Use window functions**
+- [x] **51. Use window functions**
 
   Learn: Distinguish aggregation from window calculations, partitions, ordering, frames, and rankings.
 
   Apply: Rank failing assets within each department and compute changes using lag().
 
   Prove: Choose a tie policy deliberately and explain rows versus groups in a running total.
+
+  Evidence: [Step 51 notes](../labs/step-51/notes.md) and [executed proof](../labs/step-51/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Dense-rank ties, deterministic row numbering, explicit window frames and lag agree with hand-counted PostgreSQL results.
 
 - [ ] **52. Build time-based reports**
 

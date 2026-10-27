@@ -9,7 +9,7 @@ $logDirectory = Join-Path $projectRoot ".local/test-results/powershell-$shellVer
 [IO.Directory]::CreateDirectory($logDirectory) | Out-Null
 $report = @("Regression suite: PowerShell $shellVersion", "Captured (UTC): $([DateTimeOffset]::UtcNow.ToString('u'))")
 $result = 'FAILED'
-$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40; '17'=48; '18'=32; '19'=39; '20'=35; '21'=22; '22'=19; '23'=17; '24'=20; '25'=23; '26'=25; '27'=22; '28'=20; '29'=24; '30'=23; '31'=18; '32'=21; '33'=23; '34'=25; '35'=23; '36'=18; '37'=22; '38'=23; '39'=23; '40'=22; '41'=23; '42'=21; '43'=18; '44'=16; '45'=18; '46'=19; '47'=24; '48'=20; '49'=19; '50'=31 }
+$expectedCounts = [ordered]@{ '02'=5; '03'=11; '04'=19; '05'=34; '06'=48; '07'=43; '08'=23; '09'=37; '10'=26; '11'=25; '12'=31; '13'=23; '14'=32; '15'=31; '16'=40; '17'=48; '18'=32; '19'=39; '20'=35; '21'=22; '22'=19; '23'=17; '24'=20; '25'=23; '26'=25; '27'=22; '28'=20; '29'=24; '30'=23; '31'=18; '32'=21; '33'=23; '34'=25; '35'=23; '36'=18; '37'=22; '38'=23; '39'=23; '40'=22; '41'=23; '42'=21; '43'=18; '44'=16; '45'=18; '46'=19; '47'=24; '48'=20; '49'=19; '50'=31; '51'=16 }
 
 function Assert-Suite([bool]$Condition, [string]$Message) {
     if (-not $Condition) { throw $Message }
@@ -76,7 +76,7 @@ try {
 
     $remaining = @(Invoke-LabProcess docker @('compose', '--file', $composeFile, 'exec', '-T', 'postgres', 'sh',
         '/labs/step-02/psql.sh', '--tuples-only', '--no-align', '--command',
-        "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|[1-4][0-9]|50)$'")) -join ''
+        "SELECT count(*) FROM pg_namespace WHERE nspname ~ '^college_step(0[2-9]|[1-7][0-9]|80)$'")) -join ''
     Assert-Suite ($remaining.Trim() -eq '0') 'A fresh connection confirms no implemented study schema remains.'
     $labCheckCount = ($expectedCounts.Values | Measure-Object -Sum).Sum
     $runnerCheckCount = @($report | Where-Object { $_ -like 'PASS:*' }).Count - $expectedCounts.Count
