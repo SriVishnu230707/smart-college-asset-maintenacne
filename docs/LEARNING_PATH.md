@@ -586,13 +586,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 52 notes](../labs/step-52/notes.md) and [executed proof](../labs/step-52/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Month grids, Kolkata-midnight boundaries, empty departments, lag and unfinished-duration NULLs match exact fixtures.
 
-- [ ] **53. Choose views and materialized views**
+- [x] **53. Choose views and materialized views**
 
   Learn: Distinguish reusable query definitions from persisted, refreshable results.
 
   Apply: Create a report view; evaluate a materialized version with a refresh/staleness policy.
 
   Prove: Explain refresh effects, unique row identity for ORM mapping, and why ordinary projections may suffice.
+
+  Evidence: [Step 53 notes](../labs/step-53/notes.md) and [executed proof](../labs/step-53/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Live and persisted report projections demonstrate staleness, exact grain, concurrent refresh and explicit scope boundaries.
 
 - [ ] **54. Read execution plans**
 
