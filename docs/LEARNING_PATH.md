@@ -768,13 +768,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 69 notes](../labs/step-69/notes.md) and [executed proof](../labs/step-69/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Exact hybrid costs work in Python and SQL; deferred-column I/O and column_property projection behavior are measured without schema drift.
 
-- [ ] **70. Reusable mapping and relationship conveniences**
+- [x] **70. Reusable mapping and relationship conveniences**
 
   Learn: Explore mixins, declarative dataclass integration, composite value objects, association_proxy, and viewonly relationships as separate experiments. Prerequisites: 24, 25.
 
   Apply: Try a timestamp mixin, a value object, and convenient read access through WorkOrderPart.
 
   Prove: Keep one authoritative writable association path and prove conveniences do not create duplicate persistence.
+
+  Evidence: [Step 70 notes](../labs/step-70/notes.md) and [executed proof](../labs/step-70/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Timestamp mixins, immutable composites, mapped dataclasses, association proxies and viewonly reload behavior preserve one authoritative writable link.
 
 - [ ] **71. Inheritance and polymorphic mapping**
 
