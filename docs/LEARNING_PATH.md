@@ -616,13 +616,15 @@ Reference reading: [Isolation](https://www.postgresql.org/docs/18/transaction-is
 
   Evidence: [Step 55 notes](../labs/step-55/notes.md) and [executed proof](../labs/step-55/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Measured composite, partial covering and expression indexes preserve results and expose storage, ordering, predicate and redundancy tradeoffs.
 
-- [ ] **56. Measure realistic workloads**
+- [x] **56. Measure realistic workloads**
 
   Learn: Use deterministic correctness fixtures, skewed larger seeds, ANALYZE, query budgets, and repeated measurements.
 
   Apply: Keep a benchmark note with query parameters, data distribution, plans, and observation conditions.
 
   Prove: Explain how cardinality estimates and skew can change an index decision; avoid tuning from a tiny fixture.
+
+  Evidence: [Step 56 notes](../labs/step-56/notes.md) and [executed proof](../labs/step-56/evidence.txt). 16 checks passed in PowerShell 7 and Windows PowerShell 5.1. Skewed 100000-row fixtures, ANALYZE statistics and repeated plans justify selective indexing and common-row sequential scans.
 
 Checkpoint: Reports are correct at their declared grain and performance choices are supported by actual plans and workload measurements.
 
