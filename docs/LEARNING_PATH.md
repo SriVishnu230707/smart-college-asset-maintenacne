@@ -748,13 +748,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 67 notes](../labs/step-67/notes.md) and [executed proof](../labs/step-67/evidence.txt). 15 checks passed in PowerShell 7 and Windows PowerShell 5.1. Self-reference mapping, recursive traversal, valid moves, cycle rejection and real advisory-lock serialization are verified in an isolated hierarchy.
 
-- [ ] **68. PostgreSQL-specific type and constraint laboratories**
+- [x] **68. PostgreSQL-specific type and constraint laboratories**
 
   Learn: Explore ARRAY, native ENUM lifecycle, ranges/multiranges, domains, generated columns, and exclusion constraints in separate sub-exercises. Prerequisites: 27, 55.
 
   Apply: Model preventive-maintenance time windows and compare an overlap constraint with an application-only check.
 
   Prove: Show concurrent overlap rejection; document which remaining types are useful or unnecessary for this project's requirements.
+
+  Evidence: [Step 68 notes](../labs/step-68/notes.md) and [executed proof](../labs/step-68/evidence.txt). 19 checks passed in PowerShell 7 and Windows PowerShell 5.1. ARRAY, enum transaction lifecycle, numeric domains, generated values, multiranges and real exclusion-constraint contention are verified.
 
 - [ ] **69. Derived ORM attributes**
 
