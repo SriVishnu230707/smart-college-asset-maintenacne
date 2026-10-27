@@ -818,13 +818,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 74 notes](../labs/step-74/notes.md) and [executed proof](../labs/step-74/evidence.txt). 18 checks passed in PowerShell 7 and Windows PowerShell 5.1. Real non-owner RLS reads and writes, WITH CHECK, owner/superuser behavior and pooled transaction-context cleanup are verified.
 
-- [ ] **75. Async execution and large-result streaming**
+- [x] **75. Async execution and large-result streaming**
 
   Learn: Explore AsyncEngine/AsyncSession, explicit I/O, one Session per task, stream/yield_per, and loader compatibility. Prerequisites: 32, 48, 61.
 
   Apply: Port one proven use case and export a large result without materializing everything.
 
   Prove: Preserve transaction tests, avoid shared concurrent Sessions, and explain driver/cursor and eager-loading limitations.
+
+  Evidence: [Step 75 notes](../labs/step-75/notes.md) and [executed proof](../labs/step-75/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Windows selector-loop async commit and rollback, schema-consistent run_sync/streaming, distinct concurrent Sessions, explicit loading and backend disposal pass.
 
 - [ ] **76. Advanced query and index laboratories**
 

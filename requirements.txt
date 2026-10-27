@@ -2,3 +2,4 @@
 -r labs/step-13/requirements.txt
 -r labs/step-26/requirements.txt
 -r labs/step-33/requirements.txt
+greenlet==3.2.4
