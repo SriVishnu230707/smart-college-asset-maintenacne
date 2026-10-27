@@ -798,13 +798,15 @@ Reference reading: [COPY](https://www.postgresql.org/docs/18/sql-copy.html), [Po
 
   Evidence: [Step 72 notes](../labs/step-72/notes.md) and [executed proof](../labs/step-72/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. Custom bind/result conversion, cache configuration, escaped comparators and validator-versus-database enforcement boundaries are exercised.
 
-- [ ] **73. Events, triggers, and database functions**
+- [x] **73. Events, triggers, and database functions**
 
   Learn: Explore Session/mapper/connection events, SQL/PLpgSQL functions, and row triggers in separate experiments. Prerequisites: 36, 59.
 
   Apply: Compare explicit audit writes with a trigger for a selected table and test ORM versus direct SQL paths.
 
   Prove: Explain actor propagation, transaction rollback, bulk-write coverage, and how duplicate audit entries are avoided.
+
+  Evidence: [Step 73 notes](../labs/step-73/notes.md) and [executed proof](../labs/step-73/evidence.txt). 17 checks passed in PowerShell 7 and Windows PowerShell 5.1. ORM hooks and database triggers are compared against direct SQL, trusted actor context, rollback and one-authority audit policy; stored functions are called through func.
 
 - [ ] **74. Row-level security**
 
