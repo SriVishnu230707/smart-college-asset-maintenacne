@@ -22,7 +22,7 @@ Store observations under labs/step-NN/: notes.md, query.sql where appropriate, a
 
 Use a disposable SQL-learning database for hand-written schema experiments. Once Alembic is introduced, let reviewed migrations own the application schema; do not mix independent schema-edit histories.
 
-Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-50 without advancing this checklist. It checks 1224 lab assertions and fourteen runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
+Maintenance verification: the [regression suite](../tests/README.md) reruns the implemented Steps 2-80 without advancing this checklist. It checks 1769 lab assertions and fourteen runner regressions, including failed-assertion exit status, native stderr handling, dependency preflight, and cleanup. See the [PowerShell 7 evidence](../tests/evidence-powershell7.txt) and [Windows PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
 
 The [maintenance review](MAINTENANCE_REVIEW.md) records runner bug fixes and loop simplification without advancing this checklist.
 

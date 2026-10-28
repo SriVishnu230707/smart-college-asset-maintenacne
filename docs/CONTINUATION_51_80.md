@@ -34,3 +34,5 @@ Each row is added only after its PostgreSQL proof and guarded cleanup succeed in
 | 78 | WAL, PITR, and replication | 20 | [Lab](../labs/step-78/notes.md), [executed proof](../labs/step-78/evidence.txt) |
 | 79 | Reliable external side effects | 20 | [Lab](../labs/step-79/notes.md), [executed proof](../labs/step-79/evidence.txt) |
 | 80 | Independent feature and reference audit | 33 | [Lab](../labs/step-80/notes.md), [executed proof](../labs/step-80/evidence.txt) |
+
+Final whole-project checkpoint: all 79 executable labs (Steps 2-80), 1769 lab checks and 14 runner regressions (1783 checks) passed in both PowerShell 7 and Windows PowerShell 5.1. This includes the current 30-check Step 64 proof. [PowerShell 7 evidence](../tests/evidence-powershell7.txt), [PowerShell 5.1 evidence](../tests/evidence-powershell5.txt).
