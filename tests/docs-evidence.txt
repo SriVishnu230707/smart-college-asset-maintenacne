@@ -1,0 +1,14 @@
+Documentation verification - 2026-10-28
+Commands: python tools/build_reference.py --check; python tools/check_docs.py; node tools/check_diagrams.mjs
+
+PowerShell 7.6.5
+PASS: 3 reference pages; 98 library symbols, 114 method names, 87 SQL names, 46 command forms, 130 application definitions.
+PASS: 7 concept/reference pages; 999 local links/anchors; 130 core function definitions covered; Python examples parse; 14 Mermaid blocks found (use Mermaid parser separately).
+PASS: 14 Mermaid diagrams across 6 pages; Mermaid 12.2.0.
+
+PowerShell 5.1.26100.9711
+PASS: 3 reference pages; 98 library symbols, 114 method names, 87 SQL names, 46 command forms, 130 application definitions.
+PASS: 7 concept/reference pages; 999 local links/anchors; 130 core function definitions covered; Python examples parse; 14 Mermaid blocks found (use Mermaid parser separately).
+PASS: 14 Mermaid diagrams across 6 pages; Mermaid 12.2.0.
+
+Documentation-only validation; application regression suites were not rerun.

@@ -1,5 +1,7 @@
 **Sequential PostgreSQL and SQLAlchemy learning path for the college maintenance system**
 
+> This is the original numbered checklist and evidence archive. For a concept-based explanation, use the [project overview](../README.md), [SQLAlchemy guide](SQLALCHEMY.md), and [PostgreSQL guide](POSTGRESQL.md).
+
 This plan has no time estimates or deadlines. Work at your own pace and advance by evidence. Your starting point is Python and basic SQL; this path starts before SQLAlchemy and builds toward a complete, reliable maintenance application.
 
 Steps 1–64 form the project path. Steps 65–80 are specialist extensions, each with prerequisites. Some extension steps contain several related sub-experiments; perform those individually. They need not all become production features.

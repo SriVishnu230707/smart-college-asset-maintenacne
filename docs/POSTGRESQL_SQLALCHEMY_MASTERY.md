@@ -1,5 +1,7 @@
 **Learn PostgreSQL and SQLAlchemy through the Smart College Asset & Maintenance Management System**
 
+> Historical learning proposal and experiment archive. For the implemented system and concept-based diagrams, start with the [project overview](../README.md), [SQLAlchemy guide](SQLALCHEMY.md), and [PostgreSQL guide](POSTGRESQL.md). Statements below about future steps describe the original plan.
+
 Research date: 18 October 2026. Starting point: comfortable with Python and basic SQL, new to SQLAlchemy. Progress is based on demonstrated understanding, with no schedule or time allocation.
 
 This is a proposed learning and implementation guide, not an implemented application or a claim that the examples have been executed. SQL examples assume the schema decisions described below. The exercises and acceptance criteria are original recommendations; the linked official documentation supports the database and library behavior.
