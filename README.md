@@ -1,6 +1,6 @@
 # Smart College Asset & Maintenance Management System
 
-A Python backend for reporting broken college equipment, assigning repairs, using spare parts, and keeping a trustworthy maintenance history.
+A college maintenance application with a responsive browser dashboard and Python API for reporting broken equipment, assigning repairs, using spare parts, and keeping a trustworthy maintenance history.
 
 **SQLAlchemy connects the Python code to the database. PostgreSQL stores records, executes SQL, and enforces database rules.**
 
@@ -70,7 +70,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn college_maintenance.api:app --host 127.0.0.1 --port 8000
 ```
 
-Open the [API documentation](http://127.0.0.1:8000/docs). The [API guide](docs/API.md) explains provisioning actors and bearer credentials. PostgreSQL is available at `127.0.0.1:55432`; local credentials and uploads stay in ignored `.local/`.
+Open [Campus Care](http://127.0.0.1:8000/) for the dashboard, or the [API documentation](http://127.0.0.1:8000/docs) for backend operations. The [dashboard guide](docs/UI.md) describes account connection, ticket reporting, filters, and role-based views. The [API guide](docs/API.md) explains provisioning actors and bearer credentials. PostgreSQL is available at `127.0.0.1:55432`; local credentials and uploads stay in ignored `.local/`.
 
 For the separate Compose deployment with migration-owner/runtime logins, use the [deployment and recovery guide](docs/DEPLOYMENT_AND_RECOVERY.md).
 

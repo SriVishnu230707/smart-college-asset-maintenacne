@@ -34,7 +34,7 @@ flowchart TD
 |---|---|---|
 | `avg` | Calculate the arithmetic mean of non-null input values. | [labs/step-11/query.sql:193](../../labs/step-11/query.sql#L193) |
 | `bool_and` | Return true when all non-null boolean inputs are true. | [labs/shared/orm-cleanup.sql:18](../../labs/shared/orm-cleanup.sql#L18)<br/>[labs/step-05/query.sql:276](../../labs/step-05/query.sql#L276)<br/>[labs/step-06/query.sql:334](../../labs/step-06/query.sql#L334) |
-| `count` | Count rows with count(*) or non-null values with count(expression). | [reports.py:21](../../college_maintenance/reports.py#L21)<br/>[labs/shared/orm-cleanup.sql:18](../../labs/shared/orm-cleanup.sql#L18)<br/>[labs/step-02/query.sql:71](../../labs/step-02/query.sql#L71) |
+| `count` | Count rows with count(*) or non-null values with count(expression). | [dashboard.py:42](../../college_maintenance/dashboard.py#L42)<br/>[reports.py:21](../../college_maintenance/reports.py#L21)<br/>[labs/shared/orm-cleanup.sql:18](../../labs/shared/orm-cleanup.sql#L18) |
 | `dense_rank` | Rank peer groups without gaps after ties. | [analytics.py:10](../../college_maintenance/analytics.py#L10) |
 | `lag` | Read a preceding row's value in an ordered window. | [analytics.py:39](../../college_maintenance/analytics.py#L39)<br/>[labs/step-51/Python:34](../../labs/step-51/python_lab.py#L34) |
 | `max` | Find the greatest non-null input value. | [labs/step-04/query.sql:217](../../labs/step-04/query.sql#L217)<br/>[labs/step-50/Python:44](../../labs/step-50/python_lab.py#L44) |

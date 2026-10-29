@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light"><meta name="theme-color" content="#153e35">
+  <title>Campus Care · Maintenance workspace</title>
+  <link rel="stylesheet" href="/static/styles.css"><script src="/static/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Campus Care home"><span class="brand-icon" aria-hidden="true">C<span>✦</span></span><span>Campus Care<small>ASSET & MAINTENANCE</small></span></a>
+    <p class="nav-label">WORKSPACE</p>
+    <nav aria-label="Main navigation">
+      <button class="nav-item active" data-view="overview" aria-current="page"><span aria-hidden="true">◫</span> Overview</button>
+      <button class="nav-item" data-view="tickets"><span aria-hidden="true">☷</span> Maintenance tickets</button>
+      <button class="nav-item" data-view="assets"><span aria-hidden="true">▦</span> Asset directory</button>
+      <button class="nav-item" data-view="inventory" data-staff hidden><span aria-hidden="true">▤</span> Spare parts</button>
+      <button class="nav-item" data-view="reports" data-admin hidden><span aria-hidden="true">▥</span> Reports</button>
+    </nav>
+    <div class="sidebar-bottom"><div class="help-card"><strong>A better campus, together.</strong><p>Report an issue. Track the repair. Keep learning moving.</p><a href="/docs" target="_blank" rel="noopener">API documentation ↗</a></div><div class="identity"><span class="avatar" id="avatar">—</span><div><strong id="user-name">Guest workspace</strong><small id="user-role">Connect to get started</small></div></div><button class="text-button" id="connection-button">Connect account</button></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>College operations <span class="breadcrumb">/ <span id="breadcrumb">Overview</span></span></span><div><span class="live-dot" aria-hidden="true"></span><span id="connection-state">Not connected</span><button class="text-button" id="mobile-account">Connect</button><button class="icon-button" id="refresh" aria-label="Refresh current view" title="Refresh">↻</button></div></header>
+    <main id="main" tabindex="-1">
+      <div class="page-heading"><div><p class="eyebrow" id="department">YOUR CAMPUS WORKSPACE</p><h1 id="page-title">Maintenance overview</h1><p id="page-subtitle">A clearer view of what needs care across your campus.</p></div><button class="primary" id="new-ticket">＋ Report an issue</button></div>
+      <div id="notice" role="status" aria-live="polite" hidden></div>
+      <section id="welcome" class="welcome"><div><span class="eyebrow">WELCOME TO CAMPUS CARE</span><h2>Every issue has a next step.</h2><p>Connect your college account to see your tickets, explore assets, and follow repairs in one place.</p><button class="primary" id="welcome-connect">Connect account →</button></div><div class="campus-art" aria-hidden="true"><div class="sun"></div><div class="building">▥ ▥ ▥<br>▥ ▥ ▥<br>▥ ▥ ▥</div><div class="tree">♧</div><span class="art-tag">A campus that works.</span></div></section>
+      <div id="content" aria-live="polite"></div>
+      <footer>Campus Care <span>Thoughtful maintenance. Better places to learn.</span></footer>
+    </main>
+  </div>
+</div>
+<dialog id="connect-dialog" aria-labelledby="connect-title"><form id="connect-form"><div class="dialog-heading"><h2 id="connect-title">Connect your account</h2><button type="button" class="icon-button" data-close aria-label="Close">×</button></div><p>Use the access token provisioned by your college administrator. Your role and department are loaded securely from the server.</p><label for="token">Access token</label><input id="token" type="password" required autocomplete="off" spellcheck="false"><p class="field-hint">Kept in memory for this tab. Reloading the page signs you out.</p><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" type="submit">Connect account</button></div></form></dialog>
+<dialog id="report-dialog" aria-labelledby="report-title"><form id="report-form"><div class="dialog-heading"><h2 id="report-title">Report an issue</h2><button type="button" class="icon-button" data-close aria-label="Close">×</button></div><p>Tell us what needs attention. A clear description helps the team resolve it sooner.</p><label for="asset-search">Find your asset</label><div class="inline-field"><input id="asset-search" placeholder="Search by name or asset code" maxlength="150"><button type="button" class="secondary" id="find-assets">Find</button></div><label for="report-asset">Asset</label><select id="report-asset" required><option value="">Choose an asset</option></select><p id="asset-hint" class="field-hint"></p><label for="report-subject">Issue title</label><input id="report-subject" required maxlength="200" placeholder="e.g. Projector has no display"><label for="report-priority">Priority</label><select id="report-priority"><option value="low">Low · Can wait</option><option value="medium" selected>Medium · Needs attention</option><option value="high">High · Disrupting learning</option><option value="critical">Critical · Urgent attention</option></select><label for="report-description">What happened?</label><textarea id="report-description" rows="4" required maxlength="10000" placeholder="Describe the problem, location, and when it started."></textarea><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button type="submit" class="primary">Submit issue</button></div></form></dialog>
+<dialog id="ticket-dialog" aria-labelledby="detail-title"><div class="dialog-heading"><h2 id="detail-title">Ticket details</h2><button type="button" class="icon-button" data-close aria-label="Close">×</button></div><div id="ticket-detail"></div></dialog>
+</body></html>

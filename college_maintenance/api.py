@@ -111,6 +111,9 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
         with session_factory() as session:
             yield session
 
+    from college_maintenance.dashboard import install_dashboard
+    install_dashboard(app, actor_id, session_dependency)
+
     @app.get('/health/ready')
     def ready(session=Depends(session_dependency)):
         with session.begin():session.execute(select(1)).scalar_one()
@@ -304,7 +307,7 @@ def create_app(session_factory=SessionFactory, authenticate=authenticate_token, 
     @app.get('/tickets/{ticket_id}')
     def get_ticket(ticket_id: UUID, identity=Depends(actor_id), session=Depends(session_dependency)):
         with session.begin():
-            query = ticket_query(scope_for_actor(session, identity)).add_columns(MaintenanceTicket.version).where(MaintenanceTicket.id == ticket_id)
+            query = ticket_query(scope_for_actor(session, identity)).add_columns(MaintenanceTicket.version, MaintenanceTicket.description).where(MaintenanceTicket.id == ticket_id)
             result = session.execute(query).mappings().one_or_none()
             if result is None: raise HTTPException(404, 'Ticket not found')
             return dict(result)

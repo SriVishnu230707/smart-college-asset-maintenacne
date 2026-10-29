@@ -4,6 +4,8 @@
 
 This documentation update replaces step-by-step primary navigation with a project overview, two concept guides, and three source-linked indexes. The original learning checklist, evidence, application code, and migration history are retained.
 
+The table below records the original concept-guide baseline. The subsequent [dashboard update](UI_VERIFICATION.md) refreshed the indexes and passed the scanner with **136 core definitions, 99 library symbols, 114 method names, and 1010 local links/anchors**. Its fresh application acceptance and targeted API regression results are recorded separately in that verification page.
+
 ## Coverage and checks
 
 | Check | What it establishes |

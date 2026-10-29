@@ -25,3 +25,14 @@ Every committed lab retains an independent SQL observer and exact-run cleanup gu
 Python resolution checks the project virtual environment, PATH and an existing bundled candidate, respects -PythonExecutable, and checks dependencies before SQL. Async steps additionally require Python 3.11+ and pinned greenlet. No packages are installed automatically by the suite. Compilation/query plan evidence is rewritten only when explicitly capturing evidence, keeping ordinary regression runs from dirtying tracked plan files.
 
 Full native process logs and failures remain under ignored .local/test-results/. Expected SQLSTATEs and conflicts are assertions, not skipped behavior. There is no SQLite substitution. A failure, changed check count, bad cleanup, or unexpected exit fails the run; success evidence is not saved for a failed individual lesson. See [debug review](../docs/DEBUG_CHECKPOINTS.md).
+
+## Campus Care interface checks
+
+The additional dashboard checks run separately from the original numbered labs:
+
+```powershell
+.\tests\dashboard.ps1 -WriteEvidence
+powershell.exe -NoProfile -File tests/dashboard.ps1 -WriteEvidence
+```
+
+They require the existing local PostgreSQL container and installed Python dependencies. Each run creates and removes its own generated schema. See the [dashboard verification record](../docs/UI_VERIFICATION.md) for evidence and browser coverage.
