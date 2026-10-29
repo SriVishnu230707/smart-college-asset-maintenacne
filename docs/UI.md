@@ -30,6 +30,8 @@ Work-order editing, spare-part consumption, completion-proof uploads, stock admi
 ```powershell
 .\tests\dashboard.ps1 -WriteEvidence
 powershell.exe -NoProfile -File tests/dashboard.ps1 -WriteEvidence
+.\tests\dashboard-async.ps1 -WriteEvidence
+powershell.exe -NoProfile -File tests/dashboard-async.ps1 -WriteEvidence
 node --check college_maintenance/static/app.js
 .\.venv\Scripts\python.exe tools\build_reference.py --check
 .\.venv\Scripts\python.exe tools\check_docs.py
@@ -38,3 +40,5 @@ node --check college_maintenance/static/app.js
 The dashboard acceptance tests use real PostgreSQL with a uniquely generated schema and remove only that schema afterward. They verify authentication, field exposure, department boundaries, all-page totals, wildcard search, stable asset paging, bounded input, descriptions, comments, and assignment. They do not mutate the application's public schema or reuse production credentials.
 
 Evidence: [PowerShell 7](../tests/dashboard-evidence-powershell7.txt), [Windows PowerShell 5.1](../tests/dashboard-evidence-powershell5.txt). See [UI verification](UI_VERIFICATION.md) for browser checks and the regression checkpoint.
+
+The separate async regression requires Node.js with its built-in test runner. It executes the shipped script against a small DOM fixture with controlled network responses, covering cancelled dialogs, stale searches, and account changes without installing browser packages. Closing a dialog discards its pending UI updates; a write already accepted by the server can still complete.

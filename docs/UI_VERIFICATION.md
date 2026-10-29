@@ -1,5 +1,17 @@
 # Dashboard debugging and verification
 
+## Async debugging follow-up — 30 October 2026
+
+- [x] Reproduced six failing cases before editing the shipped JavaScript: stale asset search results, asset responses after dialog closure, misleading retired-only results, responses from a previous connection using the same token, cancelled sign-in, and comments reopening a closed ticket.
+- [x] Added connection and asset-request generations so earlier responses cannot overwrite the current state. Closing a dialog invalidates its pending submissions and releases its submit control for a new attempt.
+- [x] Guarded sign-in, comment refresh, administrator refresh, and report completion callbacks so cancelled or replaced dialogs are not reopened, closed, or reset by older work.
+- [x] Added two additional cases proving that an old sign-in cannot clear a newer successful connection and an old report cannot reset a reopened draft. All eight controlled-network cases pass in both shells: [PowerShell 7](../tests/dashboard-async-evidence-powershell7.txt) · [PowerShell 5.1](../tests/dashboard-async-evidence-powershell5.txt).
+- [x] Reran the eleven real-PostgreSQL dashboard acceptance cases in both shells and refreshed their evidence; all passed. JavaScript syntax, documentation checks, and Git whitespace checks passed too.
+
+These tests execute the actual JavaScript using Node's VM and a deliberately small DOM fixture. They verify response timing and state transitions; they do not claim a fresh browser-layout test or full 80-step regression. The earlier browser and API checkpoint evidence below remains the baseline.
+
+## Original dashboard verification
+
 Verified on 29 October 2026. This change adds the Campus Care browser interface to the existing FastAPI application. No numbered learning step or database migration is added.
 
 ## Acceptance checklist

@@ -1,7 +1,7 @@
 'use strict';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const state = { token: '', user: null, view: 'overview', cursor: null, next: null, offset: 0, nextOffset: null, status: '', priority: '', assetSearch: '', revision: 0, detail: 0 };
+const state = { token: '', user: null, view: 'overview', cursor: null, next: null, offset: 0, nextOffset: null, status: '', priority: '', assetSearch: '', revision: 0, detail: 0, session: 0, assetRequest: 0 };
 const titles = { overview: ['Maintenance overview', 'A clearer view of what needs care across your campus.'], tickets: ['Maintenance tickets', 'Follow every issue, from the first report to the final fix.'], assets: ['Asset directory', 'Find the equipment and spaces that keep your campus moving.'], inventory: ['Spare parts', 'Check available stock and see what needs replenishing.'], reports: ['Maintenance reports', 'Understand repair costs and recurring equipment issues.'] };
 const admin = () => ['department_admin', 'super_admin'].includes(state.user?.role);
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -16,7 +16,7 @@ function notify(message, error = false) {
   const node = $('#notice'); node.textContent = message; node.hidden = !message; node.classList.toggle('error', error);
 }
 function disconnect(message = '') {
-  state.token = ''; state.user = null; state.revision++; state.detail++;
+  state.token = ''; state.user = null; state.revision++; state.detail++; state.session++; state.assetRequest++;
   state.cursor = null; state.next = null; state.offset = 0; state.nextOffset = null;
   state.status = ''; state.priority = ''; state.assetSearch = '';
   $('#token').value = ''; $('#user-name').textContent = 'Guest workspace'; $('#user-role').textContent = 'Connect to get started';
@@ -29,13 +29,13 @@ function disconnect(message = '') {
   $('#welcome').hidden = false; $('#content').replaceChildren(); setHeading('overview'); notify(message, Boolean(message));
 }
 async function api(path, options = {}) {
-  const token = state.token;
+  const token = state.token; const session = state.session;
   if (!token) throw new Error('Connect your account to continue.');
   const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 20000);
   try {
     const response = await fetch(path, { ...options, signal: controller.signal, headers: { Authorization: `Bearer ${token}`, ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers }, cache: 'no-store' });
     const body = await response.json().catch(() => ({}));
-    if (token !== state.token) throw new Error('Your connection changed. Please try again.');
+    if (session !== state.session || token !== state.token) throw new Error('Your connection changed. Please try again.');
     if (response.status === 401) { if (state.user) disconnect('Your access token has expired or is invalid. Connect again to continue.'); else state.token = ''; throw new Error('Access token expired or invalid. Check the token and try again.'); }
     if (!response.ok) {
       const detail = Array.isArray(body.detail) ? body.detail.map(item => `${item.loc.at(-1)}: ${item.msg}`).join('; ') : body.detail;
@@ -96,13 +96,17 @@ function navigate(view) {
   state.cursor = null; state.offset = 0; notify(''); setHeading(view); render();
 }
 async function loadAssets() {
+  const request = ++state.assetRequest;
   $('#find-assets').disabled = true;
+  $('#report-form .form-error').textContent = '';
   try {
     const page = await api(`/assets?${new URLSearchParams({ q: $('#asset-search').value, limit: '100' })}`);
-    $('#report-asset').innerHTML = '<option value="">Choose an asset</option>' + page.items.filter(asset => asset.status !== 'retired').map(asset => `<option value="${escapeHTML(asset.id)}">${escapeHTML(asset.asset_code)} · ${escapeHTML(asset.name)}</option>`).join('');
-    $('#asset-hint').textContent = page.next_offset !== null ? 'More matches are available. Narrow your search to find the right asset.' : page.items.length ? 'Choose the asset that needs attention.' : 'No matching assets. Try a different name or contact your administrator.';
-  } catch (error) { $('#report-form .form-error').textContent = error.message; }
-  finally { $('#find-assets').disabled = false; }
+    if (request !== state.assetRequest || !$('#report-dialog').open) return;
+    const reportable = page.items.filter(asset => asset.status !== 'retired');
+    $('#report-asset').innerHTML = '<option value="">Choose an asset</option>' + reportable.map(asset => `<option value="${escapeHTML(asset.id)}">${escapeHTML(asset.asset_code)} · ${escapeHTML(asset.name)}</option>`).join('');
+    $('#asset-hint').textContent = page.next_offset !== null ? 'More matches are available. Narrow your search to find the right asset.' : reportable.length ? 'Choose the asset that needs attention.' : 'No reportable assets match. Try a different name or contact your administrator.';
+  } catch (error) { if (request === state.assetRequest && $('#report-dialog').open) $('#report-form .form-error').textContent = error.message; }
+  finally { if (request === state.assetRequest) $('#find-assets').disabled = false; }
 }
 async function openTicket(id) {
   const detail = ++state.detail; const dialog = $('#ticket-dialog'); $('#detail-title').textContent = 'Ticket details'; $('#ticket-detail').innerHTML = '<p>Loading ticket…</p>'; if (!dialog.open) dialog.showModal();
@@ -121,34 +125,44 @@ async function openTicket(id) {
     if (detail !== state.detail || !dialog.open) return;
     $('#ticket-detail').innerHTML = `<div class="detail-meta">${badge(ticket.status)} ${badge(ticket.priority, true)}<span class="ticket-code">#${escapeHTML(id.slice(0, 8).toUpperCase())}</span></div><div class="description">${escapeHTML(ticket.description)}</div><p>Reported by ${escapeHTML(ticket.reporter_name)} · ${escapeHTML(date(ticket.created_at))}<br>Assigned to ${escapeHTML(ticket.assignee_name || 'Unassigned')}</p>${actions}<h3 class="section-title">Discussion</h3><div>${comments.length ? comments.map(comment => `<div class="comment">${escapeHTML(comment.body)}<small>${escapeHTML(date(comment.created_at))}</small></div>`).join('') : '<p>No comments yet. Add an update below.</p>'}</div><p class="field-hint">Showing the first 20 comments, oldest first.</p><form id="comment-form"><label for="comment-body">Add a comment</label><textarea id="comment-body" required maxlength="10000" rows="3" placeholder="Share a useful update…"></textarea><p class="form-error" role="alert"></p><div class="dialog-actions"><button class="primary">Post comment</button></div></form>`;
     if (['closed', 'rejected'].includes(ticket.status)) $('#comment-form').innerHTML = '<p>This ticket is finalized. Its discussion is read-only.</p>';
-    else $('#comment-form').onsubmit = event => submitForm(event, async () => { const body = $('#comment-body').value.trim(); if (!body) throw new Error('Enter a comment before posting.'); await post(`/tickets/${id}/comments`, { body }); await openTicket(id); });
+    else $('#comment-form').onsubmit = event => submitForm(event, async () => { const body = $('#comment-body').value.trim(); if (!body) throw new Error('Enter a comment before posting.'); await post(`/tickets/${id}/comments`, { body }); if (detail === state.detail && dialog.open) await openTicket(id); });
     const transitionForm = $('#transition-form');
     if (transitionForm) transitionForm.onsubmit = event => submitForm(event, async () => {
       const action = $('#transition-action').value; const reason = $('#transition-reason').value.trim(); const technician = $('#technician')?.value;
       if (action === 'assign' && !technician) throw new Error('Choose a technician to assign.');
       if (action !== 'assign' && !reason) throw new Error('Enter a reason for this action.');
       await post(`/tickets/${id}/transitions`, { action, technician_id: action === 'assign' ? technician : null, reason: reason || null });
-      notify('Ticket updated.'); await openTicket(id); render();
+      notify('Ticket updated.'); if (detail === state.detail && dialog.open) await openTicket(id); render();
     });
   } catch (error) { if (detail === state.detail && dialog.open) $('#ticket-detail').innerHTML = `<p class="form-error" role="alert">${escapeHTML(error.message)}</p>`; }
 }
 async function submitForm(event, work) {
   event.preventDefault(); const form = event.currentTarget; const button = $('button[type="submit"], button:not([type])', form); const error = $('.form-error', form);
-  if (button.disabled) return; button.disabled = true; error.textContent = '';
-  try { await work(); } catch (failure) { error.textContent = failure.message; } finally { button.disabled = false; }
+  if (button.disabled) return;
+  const submission = Symbol('submission'); form.activeSubmission = submission;
+  button.disabled = true; error.textContent = '';
+  const isCurrent = () => form.activeSubmission === submission;
+  try { await work(isCurrent); } catch (failure) { if (isCurrent()) error.textContent = failure.message; }
+  finally { if (isCurrent()) { button.disabled = false; form.activeSubmission = null; } }
 }
 $('#connect-form').onsubmit = event => submitForm(event, async () => {
+  const session = ++state.session;
   state.token = $('#token').value.trim(); if (!state.token) throw new Error('Enter your access token.');
-  try { state.user = await api('/me'); } catch (error) { state.token = ''; throw error; }
+  try {
+    const user = await api('/me');
+    if (session !== state.session || !$('#connect-dialog').open) return;
+    state.user = user;
+  } catch (error) { if (session === state.session) state.token = ''; throw error; }
   $('#token').value = ''; $('#connect-dialog').close(); $('#welcome').hidden = true; $('.topbar').classList.add('connected'); $('#connection-state').textContent = 'Connected';
   $('#user-name').textContent = state.user.name; $('#user-role').textContent = label(state.user.role); $('#avatar').textContent = state.user.name.slice(0, 1).toUpperCase();
   $('#department').textContent = state.user.department; $('#connection-button').textContent = 'Disconnect account'; $('#mobile-account').textContent = 'Disconnect';
   $$('[data-staff]').forEach(node => { node.hidden = state.user.role === 'student'; }); $$('[data-admin]').forEach(node => { node.hidden = !admin(); }); navigate('overview');
 });
-$('#report-form').onsubmit = event => submitForm(event, async () => {
+$('#report-form').onsubmit = event => submitForm(event, async isCurrent => {
   const title = $('#report-subject').value.trim(); const description = $('#report-description').value.trim();
   if (!title || !description) throw new Error('Enter a title and description with more than spaces.');
   await post('/tickets', { asset_id: $('#report-asset').value, title, description, priority: $('#report-priority').value });
+  if (!isCurrent()) return;
   $('#report-dialog').close(); $('#report-form').reset(); state.status = ''; state.priority = ''; navigate('tickets'); notify('Issue reported. Your maintenance team can now review it.');
 });
 $('#new-ticket').onclick = () => { if (!state.user) { $('#connect-dialog').showModal(); return; } $('#report-form .form-error').textContent = ''; $('#report-dialog').showModal(); loadAssets(); };
@@ -160,6 +174,18 @@ $('#mobile-account').onclick = $('#connection-button').onclick;
 $('#refresh').onclick = () => { if (state.user) { notify(''); render(); } else $('#connect-dialog').showModal(); };
 $$('[data-view]').forEach(button => { button.onclick = () => navigate(button.dataset.view); });
 $$('[data-close]').forEach(button => { button.onclick = () => button.closest('dialog').close(); });
+// A closed dialog invalidates its pending UI work. Writes already accepted by
+// the server may still finish, but cannot reopen or overwrite another dialog.
+$$('dialog').forEach(dialog => dialog.addEventListener('close', () => {
+  $$('form', dialog).forEach(form => {
+    form.activeSubmission = null;
+    const button = $('button[type="submit"], button:not([type])', form);
+    if (button) button.disabled = false;
+  });
+  if (dialog === $('#ticket-dialog')) state.detail++;
+  if (dialog === $('#report-dialog')) { state.assetRequest++; $('#find-assets').disabled = false; }
+  if (dialog === $('#connect-dialog') && !state.user) { state.session++; state.token = ''; $('#token').value = ''; }
+}));
 $('#content').addEventListener('click', event => {
   const button = event.target.closest('button'); if (!button || button.disabled) return;
   if (button.dataset.ticket) openTicket(button.dataset.ticket);

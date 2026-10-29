@@ -1,0 +1,61 @@
+Dashboard async regression: PowerShell 5.1.26100.9711
+Captured (UTC): 2026-10-29 18:51:25Z
+v22.17.0
+TAP version 13
+# Subtest: an older asset search cannot replace the latest search results
+ok 1 - an older asset search cannot replace the latest search results
+  ---
+  duration_ms: 11.0268
+  type: 'test'
+  ...
+# Subtest: an asset request finishing after the report dialog closes is discarded
+ok 2 - an asset request finishing after the report dialog closes is discarded
+  ---
+  duration_ms: 3.029
+  type: 'test'
+  ...
+# Subtest: retired-only asset matches explain that no reportable assets are available
+ok 3 - retired-only asset matches explain that no reportable assets are available
+  ---
+  duration_ms: 1.5996
+  type: 'test'
+  ...
+# Subtest: disconnect and reconnect with the same token invalidates earlier responses
+ok 4 - disconnect and reconnect with the same token invalidates earlier responses
+  ---
+  duration_ms: 2.3093
+  type: 'test'
+  ...
+# Subtest: cancelled sign-in cannot reconnect the account when its response arrives
+ok 5 - cancelled sign-in cannot reconnect the account when its response arrives
+  ---
+  duration_ms: 2.3899
+  type: 'test'
+  ...
+# Subtest: a delayed comment response does not reopen a closed ticket
+ok 6 - a delayed comment response does not reopen a closed ticket
+  ---
+  duration_ms: 5.6384
+  type: 'test'
+  ...
+# Subtest: a cancelled sign-in response cannot clear a newer successful connection
+ok 7 - a cancelled sign-in response cannot clear a newer successful connection
+  ---
+  duration_ms: 5.7445
+  type: 'test'
+  ...
+# Subtest: a cancelled report response cannot close or reset a reopened report form
+ok 8 - a cancelled report response cannot close or reset a reopened report form
+  ---
+  duration_ms: 1.8713
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 465.6437

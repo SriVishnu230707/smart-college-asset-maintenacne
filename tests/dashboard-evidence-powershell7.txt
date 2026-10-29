@@ -1,5 +1,5 @@
 Dashboard verification: PowerShell 7.6.5
-Captured (UTC): 2026-10-29 18:13:21Z
+Captured (UTC): 2026-10-29 18:51:56Z
 test_asset_discovery_scope_and_literal_wildcards (tests.dashboard_cases.DashboardAcceptance.test_asset_discovery_scope_and_literal_wildcards) ... ok
 test_asset_pages_have_stable_order_without_duplicates (tests.dashboard_cases.DashboardAcceptance.test_asset_pages_have_stable_order_without_duplicates) ... ok
 test_bounded_asset_parameters (tests.dashboard_cases.DashboardAcceptance.test_bounded_asset_parameters) ... ok
@@ -13,6 +13,6 @@ test_summary_department_and_technician_scope (tests.dashboard_cases.DashboardAcc
 test_technician_directory_does_not_leak_other_departments (tests.dashboard_cases.DashboardAcceptance.test_technician_directory_does_not_leak_other_departments) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests in 3.942s
+Ran 11 tests in 5.399s
 
 OK

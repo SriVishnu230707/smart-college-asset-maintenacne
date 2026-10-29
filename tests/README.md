@@ -36,3 +36,5 @@ powershell.exe -NoProfile -File tests/dashboard.ps1 -WriteEvidence
 ```
 
 They require the existing local PostgreSQL container and installed Python dependencies. Each run creates and removes its own generated schema. See the [dashboard verification record](../docs/UI_VERIFICATION.md) for evidence and browser coverage.
+
+For UI timing regressions, run `.\tests\dashboard-async.ps1 -WriteEvidence` in either shell. These eight cases require Node.js and its built-in test runner, use controlled network responses against the shipped script, and do not require PostgreSQL. [PowerShell 7 evidence](dashboard-async-evidence-powershell7.txt) · [PowerShell 5.1 evidence](dashboard-async-evidence-powershell5.txt).
